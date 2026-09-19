@@ -1,3 +1,13 @@
+## [2.1.2] - 2026-09-20
+
+### Reliability Cleanup
+- Removed unused native media/voice dependencies that caused deprecated transitive-package warnings.
+- Migrated media HTTP downloads from `undici` package imports to the Node fetch API.
+- Added an `encoding-sniffer` override to remove the deprecated `whatwg-encoding` dependency path.
+- Hardened media fetch timeout cleanup.
+- CI now runs inside a pinned Node 22 container instead of `setup-node`, avoiding the setup action's own `punycode` deprecation warning.
+- Syntax validation and the full Node test suite remain required CI gates.
+
 ## [2.1.0] - 2026-09-20
 
 ### Restaurant Price Aggregation and Tooling
