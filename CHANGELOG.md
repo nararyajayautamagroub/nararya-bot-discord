@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.7.1] - 2026-09-19
+
+### Guild Welcome
+- Added automatic welcome message when the bot is invited to a new Discord server.
+- Uses the server system channel when writable, otherwise falls back to the first writable text channel.
+- Stores a `welcome_sent_at` timestamp so the invite message is sent only once per guild configuration.
+- Existing databases receive a safe migration for the new column.
+
+
 All notable changes to this project are documented here.
 
 ## [1.7.0] - 2026-09-19
@@ -88,4 +97,5 @@ All notable changes to this project are documented here.
 ## [1.0.0]
 - Initial modular Discord bot foundation.
 
+[1.7.1]: https://github.com/nararyajayautamagroub/nararya-bot-discord/releases/tag/v1.7.1
 [1.7.0]: https://github.com/nararyajayautamagroub/nararya-bot-discord/releases/tag/v1.7.0
