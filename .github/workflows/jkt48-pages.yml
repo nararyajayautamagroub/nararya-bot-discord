@@ -1,4 +1,4 @@
-name: JKT48 Website Pages
+name: JKT48 Website Build
 
 on:
   push:
@@ -7,15 +7,17 @@ on:
     paths:
       - 'website/jkt48/**'
       - '.github/workflows/jkt48-pages.yml'
+  pull_request:
+    paths:
+      - 'website/jkt48/**'
+      - '.github/workflows/jkt48-pages.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages-jkt48
+  group: jkt48-website-build
   cancel-in-progress: true
 
 jobs:
@@ -35,28 +37,22 @@ jobs:
           test -f website/jkt48/app.js
           test -f website/jkt48/README.md
 
-      - name: Build static site
+      - name: Validate required UI tokens
+        run: |
+          grep -q 'id="menuToggle"' website/jkt48/index.html
+          grep -q 'class="hamburger"' website/jkt48/index.html
+          grep -q -- '--red:#d71920' website/jkt48/style.css
+          grep -q 'background:var(--white)' website/jkt48/style.css
+
+      - name: Build static artifact
         run: |
           rm -rf _site
           mkdir -p _site
           cp -R website/jkt48/. _site/
           touch _site/.nojekyll
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Upload website artifact
+        uses: actions/upload-artifact@v4
         with:
-          path: '_site'
-
-  deploy:
-    environment:
-      name: github-pages
-      url: \${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
-      - name: Deploy Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          name: jkt48-center-website
+          path: _site
