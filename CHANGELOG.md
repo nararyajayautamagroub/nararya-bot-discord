@@ -1,4 +1,4 @@
-# Changelog
+## 1.5.0 — 2026-09-19\n\n### Added\n- Web verification flow with an “I’m not a robot” checkbox.\n- 4-character server-bound verification codes with one-time redemption and expiry.\n- Optional automatic verified role assignment.\n- `/verify` commands for start, code, status, and role configuration.\n- `/bot` commands for info, feature registry, and health.\n- `src/config/features.js` centralized feature registry.\n- `SECURITY.md` and verification documentation.\n\n### Security\n- Verification codes are stored only as hashes.\n- Each Discord server receives its own random secret.\n- Verification sessions have attempt limits and expiry.\n\n# Changelog
 
 All notable changes to this project are documented here.
 
