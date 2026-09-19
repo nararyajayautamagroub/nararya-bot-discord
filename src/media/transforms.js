@@ -18,7 +18,7 @@ export async function removeVocals(input,outdir,format='mp3'){
  const base=path.basename(input,path.extname(input));
  const candidate=path.join(outdir,model,base,'no_vocals.wav');
  if(!fs.existsSync(candidate))throw new Error('Demucs did not produce no_vocals.wav');
- await ffmpeg('-y','-i',candidate,'-vn','-c:a',format==='wav'?'pcm_s16le':'libmp3lame','-b:a',format==='mp3'?'320k':undefined,target);
+ const args=['-y','-i',candidate,'-vn','-c:a']; if(format==='wav')args.push('pcm_s16le'); else if(format==='flac')args.push('flac'); else if(format==='m4a')args.push('aac','-b:a','256k'); else args.push('libmp3lame','-b:a','320k'); args.push(target); await ffmpeg(...args);
  return {path:target,mime:MIME_BY_EXT[format]};
 }
 
