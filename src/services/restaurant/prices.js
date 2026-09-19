@@ -17,7 +17,7 @@ export const RESTAURANT_PRICE_MAX_CITY_PAGES=Math.max(1,Math.min(20,asInteger(pr
 export const RESTAURANT_PRICE_MAX_ITEMS=Math.max(10,Math.min(1000,asInteger(process.env.RESTAURANT_PRICE_MAX_ITEMS,300)));
 
 export const INDONESIA_CITIES=Object.freeze([
- 'jakarta','bandung','bali','surabaya','makassar','palembang','medan','balikpapan',
+ 'jakarta','depok','bekasi','bogor','tangerang','tangerang-selatan','bandung','bali','surabaya','makassar','palembang','medan','balikpapan',
  'yogyakarta','semarang','manado','solo','samarinda','malang','batam','padang',
  'pontianak','banjarmasin','pekanbaru','jambi','bandar-lampung','mataram','sukabumi',
  'pematangsiantar','tasikmalaya','serang','cirebon','tegal','magelang','purwokerto',
@@ -431,7 +431,6 @@ export async function fetchRestaurantMenu(url){
 
 export async function findRestaurants(options={}){
  const input=normalizeRestaurantQuery(options);
- const cached=[];
  const fetched=[];
  for(let page=1;page<=input.maxPages;page++){
   const directory=await fetchRestaurantDirectory(input.city,page);
