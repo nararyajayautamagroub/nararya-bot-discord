@@ -15,8 +15,7 @@ test('verification codes are server-bound and redeemable once',()=>{
  const redeemed=service.redeemCode({guildId:'guild-a',userId:'user-a',code:completed.code});
  assert.ok(redeemed.sessionId);
  assert.throws(()=>service.redeemCode({guildId:'guild-a',userId:'user-a',code:completed.code}),/Tidak ada sesi verifikasi aktif/);
- const bRow=db.prepare('SELECT * FROM verification_sessions WHERE id=?').get(b.ticket);
- assert.notEqual(completed.code,bRow.code_hash);
+ assert.throws(()=>service.redeemCode({guildId:'guild-b',userId:'user-b',code:completed.code}),/Kode salah/);
  db.close();
 });
 
