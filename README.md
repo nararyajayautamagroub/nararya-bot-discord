@@ -64,7 +64,6 @@ Detail integrasi ada di `docs/JKT48-SOURCES.md`.
 
 Scraper hanya menggunakan sumber publik dan tidak melakukan bypass CAPTCHA, login, paywall, rate limit, atau sistem anti-bot. Gunakan URL/API yang sesuai dengan ketentuan layanan masing-masing platform.
 
-
 ## Documentation
 
 Project/legal documentation:
