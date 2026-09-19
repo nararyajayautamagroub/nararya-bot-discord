@@ -102,6 +102,19 @@ npm run deploy
 Command registration is separate from starting the bot process.
 
 
+## Verification
+
+- `/verify start`
+- `/verify code code:<4-character-code>`
+- `/verify status`
+- `/verify role role:<role>` — Manage Server
+
+## Developer
+
+- `/bot info`
+- `/bot features`
+- `/bot health`
+
 ## Media
 
 - `/media video url:<url> [resolution] [format]`
