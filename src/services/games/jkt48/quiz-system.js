@@ -34,9 +34,9 @@ export function calculatePoints(seconds,rarity){
  const info=rarityInfo[rarity]||rarityInfo.common;
  return Math.max(25,Math.round((100-Math.floor(Math.max(0,seconds)/10)*5)*info.multiplier));
 }
-export function recordResult(db,{guildId,userId,mode,rarity,answer,input,correct,points,durationMs}){
+export function recordAttempt(db,{guildId,userId,mode,rarity,answer,input,correct,points=0,durationMs=0}){db.prepare('INSERT INTO quiz_attempts(guild_id,user_id,mode,rarity,answer,input,correct,points,duration_ms,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)').run(guildId,userId,mode,rarity,answer,input,correct?1:0,points,durationMs,Date.now());}\nexport function recordResult(db,{guildId,userId,mode,rarity,answer,input,correct,points,durationMs}){
  const now=Date.now();
- db.prepare('INSERT INTO quiz_attempts(guild_id,user_id,mode,rarity,answer,input,correct,points,duration_ms,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)').run(guildId,userId,mode,rarity,answer,input,correct?1:0,points,durationMs,now);
+ recordAttempt(db,{guildId,userId,mode,rarity,answer,input,correct,points,durationMs});
  const old=db.prepare('SELECT * FROM quiz_scores WHERE guild_id=? AND user_id=?').get(guildId,userId);
  const nextStreak=correct?(old?.streak||0)+1:0;
  const nextMax=Math.max(old?.max_streak||0,nextStreak);
