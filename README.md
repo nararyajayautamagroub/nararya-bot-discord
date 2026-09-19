@@ -141,6 +141,7 @@ find src test -type f -name '*.js' -print0 | xargs -0 -n1 node --check
 - docs/FEATURE-REGISTRY.md
 - docs/INDONESIA-DATA.md
 - docs/JKT48-SOURCES.md
+- docs/JKT48-INTEGRATION-NOTES.md
 - docs/JKT48-CONNECT.md
 - docs/MEDIA.md
 - docs/NOTIFICATION-SOURCES.md
