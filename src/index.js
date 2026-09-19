@@ -98,6 +98,7 @@ function gameCooldownLeft(guildId,userId){const key=guildId+':'+userId,last=game
 function scheduleQuizExpiry(session){setTimeout(async()=>{const current=jkt48Dbs.quiz.prepare('SELECT * FROM quiz_sessions WHERE id=?').get(session.id);if(!current||current.status!=='active')return;if(current.expires_at>Date.now())return scheduleQuizExpiry({...current});finishSession(jkt48Dbs.quiz,current.id,'expired');recordResult(jkt48Dbs.quiz,{guildId:current.guild_id,userId:current.user_id,mode:current.mode,rarity:current.rarity,answer:current.answer,input:'[timeout]',correct:false,points:0,durationMs:QUIZ_TIMEOUT_MS});const ch=await client.channels.fetch(current.channel_id).catch(()=>null);if(ch?.isTextBased())await ch.send({embeds:[embed('⏰ Waktu Habis','Tantangan **'+current.mode+'** gagal karena tidak dijawab dalam **1 menit**. Coba lagi setelah cooldown.',{color:EMBED_COLORS.error})]}).catch(()=>{});},Math.max(100,current.expires_at-Date.now()+100));}
 function money(v){return Number.isFinite(Number(v))?'Rp'+Number(v).toLocaleString('id-ID'):'-';}
 const additionalCommandHandler=createAdditionalCommandHandler({db,jkt48QuizDb:jkt48Dbs.quiz,client,embed,gameCooldowns,gameCooldownMs:GAME_COOLDOWN_MS,quizTimeoutMs:QUIZ_TIMEOUT_MS,scraperOrchestrator,getAuditStatus,onQuizStarted:scheduleQuizExpiry});
+let dataPipelineRunning=false;
 const auditDatabases=[
  {name:'main',db},
  {name:'media',db:mediaDbState.db},
@@ -106,8 +107,11 @@ const auditDatabases=[
  {name:'jkt48-cards',db:jkt48Dbs.cards}
 ];
 async function runDataPipelineCheck(){
+ if(dataPipelineRunning)return null;
+ dataPipelineRunning=true;
  try{await scraperOrchestrator.checkNow();return await runDataAudit({databases:auditDatabases});}
  catch(error){console.warn('[data-audit] '+error.message);return null;}
+ finally{dataPipelineRunning=false;}
 }
 
 async function sendIndonesiaDataRefresh(){return refreshIndonesiaCache().catch(error=>[{ok:false,error:error.message}]);}
