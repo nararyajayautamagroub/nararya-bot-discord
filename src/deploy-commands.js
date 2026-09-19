@@ -14,7 +14,15 @@ const feed=new SlashCommandBuilder().setName('feed').setDescription('Kelola noti
    {name:'Costume Instagram',value:'costume-instagram'},{name:'Costume TikTok',value:'costume-tiktok'})))
  .addSubcommand(s=>s.setName('remove').setDescription('Hapus feed').addIntegerOption(o=>o.setName('id').setDescription('ID feed').setRequired(true)))
  .addSubcommand(s=>s.setName('test').setDescription('Tes scraper feed').addIntegerOption(o=>o.setName('id').setDescription('ID feed').setRequired(true)));
+
+const jkt48game=new SlashCommandBuilder().setName('jkt48game').setDescription('Game tebak-tebakan dan gacha JKT48')
+ .addSubcommand(s=>s.setName('play').setDescription('Mulai game tebak JKT48').addStringOption(o=>o.setName('mode').setDescription('Mode game').setRequired(true).addChoices(
+  {name:'Tebak suara lagu',value:'song'},{name:'Tebak suara member JKT48',value:'memberVoice'},{name:'Tebak member foto active',value:'activePhoto'},{name:'Tebak member foto graduation',value:'graduationPhoto'},{name:'Tebak member random',value:'randomMember'},{name:'Tebak foto setlist',value:'setlistPhoto'},{name:'Tebak lagu dari foto',value:'songPhoto'})))
+ .addSubcommand(s=>s.setName('gacha').setDescription('Gacha member JKT48'))
+ .addSubcommand(s=>s.setName('inventory').setDescription('Lihat koleksi gacha'))
+ .addSubcommand(s=>s.setName('leaderboard').setDescription('Lihat leaderboard game'));
 const commands=[
+ jkt48game,
  new SlashCommandBuilder().setName('ping').setDescription('Cek latency'),
  feed,
  new SlashCommandBuilder().setName('ticket').setDescription('Buka ticket support'),
