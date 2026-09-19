@@ -1,116 +1,89 @@
-# Media Subsystem
+# Media System
 
-## Overview
+Media processing lives under src/media. Python helpers live under tools/media.
 
-The media subsystem provides public URL downloads and local media transformations through the `/media` command.
+## Operations
+
+- Video download.
+- Audio download.
+- Image download.
+- Vocal separation.
+- Instrumental generation.
+- Image background removal.
+- Video background removal.
+- Image watermark removal.
+- Video watermark removal.
+- Media settings.
+- Resolution control.
 
 ## Commands
 
-- `/media video`
-  - Downloads video content from a public URL supported by the configured downloader.
-  - Supports configurable maximum resolution and video format.
-- `/media audio`
-  - Downloads audio or music from a public URL supported by the configured downloader.
-  - Supports MP3, M4A, WAV, and FLAC.
-- `/media image`
-  - Downloads an image from a direct public image URL or a page exposing a public preview image.
-- `/media vocals`
-  - Separates vocals from a song and returns the instrumental track.
-- `/media background`
-  - Removes image backgrounds.
-  - Video background removal produces a WebM video with transparency.
-- `/media watermark`
-  - Removes a specified rectangular watermark region from an image or video.
-- `/media settings`
-  - Stores per-user default resolution and output formats.
+- /media video
+- /media audio
+- /media image
+- /media vocals
+- /media instrumental
+- /media background
+- /media watermark
+- /media settings
 
-## Download Support
+## External tools
 
-Video and audio URL extraction uses `yt-dlp`. The supported URL set therefore follows the extractors available in the installed yt-dlp version. Direct image URLs and pages exposing a public `og:image` or `twitter:image` are supported before falling back to yt-dlp thumbnail extraction.
+- yt-dlp
+- FFmpeg
+- Python
+- Demucs
+- rembg
+- Pillow
+- OpenCV
 
-The bot does not bypass authentication, DRM, CAPTCHA, paywalls, private resources, or platform access controls.
+## URL support
 
-## Resolution
+Video and audio use yt-dlp for broad public platform support.
 
-Supported video resolutions:
+The exact platform set follows the installed yt-dlp version.
 
-- best
-- 2160p
-- 1440p
-- 1080p
-- 720p
-- 480p
-- 360p
+The service does not bypass login requirements, CAPTCHA, paywalls, private accounts, or anti-bot protections.
 
-The selected resolution is a maximum target. The downloader may return a lower resolution when the source does not provide the requested quality.
+## Safety controls
 
-## Audio Source Separation
+- HTTP and HTTPS validation.
+- Isolated job directories.
+- SQLite job records.
+- Download and output size limits.
+- Format and resolution validation.
+- User-safe error messages.
 
-Vocal removal uses Demucs through the configured Python environment. The current implementation uses the `--two-stems=vocals` mode and produces the accompaniment without the vocal stem.
+## Environment
 
-Required Python dependencies are listed in `tools/media/requirements.txt`.
+~~~
+MEDIA_DATA_DIR=./data/media
+MEDIA_MAX_DOWNLOAD_MB=200
+MEDIA_MAX_UPLOAD_MB=8
+MEDIA_HTTP_TIMEOUT_MS=30000
+YTDLP_PATH=yt-dlp
+FFMPEG_PATH=ffmpeg
+PYTHON_BIN=python
+DEMUCS_MODEL=htdemucs
+~~~
 
-## Background Removal
+## Python helpers
 
-Image and video background removal uses `rembg`. Video processing is performed frame by frame and can require significant CPU, RAM, GPU memory, disk space, and processing time.
+Install requirements:
 
-Video background removal is returned as WebM with an alpha channel.
+~~~
+pip install -r tools/media/requirements.txt
+~~~
 
-## Watermark Removal
+Background removal:
 
-Watermark removal requires a rectangular region:
+~~~
+python tools/media/remove_background.py input.png output.png
+python tools/media/remove_background_video.py frames/ output/
+~~~
 
-- `x`
-- `y`
-- `width`
-- `height`
+Watermark removal:
 
-Image watermark removal uses OpenCV inpainting. Video watermark removal extracts frames, applies the same operation to each frame, and reassembles the video while preserving audio when available.
-
-This workflow is intended for content the operator is authorized to edit. The software does not grant rights to remove or redistribute third-party watermarks.
-
-## File Limits and Storage
-
-Environment variables:
-
-- `MEDIA_DATA_DIR`: media database and job directory.
-- `MEDIA_MAX_DOWNLOAD_MB`: maximum source download size.
-- `MEDIA_MAX_UPLOAD_MB`: maximum result size sent to Discord.
-- `MEDIA_HTTP_TIMEOUT_MS`: HTTP request timeout.
-- `YTDLP_PATH`: yt-dlp executable.
-- `FFMPEG_PATH`: optional FFmpeg executable path.
-- `PYTHON_BIN`: Python executable.
-- `DEMUCS_MODEL`: Demucs model name.
-- `REMBG_SCRIPT`: optional custom image background-removal script.
-- `REMBG_VIDEO_SCRIPT`: optional custom video background-removal script.
-- `WATERMARK_SCRIPT`: optional custom watermark-removal script.
-
-The subsystem stores job metadata in:
-
-```text
-data/media/media.db
-```
-
-Temporary processing files are stored under per-job directories and removed after successful Discord delivery.
-
-## Installation
-
-Node dependencies are installed with:
-
-```bash
-npm install
-```
-
-Install the optional Python media dependencies:
-
-```bash
-python -m pip install -r tools/media/requirements.txt
-```
-
-Install yt-dlp and FFmpeg separately and make sure their executables are available in the configured paths or system PATH.
-
-## Operational Notes
-
-Media processing can be CPU- and memory-intensive. Operators should configure file limits and restrict the command to trusted users or guilds when necessary.
-
-Heavy operations such as Demucs separation, frame-by-frame background removal, and frame-by-frame watermark removal may take substantially longer than normal Discord command processing. The bot defers the Discord interaction while the job is running.
+~~~
+python tools/media/remove_watermark.py input.png output.png x y width height
+~~~
