@@ -2,6 +2,8 @@ import {createStreetViewQuestion} from './games/streetview.js';
 import {rollRarity,rarityInfo} from './games/rarity.js';
 import {startSession} from './games/jkt48/quiz-system.js';
 import {getIndonesiaNews,getStockQuote,getFuelPrices,getElectricityPrices,getFoodPrices,upcomingRamadan,DATA_SOURCES} from './indonesia/data.js';
+import {getElectronicsPrices} from './indonesia/electronics.js';
+import {FEATURE_REGISTRY} from '../config/features.js';
 import {AttachmentBuilder} from 'discord.js';
 import {DISASTER_URLS,recentDisasters,disasterStatus,configureDisaster} from './disasters/index.js';
 
@@ -21,6 +23,65 @@ export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,game
  };
  return async function handle(i){
   const n=i.commandName;
+  if(n==='help'){
+   const category=i.options.getString('category')||'all';
+   const page=i.options.getInteger('page')||1;
+   const categories=[...new Set(FEATURE_REGISTRY.map(x=>x.category))];
+   const rows=category==='all'?FEATURE_REGISTRY:FEATURE_REGISTRY.filter(x=>x.category.toLowerCase()===category.toLowerCase());
+   const pageSize=8,totalPages=Math.max(1,Math.ceil(rows.length/pageSize)),safePage=Math.min(Math.max(1,page),totalPages);
+   const slice=rows.slice((safePage-1)*pageSize,safePage*pageSize);
+   const body=slice.length?slice.map((x,n)=>'**'+(((safePage-1)*pageSize)+n+1)+'. '+x.name+'**\n'+x.description).join('\n\n'):'Tidak ada fitur untuk kategori tersebut.';
+   return i.reply({embeds:[embed('📚 BOT NARARYA GROUB • Help',body+'\n\n**Kategori:** '+category+'\n**Halaman:** '+safePage+'/'+totalPages+'\n\nGunakan /help category:<kategori> untuk memfilter.',{color:0xFF6200,fields:[{name:'Kategori tersedia',value:categories.join(' • ')||'General'},{name:'Command utama',value:'/bot • /status • /setup • /news • /market • /prices • /electronics • /ramadan • /disaster • /game • /jkt48 • /jkt48game • /media • /feed'}]})]});
+  }
+
+  if(n==='setup'){
+   const sub=i.options.getSubcommand(true);
+   if(sub==='overview'){
+    const cfg=db.prepare('SELECT * FROM guild_config WHERE guild_id=?').get(i.guild.id)||{};
+    const ramadan=db.prepare('SELECT * FROM ramadan_configs WHERE guild_id=?').get(i.guild.id);
+    const disaster=db.prepare('SELECT * FROM disaster_configs WHERE guild_id=?').get(i.guild.id);
+    return i.reply({embeds:[embed('⚙️ Setup • Server Configuration',
+     '**Welcome:** '+(cfg.welcome_channel?'<#'+cfg.welcome_channel+'>':'Otomatis / belum diatur')+
+     '\n**Log:** '+(cfg.log_channel?'<#'+cfg.log_channel+'>':'Belum diatur')+
+     '\n**Feed:** '+(cfg.feed_channel?'<#'+cfg.feed_channel+'>':'Belum diatur')+
+     '\n**Ramadan:** '+(ramadan?.enabled?'✅ Aktif • '+ramadan.city_name:'❌ Nonaktif / belum diatur')+
+     '\n**Disaster:** '+(disaster?.enabled?'✅ Aktif • <#'+disaster.channel_id+'>':'❌ Nonaktif / belum diatur')+
+     '\n\n**Total fitur:** '+FEATURE_REGISTRY.length,
+     {color:0x3B82F6,fields:[{name:'Data scraper',value:'✅ Pemeriksaan URL 10 detik'},{name:'Berita',value:'✅ Background refresh 24 jam'},{name:'Harga elektronik',value:'✅ Scraper 30 menit'},{name:'JKT48',value:'✅ Menggunakan sumber repository/sumber JKT48 yang dikonfigurasi'}]})]});
+   }
+   if(sub==='welcome'){
+    const channel=i.options.getChannel('channel',true);
+    db.prepare('UPDATE guild_config SET welcome_channel=? WHERE guild_id=?').run(channel.id,i.guild.id);
+    return i.reply({embeds:[embed('✅ Welcome Channel Disimpan','Pesan member masuk dan onboarding guild akan menggunakan <#'+channel.id+'>.',{color:0x22C55E})]});
+   }
+   if(sub==='log'){
+    const channel=i.options.getChannel('channel',true);
+    db.prepare('UPDATE guild_config SET log_channel=? WHERE guild_id=?').run(channel.id,i.guild.id);
+    return i.reply({embeds:[embed('✅ Log Channel Disimpan','Laporan audit scraper dan error data akan dikirim ke <#'+channel.id+'> bila ada temuan baru.',{color:0x22C55E})]});
+   }
+  }
+
+  if(n==='electronics'){
+   const category=i.options.getString('category')||'all';
+   const query=i.options.getString('query')||'';
+   const limit=i.options.getInteger('limit')||15;
+   try{
+    const data=await getElectronicsPrices({category,query,limit});
+    const body=data.items.length?data.items.map((x,n)=>
+      '**'+(n+1)+'. '+x.title+'**\n💰 **Rp'+Number(x.price).toLocaleString('id-ID')+'**'+
+      (x.platform!=='Unknown'?' • '+x.platform:'')+'\n'+(x.url?'[Lihat produk]('+x.url+')':'')
+    ).join('\n\n'):'Tidak ada produk yang cocok dari katalog publik saat ini.';
+    return i.reply({embeds:[embed('🔌 Harga Elektronik Indonesia',body,{color:0x06B6D4,fields:[
+      {name:'Kategori',value:category,inline:true},
+      {name:'Pencarian',value:query||'Semua produk',inline:true},
+      {name:'Item dipindai',value:String(data.scanned),inline:true},
+      {name:'Sumber',value:data.source},
+      {name:'Pembaruan',value:new Date(data.updatedAt).toLocaleString('id-ID',{timeZone:process.env.BOT_TIMEZONE||'Asia/Jakarta'})+' WIB'}
+    ]})]});
+   }catch(error){
+    return i.reply({embeds:[embed('❌ Harga Elektronik Tidak Tersedia',error.message,{color:0xEF4444})],ephemeral:true});
+   }
+  }
   if(n==='game'){
    const sub=i.options.getSubcommand(true);
    if(sub==='status'){
