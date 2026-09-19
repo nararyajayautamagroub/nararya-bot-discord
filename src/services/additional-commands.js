@@ -15,7 +15,7 @@ export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,game
   return 0;
  };
  const infoGameStatus=(guildId,userId)=>{
-  const active=db.prepare("SELECT mode,started_at,expires_at FROM quiz_sessions WHERE guild_id=? AND user_id=? AND status='active' ORDER BY id DESC LIMIT 1").get(guildId,userId);
+  const active=jkt48QuizDb.prepare("SELECT mode,started_at,expires_at FROM quiz_sessions WHERE guild_id=? AND user_id=? AND status='active' ORDER BY id DESC LIMIT 1").get(guildId,userId);
   const last=gameCooldowns.get(guildId+':'+userId)||0;
   return {active,remaining:Math.max(0,gameCooldownMs-(Date.now()-last))};
  };
