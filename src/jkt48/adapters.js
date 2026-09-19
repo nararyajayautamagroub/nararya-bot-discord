@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import {fetch} from 'undici';
 import * as cheerio from 'cheerio';
+import {stableHash,safePublicUrl,cleanText,parseDate,uniqueByUrl,retry} from '../tools/scraper-toolbox.js';
 
 const UA=process.env.SCRAPER_USER_AGENT||'NararyaBotDiscord/3.0 (+public-feed-monitor)';
 const TIMEOUT_MS=Math.max(3000,Number(process.env.SCRAPER_TIMEOUT_MS||15000));
@@ -9,20 +10,17 @@ const MAX_ITEMS=Math.min(100,Math.max(5,Number(process.env.SCRAPER_MAX_ITEMS||40
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
 function hash(value){
- return crypto.createHash('sha256').update(String(value)).digest('hex');
+ return stableHash(value);
 }
 
-function absolute(base,value){
- try{return new URL(value,base).href}catch{return null}
-}
+function absolute(base,value){return safePublicUrl(value,base)}
 
 function clean(value,max=900){
  return String(value||'').replace(/\s+/g,' ').trim().slice(0,max);
 }
 
 function dateValue(value){
- const time=Date.parse(value||'');
- return Number.isFinite(time)?time:Date.now();
+ return parseDate(value);
 }
 
 function item({title,url,description='',image=null,publishedAt=Date.now(),sourceType='public',author=null}){
@@ -114,7 +112,7 @@ export async function scrapeHtmlPage(url,{filter=()=>true,sourceType='public'}={
  const $=cheerio.load(body);
  const json=parseJsonLd($,url,sourceType);
  const anchors=parseAnchors($,url,filter,sourceType);
- return unique([...json,...anchors]);
+ return uniqueByUrl([...json,...anchors],MAX_ITEMS);
 }
 
 export async function scrapeJkt48Web(url){
