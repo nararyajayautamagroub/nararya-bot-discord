@@ -126,7 +126,7 @@ client.on('interactionCreate',async i=>{
    const sub=i.options.getSubcommand(true);
    if(sub==='start'){
     const session=verificationService.createSession({guildId:i.guild.id,userId:i.user.id});
-    return i.reply({embeds:[embed('🔐 Verifikasi Akun','Buka website berikut untuk menyelesaikan verifikasi:**\\n'+session.url+'**\\n\\nSetelah berhasil, website akan menampilkan **kode 4 karakter**. Masukkan kode itu dengan **/verify code**.\\n\\nSesi berlaku sekitar **'+Math.round((session.expiresAt-Date.now())/60000)+' menit**.',{color:EMBED_COLORS.info})],ephemeral:true});
+    return i.reply({embeds:[embed('🔐 Verifikasi Akun','Buka website berikut untuk menyelesaikan verifikasi:\\n'+session.url+'\\n\\nSetelah berhasil, website akan menampilkan **kode 4 karakter**. Masukkan kode itu dengan **/verify code**.\\n\\nSesi berlaku sekitar **'+Math.round((session.expiresAt-Date.now())/60000)+' menit**.',{color:EMBED_COLORS.info})],ephemeral:true});
    }
    if(sub==='code'){
     const code=i.options.getString('code',true);
