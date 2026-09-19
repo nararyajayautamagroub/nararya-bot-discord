@@ -5,7 +5,6 @@ import {getIndonesiaNews,getStockQuote,getFuelPrices,getElectricityPrices,getFoo
 import {getElectronicsPrices} from './indonesia/electronics.js';
 import {FEATURE_REGISTRY} from '../config/features.js';
 import {AttachmentBuilder} from 'discord.js';
-import {createXpCardBuffer} from './leveling/xp-card.js';
 import {DISASTER_URLS,recentDisasters,disasterStatus,configureDisaster} from './disasters/index.js';
 
 export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,gameCooldowns,gameCooldownMs,quizTimeoutMs,scraperOrchestrator,getAuditStatus,onQuizStarted,botControl,extendedFeatures}){
