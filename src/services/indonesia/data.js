@@ -26,6 +26,7 @@ async function json(url,init={}){const body=await text(url,init);try{return JSON
 function getCached(key,ttl){const item=cache.get(key);if(item&&Date.now()-item.fetchedAt<ttl)return item.value;return null}
 function setCached(key,value){cache.set(key,{value,fetchedAt:Date.now()});return value}
 function sourceStamp(key){return cache.get(key)?.fetchedAt||null}
+function dateKey(date=new Date()){return new Intl.DateTimeFormat('en-CA',{timeZone:process.env.BOT_TIMEZONE||'Asia/Jakarta',year:'numeric',month:'2-digit',day:'2-digit'}).format(date)}
 function parseRss(xml,limit=8){
  const $=cheerio.load(xml,{xmlMode:true});
  return $('item').toArray().slice(0,limit).map(item=>{const el=$(item);return{title:el.find('title').first().text().trim(),link:el.find('link').first().text().trim(),pubDate:el.find('pubDate').first().text().trim(),description:el.find('description').first().text().replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(),image:el.find('media\\:content, enclosure').first().attr('url')||null}}).filter(x=>x.title&&x.link);
