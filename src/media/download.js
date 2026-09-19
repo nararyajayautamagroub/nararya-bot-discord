@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import {request} from 'undici';
 import * as cheerio from 'cheerio';
 import {run} from './runner.js';
 import {MIME_BY_EXT,assertResolution,safeName,firstFile} from './utils.js';
@@ -37,22 +36,28 @@ export async function downloadWithYtdlp({url,outdir,kind='video',resolution='bes
 }
 
 async function directImage(url,outdir){
- const res=await request(url,{headers:{accept:'image/*,*/*;q=0.8','user-agent':process.env.SCRAPER_USER_AGENT||'NararyaBotDiscord/1.0'},bodyTimeout:timeoutMs});
- if(res.statusCode<200||res.statusCode>=300)throw new Error('Image URL returned HTTP '+res.statusCode);
- const type=String(res.headers['content-type']||'').split(';')[0];
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),timeoutMs);
+ const res=await fetch(url,{headers:{accept:'image/*,*/*;q=0.8','user-agent':process.env.SCRAPER_USER_AGENT||'NararyaBotDiscord/2.1'},signal:controller.signal});
+ clearTimeout(timer);
+ if(!res.ok)throw new Error('Image URL returned HTTP '+res.status);
+ const type=String(res.headers.get('content-type')||'').split(';')[0];
  if(!type.startsWith('image/'))return null;
  const ext=type==='image/jpeg'?'jpg':type==='image/png'?'png':type==='image/webp'?'webp':'bin';
  const target=path.join(outdir,'download.'+ext);
- const buffer=Buffer.from(await res.body.arrayBuffer());
+ const buffer=Buffer.from(await res.arrayBuffer());
  if(buffer.length>MAX_DOWNLOAD_MB*1024*1024)throw new Error('Downloaded file exceeds MEDIA_MAX_DOWNLOAD_MB');
  await fs.promises.writeFile(target,buffer);
  return {path:target,mime:type};
 }
 
 async function ogImage(url,outdir){
- const res=await request(url,{headers:{accept:'text/html','user-agent':process.env.SCRAPER_USER_AGENT||'NararyaBotDiscord/1.0'},bodyTimeout:timeoutMs});
- if(res.statusCode<200||res.statusCode>=300)throw new Error('Page returned HTTP '+res.statusCode);
- const html=await res.body.text();
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),timeoutMs);
+ const res=await fetch(url,{headers:{accept:'text/html','user-agent':process.env.SCRAPER_USER_AGENT||'NararyaBotDiscord/2.1'},signal:controller.signal});
+ clearTimeout(timer);
+ if(!res.ok)throw new Error('Page returned HTTP '+res.status);
+ const html=await res.text();
  const $=cheerio.load(html);
  const image=$('meta[property="og:image"]').attr('content')||$('meta[name="twitter:image"]').attr('content');
  if(!image)throw new Error('No public preview image found on page');
