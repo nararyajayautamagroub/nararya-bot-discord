@@ -429,6 +429,8 @@ const deny=botControl.denyReason({guildId:i.guild?.id,userId:i.user.id});
    if(sub==='gacha'){
     const cooldown=gameCooldownLeft(i.guild.id,i.user.id);
     if(cooldown)return i.reply({embeds:[embed('⏳ Cooldown Gacha','Tunggu **'+Math.ceil(cooldown/1000)+' detik** sebelum menggunakan game/gacha lagi.',{color:EMBED_COLORS.warning})],ephemeral:true});
+    const daily=consumeDailyPull(jkt48Dbs.gacha,i.guild.id,i.user.id,10);
+    if(!daily.allowed)return i.reply({embeds:[embed('🎴 Gacha Harian','Batas **10 kali per hari** sudah tercapai. Reset otomatis saat pergantian hari sesuai zona waktu bot.',{color:EMBED_COLORS.warning})],ephemeral:true});
     const members=db.prepare("SELECT id as key,name,image_url,generation,status FROM jkt48_members WHERE generation BETWEEN 1 AND 14 ORDER BY name").all();
     if(!members.length)return i.reply({embeds:[embed('🎴 Gacha Belum Siap','Database member generasi **1–14** belum tersedia. Sinkronisasi member perlu berhasil terlebih dahulu.',{color:EMBED_COLORS.warning})],ephemeral:true});
     const r=rollGacha(members); const key=r.member.key||r.member.name;
