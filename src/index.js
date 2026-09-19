@@ -10,7 +10,7 @@ import {getUpcoming,getLatest,getLatestPlatform,renderList,TYPE_LABELS} from './
 import {createJkt48Monitor} from './jkt48/live-monitor.js';
 import {createJkt48FeatureDatabases} from './services/games/jkt48/databases.js';
 import {awardCard,getInventory as getCardInventory,getCollectionStats} from './services/games/jkt48/card-system.js';
-import {addQuizAsset,getQuizAssets,migrateLegacyAssets,startSession,getActiveSession,finishSession,calculatePoints,recordAttempt,recordResult,getLeaderboard} from './services/games/jkt48/quiz-system.js';
+import {addQuizAsset,getQuizAssets,migrateLegacyAssets,startSession,getActiveSession,finishSession,calculatePoints,recordAttempt,recordResult,getLeaderboard,consumeDailyQuiz} from './services/games/jkt48/quiz-system.js';
 import {saveGacha,consumeDailyPull} from './services/games/jkt48/gacha.js';
 import {revealAnimation,revealChannel} from './services/games/jkt48/reveal-animation.js';
 import {createMediaDatabase} from './media/database.js';
@@ -456,8 +456,10 @@ const deny=botControl.denyReason({guildId:i.guild?.id,userId:i.user.id});
    const cooldown=gameCooldownLeft(i.guild.id,i.user.id);
    if(cooldown)return i.reply({embeds:[embed('⏳ Game Cooldown','Tunggu **'+Math.ceil(cooldown/1000)+' detik** sebelum memainkan tebak-tebakan lagi.',{color:EMBED_COLORS.warning})],ephemeral:true});
 
+   const daily=consumeDailyQuiz(jkt48Dbs.quiz,i.guild.id,i.user.id,10);
+   if(!daily.allowed)return i.reply({embeds:[embed('Game Harian','Batas 10 permainan tebak-tebakan per hari sudah tercapai. Reset otomatis saat pergantian hari sesuai zona waktu bot.',{color:EMBED_COLORS.warning})],ephemeral:true});
    const assets=getQuizAssets(jkt48Dbs.quiz,mode);
-   if(!assets.length)return i.reply({embeds:[embed('🎯 Asset Game Kosong','Asset untuk mode **'+MODES[mode]+'** belum tersedia. Admin perlu menambah asset ke database quiz.',{color:EMBED_COLORS.warning})],ephemeral:true});
+   if(!assets.length){jkt48Dbs.quiz.prepare('UPDATE quiz_daily SET plays=MAX(0,plays-1) WHERE guild_id=? AND user_id=? AND day=?').run(i.guild.id,i.user.id,daily.day);return i.reply({embeds:[embed('🎯 Asset Game Kosong','Asset untuk mode **'+MODES[mode]+'** belum tersedia. Admin perlu menambah asset ke database quiz.',{color:EMBED_COLORS.warning})],ephemeral:true});}
    const q=assets[0],rarity=q.rarity||rollRarity();
    const active=startSession(jkt48Dbs.quiz,{guildId:i.guild.id,userId:i.user.id,channelId:i.channel.id,mode,answer:q.answer,mediaUrl:q.media_url,rarity,durationMs:QUIZ_TIMEOUT_MS});
    scheduleQuizExpiry(active);
