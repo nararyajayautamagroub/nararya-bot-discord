@@ -134,7 +134,7 @@ async function openTicket(i){
  return ch;
 }
 const feedService=createFeedService({db,client,buildEmbed:feedEmbed});
-const jkt48Monitor=createJkt48Monitor({db,client,embed,interval:Number(process.env.JKT48_MONITOR_INTERVAL_MS||30000)});
+const jkt48Monitor=createJkt48Monitor({db,client,embed,interval:Number(process.env.JKT48_LIVE_POLL_INTERVAL_MS||process.env.JKT48_MONITOR_INTERVAL_MS||30000)});
 const gameCooldowns=new Map();
 const GAME_COOLDOWN_MS=10000;
 const QUIZ_TIMEOUT_MS=60000;
