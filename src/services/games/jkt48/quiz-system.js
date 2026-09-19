@@ -1,4 +1,5 @@
 import {rarityInfo} from './index.js';
+import {jakartaDay} from './databases.js';
 
 export function addQuizAsset(db,kind,answer,mediaUrl,rarity=null){
  db.prepare('INSERT INTO quiz_assets(kind,answer,media_url,rarity,created_at) VALUES(?,?,?,?,?)').run(kind,answer,mediaUrl,rarity,Date.now());
@@ -15,6 +16,13 @@ export function migrateLegacyAssets(legacyDb,quizDb){
   tx(rows);
   return rows.length;
  }catch{return 0}
+}
+export function consumeDailyQuiz(db,guildId,userId,maxPlays=10){
+ const day=jakartaDay();
+ const row=db.prepare('SELECT plays FROM quiz_daily WHERE guild_id=? AND user_id=? AND day=?').get(guildId,userId,day);
+ if((row?.plays||0)>=maxPlays)return {allowed:false,count:row.plays,day};
+ db.prepare('INSERT INTO quiz_daily(guild_id,user_id,day,plays) VALUES(?,?,?,1) ON CONFLICT(guild_id,user_id,day) DO UPDATE SET plays=plays+1').run(guildId,userId,day);
+ return {allowed:true,count:(row?.plays||0)+1,day};
 }
 export function startSession(db,{guildId,userId,channelId,mode,answer,mediaUrl,rarity,durationMs=60000}){
  db.prepare('UPDATE quiz_sessions SET status=\'expired\' WHERE guild_id=? AND user_id=? AND status=\'active\'').run(guildId,userId);
