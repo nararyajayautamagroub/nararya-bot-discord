@@ -57,6 +57,8 @@ export function createBotControl({db,client}={}){
   return null;
  }
 
+ function isMaintenance(){return getSetting('maintenance','false')==='true';}
+
  function setSetting(key,value){
   db.prepare('INSERT INTO bot_settings(key,value,updated_at) VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at').run(key,String(value),Date.now());
  }
