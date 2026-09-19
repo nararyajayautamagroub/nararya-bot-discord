@@ -71,6 +71,8 @@ const sim=new SlashCommandBuilder().setName('sim').setDescription('Tycoon dan si
  .addSubcommand(s=>s.setName('gacha').setDescription('Gacha member JKT48'));
 
 const jkt48=new SlashCommandBuilder().setName('jkt48').setDescription('Pusat data, jadwal, member dan live JKT48')
+ .addSubcommand(s=>s.setName('member').setDescription('Cari profil member').addStringOption(o=>o.setName('query').setDescription('Nama atau nama panggilan').setRequired(true)))
+ .addSubcommand(s=>s.setName('members').setDescription('Daftar member berdasarkan generasi').addIntegerOption(o=>o.setName('generation').setDescription('Generasi JKT48 1-14').setMinValue(1).setMaxValue(14)))
  .addSubcommandGroup(g=>g.setName('upcoming').setDescription('Jadwal yang akan datang')
   .addSubcommand(s=>s.setName('event').setDescription('Upcoming event'))
   .addSubcommand(s=>s.setName('theater').setDescription('Upcoming theater'))
@@ -90,10 +92,7 @@ const jkt48=new SlashCommandBuilder().setName('jkt48').setDescription('Pusat dat
   .addSubcommand(s=>s.setName('live_showroom').setDescription('Latest live SHOWROOM'))
   .addSubcommand(s=>s.setName('live_idn').setDescription('Latest live IDN')));
 
-const member=new SlashCommandBuilder().setName('member').setDescription('Cari profil member JKT48').addStringOption(o=>o.setName('query').setDescription('Nama atau nama panggilan member').setRequired(true));
-const members=new SlashCommandBuilder().setName('members').setDescription('Daftar member JKT48 berdasarkan generasi').addIntegerOption(o=>o.setName('generation').setDescription('Generasi JKT48 1-14').setMinValue(1).setMaxValue(14));
-
-const commands=[jkt48,member,members,jkt48game,sim,utility,economy,moderation,support,feed];
+const commands=[jkt48,jkt48game,sim,utility,economy,moderation,support,feed];
 
 const rest=new REST({version:'10'}).setToken(process.env.DISCORD_TOKEN);
 await rest.put(Routes.applicationCommands(process.env.CLIENT_ID),{body:commands.map(x=>x.toJSON())});
