@@ -11,7 +11,9 @@ const state={
   merged:[],
   loading:true,
   lastUpdated:null,
-  error:null
+  error:null,
+  page:1,
+  pageSize:12
 };
 
 const $=selector=>document.querySelector(selector);
@@ -225,11 +227,13 @@ function renderMembers(){
   const empty=$('#memberEmpty');
   const error=$('#memberError');
   const rows=filteredMembers();
+  const totalPages=Math.max(1,Math.ceil(rows.length/state.pageSize));
+  state.page=Math.min(Math.max(1,state.page),totalPages);
+  const start=(state.page-1)*state.pageSize;
+  const visible=rows.slice(start,start+state.pageSize);
   if(error)error.classList.add('hidden');
   if(empty)empty.classList.toggle('hidden',rows.length>0);
-  if(grid){
-    grid.innerHTML=rows.length?rows.map(memberCard).join(''):'';
-  }
+  if(grid)grid.innerHTML=visible.length?visible.map(memberCard).join(''):'';
   const count=$('#memberResultCount');
   if(count)count.textContent=rows.length+' member';
   const active=state.merged.filter(member=>member.status==='active').length;
@@ -237,6 +241,12 @@ function renderMembers(){
   if(activeCount)activeCount.textContent=String(active);
   const total=$('#memberCount');
   if(total)total.textContent=String(state.merged.length);
+  const label=$('#memberPageLabel');
+  if(label)label.textContent='Halaman '+state.page+'/'+totalPages;
+  const prev=$('#prevMembers');
+  const next=$('#nextMembers');
+  if(prev){prev.disabled=state.page<=1;prev.setAttribute('aria-disabled',String(state.page<=1));}
+  if(next){next.disabled=state.page>=totalPages;next.setAttribute('aria-disabled',String(state.page>=totalPages));}
 }
 
 function showMemberError(error){
@@ -298,8 +308,17 @@ function setupFilters(){
   ['#memberSearch','#generationFilter','#statusFilter'].forEach(selector=>{
     const element=$(selector);
     if(!element)return;
-    element.addEventListener(selector==='#memberSearch'?'input':'change',renderMembers);
+    element.addEventListener(selector==='#memberSearch'?'input':'change',()=>{state.page=1;renderMembers();});
   });
+}
+
+function setupMemberPagination(){
+  const prev=$('#prevMembers');
+  const next=$('#nextMembers');
+  const refresh=$('#refreshMembers');
+  prev?.addEventListener('click',()=>{if(state.page>1){state.page-=1;renderMembers();document.querySelector('#members')?.scrollIntoView({behavior:'smooth',block:'start'});}});
+  next?.addEventListener('click',()=>{const totalPages=Math.max(1,Math.ceil(filteredMembers().length/state.pageSize));if(state.page<totalPages){state.page+=1;renderMembers();document.querySelector('#members')?.scrollIntoView({behavior:'smooth',block:'start'});}});
+  refresh?.addEventListener('click',async()=>{state.page=1;refresh.disabled=true;refresh.textContent='Memuat...';await loadMembers();refresh.disabled=false;refresh.textContent='Refresh Data';});
 }
 
 function setupNavigation(){
@@ -322,6 +341,7 @@ function setFooterDate(){
 async function boot(){
   setupMenu();
   setupFilters();
+  setupMemberPagination();
   setupNavigation();
   setFooterDate();
   await loadMembers();
