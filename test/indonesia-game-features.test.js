@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {MODES,matches,normalize} from '../src/services/games/jkt48/index.js';
+import {matches,normalize} from '../src/services/games/jkt48/index.js';
+import {createStreetViewQuestion} from '../src/services/games/streetview.js';
 import {upcomingRamadan} from '../src/services/indonesia/data.js';
 
-test('Street View quiz mode is registered',()=>{
- assert.equal(MODES.streetView,'Tebak lokasi dari Google Street View');
+test('Street View module is generic and available',()=>{
+ assert.equal(typeof createStreetViewQuestion,'function');
 });
 
 test('quiz answer matching remains normalization based',()=>{
