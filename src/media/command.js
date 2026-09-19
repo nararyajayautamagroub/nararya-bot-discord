@@ -53,10 +53,8 @@ export async function handleMediaCommand(i,{mediaService,embed,colors}){
    const source=i.options.getString('url',true);
    const settings=mediaService.getSettings(guildId,userId);
    const resolution=i.options.getString('resolution')||settings.resolution;
-   const format=i.options.getString('format')||(
-    kind==='audio'?settings.audio_format:
-    kind==='video'?settings.video_format:'auto'
-   );
+   let format=i.options.getString('format');
+   if(!format||format==='auto')format=kind==='audio'?settings.audio_format:kind==='video'?settings.video_format:'auto';
    if(kind==='audio'&&!AUDIO_FORMATS.includes(format))throw new Error('Unsupported audio format: '+format);
    if(kind==='video'&&!VIDEO_FORMATS.includes(format))throw new Error('Unsupported video format: '+format);
    const result=await mediaService.download({url:source,kind,resolution,format},{...ctx});
