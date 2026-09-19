@@ -3,6 +3,7 @@ import {SCRAPER_REGISTRY} from '../scrapers/registry.js';
 
 const URL_COLUMNS=/^(url|uri|link|.*_url|source_url|media_url)$/i;
 const MAX_ROWS_PER_TABLE=Math.max(1000,Number(process.env.DATA_AUDIT_MAX_ROWS_PER_TABLE||10000));
+const IGNORED_TABLES=new Set(['data_audit_runs','data_audit_findings','scraper_sources']);
 const JKT48_HOSTS=new Set([
  'raw.githubusercontent.com',
  'jkt48.com'
@@ -57,6 +58,7 @@ function tableNames(db){
 function auditDbUrls(db,dbName){
  const rows=[];
  for(const table of tableNames(db)){
+  if(IGNORED_TABLES.has(table))continue;
   const columns=db.prepare('PRAGMA table_info('+JSON.stringify(table).slice(1,-1)+')').all();
   const urlCols=columns.filter(c=>URL_COLUMNS.test(c.name));
   if(!urlCols.length)continue;
