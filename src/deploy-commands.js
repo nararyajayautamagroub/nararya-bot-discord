@@ -43,7 +43,10 @@ const jkt48=new SlashCommandBuilder().setName('jkt48').setDescription('Jadwal, e
   .addSubcommand(s=>s.setName('live_showroom').setDescription('Latest live SHOWROOM'))
   .addSubcommand(s=>s.setName('live_idn').setDescription('Latest live IDN')));
 
+const member=new SlashCommandBuilder().setName('member').setDescription('Cari profil member JKT48').addStringOption(o=>o.setName('query').setDescription('Nama atau nama panggilan member').setRequired(true));
+
 const commands=[
+ member,
  jkt48,
  sim,
  jkt48game,
