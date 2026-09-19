@@ -6,8 +6,9 @@ import {getElectronicsPrices} from './indonesia/electronics.js';
 import {FEATURE_REGISTRY} from '../config/features.js';
 import {AttachmentBuilder} from 'discord.js';
 import {DISASTER_URLS,recentDisasters,disasterStatus,configureDisaster} from './disasters/index.js';
+import {handleRestaurantPricesCommand} from './restaurant/command.js';
 
-export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,gameCooldowns,gameCooldownMs,quizTimeoutMs,scraperOrchestrator,getAuditStatus,onQuizStarted,botControl,extendedFeatures}){
+export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,gameCooldowns,gameCooldownMs,quizTimeoutMs,scraperOrchestrator,getAuditStatus,onQuizStarted,botControl,extendedFeatures,restaurantPriceService}){
  const cooldown=(guildId,userId)=>{
   const key=guildId+':'+userId;
   const last=gameCooldowns.get(key)||0;
@@ -126,6 +127,11 @@ export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,game
     }
    }
   }
+  if(n==='restaurantprices'){
+   if(!restaurantPriceService)return i.reply({embeds:[embed('⚠️ Restaurant Prices Tidak Siap','Service harga restoran belum aktif.',{color:0xEF4444})],ephemeral:true});
+   return handleRestaurantPricesCommand(i,{db,embed,service:restaurantPriceService});
+  }
+
   if(n==='help'){
    const category=i.options.getString('category')||'all';
    const page=i.options.getInteger('page')||1;
