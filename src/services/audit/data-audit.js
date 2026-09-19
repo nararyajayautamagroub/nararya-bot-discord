@@ -4,6 +4,7 @@ import {SCRAPER_REGISTRY} from '../scrapers/registry.js';
 const URL_COLUMNS=/^(url|uri|link|.*_url|source_url|media_url)$/i;
 const MAX_ROWS_PER_TABLE=Math.max(1000,Number(process.env.DATA_AUDIT_MAX_ROWS_PER_TABLE||10000));
 const IGNORED_TABLES=new Set(['data_audit_runs','data_audit_findings','scraper_sources']);
+const ADAPTER_KINDS=new Set(['jkt48-web','idn','showroom','youtube','instagram','tiktok','x','threads','tokopedia','shopee','costume-youtube','costume-instagram','costume-tiktok']);
 const JKT48_HOSTS=new Set([
  'raw.githubusercontent.com',
  'jkt48.com'
@@ -24,6 +25,11 @@ function isJkt48Url(value,{dbName='',tableName='',row={}}={}){
  const u=isUrl(value);if(!u)return false;
  if(JKT48_HOSTS.has(u.hostname))return u.hostname==='jkt48.com'||u.pathname.includes('/FrenzY8/JKT48-Member');
  return false;
+}
+
+function adapterBoundRow(item){
+ if(String(item.table).toLowerCase()!=='feed_sources')return false;
+ return ADAPTER_KINDS.has(String(item.row?.kind||'').toLowerCase());
 }
 
 function registryMatch(url){
@@ -101,6 +107,10 @@ export async function runDataAudit({databases}){
     }
     if(isJkt48Url(item.url,{dbName:item.dbName,tableName:item.table,row:item.row})){
      primary.prepare("INSERT INTO data_audit_findings(run_id,db_name,table_name,column_name,record_key,url,status,method,suggestion,error,checked_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)").run(runIdHolder.id,item.dbName,item.table,item.column,item.recordKey,item.url,'jkt48-exempt','repository-source','JKT48 URL exempt from generic scraper validation','Sumber JKT48 mengikuti URL repository yang dikonfigurasi.',null,Date.now());
+     continue;
+    }
+    if(adapterBoundRow(item)){
+     primary.prepare("INSERT INTO data_audit_findings(run_id,db_name,table_name,column_name,record_key,url,status,method,suggestion,error,checked_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)").run(runIdHolder.id,item.dbName,item.table,item.column,item.recordKey,item.url,'adapter-bound',String(item.row?.kind||'feed-adapter'),'Existing feed adapter','Feed source sudah terhubung ke adapter internal.',null,Date.now());
      continue;
     }
     const match=registryMatch(item.url);
