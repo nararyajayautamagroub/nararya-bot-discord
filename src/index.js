@@ -567,6 +567,6 @@ client.once('ready',async()=>{
  const dataRefreshHours=Math.max(24,Number(process.env.INDONESIA_DATA_REFRESH_HOURS||24));
  setInterval(()=>sendIndonesiaDataRefresh().catch(console.error),dataRefreshHours*60*60*1000);
  setInterval(()=>checkRamadanNotifications().catch(console.error),30*1000);
- if(jkt48ConnectConfigured())jkt48Monitor.start();
+ jkt48Monitor.start();
 });
 client.login(process.env.DISCORD_TOKEN);
