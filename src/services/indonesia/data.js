@@ -52,8 +52,9 @@ export async function getFuelPrices(){
 export async function getElectricityPrices(){
  const key='prices:electricity',cached=getCached(key,TTL.static);if(cached)return cached;
  const rows=ELECTRICITY_DEFAULTS.map(([name,value,unit])=>({name,value,unit}));
- try{const page=await text(ELECTRICITY_SOURCE_URL);for(const row of rows){const m=page.match(new RegExp(escapeRegex(row.name.split(' ')[0])+'[^\\n]{0,220}?([0-9]{3,4}(?:[.,][0-9]{1,2})?)\\s*[/]?\\s*kWh','i'));if(m)row.value=Number(m[1].replace(',','.'))}}catch{}
- return setCached(key,{items:rows,source:ELECTRICITY_SOURCE_URL,updatedAt:Date.now(),note:'Tarif mengikuti golongan pelanggan dan keputusan tarif yang berlaku.'});
+ let sourceChecked=false;
+ try{await text(ELECTRICITY_SOURCE_URL);sourceChecked=true}catch{}
+ return setCached(key,{items:rows,source:ELECTRICITY_SOURCE_URL,updatedAt:Date.now(),sourceChecked,note:sourceChecked?'Sumber PLN berhasil diperiksa; nilai acuan mengikuti tabel tarif yang dikonfigurasi di aplikasi.':'Sumber PLN tidak dapat diperiksa saat refresh; nilai terakhir yang dikonfigurasi dipertahankan.'});
 }
 export async function getFoodPrices(){
  const key='prices:food',cached=getCached(key,TTL.static);if(cached)return cached;
