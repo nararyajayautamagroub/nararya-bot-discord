@@ -1,5 +1,5 @@
 import {events,theater,birthdays,news,allLive,recentLive,dateOf,titleOf,memberName} from './connect.js';
-export const TYPE_LABELS={event:'Event',theater:'Theater',setlist:'Setlist',songs:'Songs',live:'Live',birthday:'Birthday',graduation:'Graduation'};
+export const TYPE_LABELS={event:'Event',theater:'Theater',setlist:'Setlist',songs:'Songs',live:'Live',liveShowroom:'Live SHOWROOM',liveIdn:'Live IDN',birthday:'Birthday',graduation:'Graduation'};
 const fmtDate=x=>{const d=dateOf(x);if(!d)return 'Waktu belum tersedia';const dt=new Date(d);return Number.isNaN(dt.getTime())?String(d):dt.toLocaleString('id-ID',{timeZone:'Asia/Jakarta',dateStyle:'medium',timeStyle:'short'})+' WIB'};
 const urlOf=x=>x?.url||x?.link||x?.detail_url||x?.room_url||x?.stream_url;
 const line=x=>{const title=titleOf(x),member=memberName(x),extra=x?.setlist&&x.setlist!==title?' • Setlist: '+x.setlist:'';return '• **'+title+'**'+(member&&member!=='JKT48'?' • '+member:'')+extra+'\n  '+fmtDate(x)+(urlOf(x)?' • '+urlOf(x):'')};
