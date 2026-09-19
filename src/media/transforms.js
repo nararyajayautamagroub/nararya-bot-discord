@@ -40,7 +40,7 @@ export async function removeBackgroundVideo(input,outdir){
  const script=process.env.REMBG_VIDEO_SCRIPT||path.resolve('tools/media/remove_background_video.py');
  await run(py,[script,frames,result]);
  const target=uniqueFile(outdir,'no-background','webm');
- await ffmpeg('-y','-framerate','30','i',path.join(result,'%08d.png'),'-c:v','libvpx-vp9','-pix_fmt','yuva420p','-auto-alt-ref','0',target);
+ await ffmpeg('-y','-framerate','30','-i',path.join(result,'%08d.png'),'-i',input,'-map','0:v:0','-map','1:a?','-c:v','libvpx-vp9','-pix_fmt','yuva420p','-auto-alt-ref','0','-c:a','libopus','-shortest',target);
  return {path:target,mime:'video/webm'};
 }
 
