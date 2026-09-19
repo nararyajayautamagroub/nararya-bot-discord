@@ -19,7 +19,7 @@ const jkt48game=new SlashCommandBuilder().setName('jkt48game').setDescription('G
  .addSubcommand(s=>s.setName('play').setDescription('Mulai game tebak JKT48').addStringOption(o=>o.setName('mode').setDescription('Mode game').setRequired(true).addChoices(
   {name:'Tebak suara lagu',value:'song'},{name:'Tebak suara member JKT48',value:'memberVoice'},{name:'Tebak member foto active',value:'activePhoto'},{name:'Tebak member foto graduation',value:'graduationPhoto'},{name:'Tebak member random',value:'randomMember'},{name:'Tebak foto setlist',value:'setlistPhoto'},{name:'Tebak lagu dari foto',value:'songPhoto'})))
  .addSubcommand(s=>s.setName('gacha').setDescription('Gacha member JKT48'))
- .addSubcommand(s=>s.setName('inventory').setDescription('Lihat koleksi gacha'))
+ .addSubcommand(s=>s.setName('inventory').setDescription('Lihat koleksi card'))
  .addSubcommand(s=>s.setName('leaderboard').setDescription('Lihat leaderboard game'))
  .addSubcommand(s=>s.setName('asset_add').setDescription('Tambah asset quiz ke database').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild.toString())
   .addStringOption(o=>o.setName('mode').setDescription('Mode quiz').setRequired(true).addChoices({name:'Tebak suara lagu',value:'song'},{name:'Tebak suara member',value:'memberVoice'},{name:'Member foto active',value:'activePhoto'},{name:'Member foto graduation',value:'graduationPhoto'},{name:'Member random',value:'randomMember'},{name:'Foto setlist',value:'setlistPhoto'},{name:'Lagu dari foto',value:'songPhoto'}))
