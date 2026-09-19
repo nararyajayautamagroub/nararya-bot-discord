@@ -5,9 +5,10 @@ import {getIndonesiaNews,getStockQuote,getFuelPrices,getElectricityPrices,getFoo
 import {getElectronicsPrices} from './indonesia/electronics.js';
 import {FEATURE_REGISTRY} from '../config/features.js';
 import {AttachmentBuilder} from 'discord.js';
+import {createXpCardBuffer} from './leveling/xp-card.js';
 import {DISASTER_URLS,recentDisasters,disasterStatus,configureDisaster} from './disasters/index.js';
 
-export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,gameCooldowns,gameCooldownMs,quizTimeoutMs,scraperOrchestrator,getAuditStatus,onQuizStarted,botControl}){
+export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,gameCooldowns,gameCooldownMs,quizTimeoutMs,scraperOrchestrator,getAuditStatus,onQuizStarted,botControl,extendedFeatures}){
  const cooldown=(guildId,userId)=>{
   const key=guildId+':'+userId;
   const last=gameCooldowns.get(key)||0;
@@ -23,6 +24,7 @@ export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,game
  };
  return async function handle(i){
   const n=i.commandName;
+  if(extendedFeatures){const handled=await extendedFeatures.handle(i);if(handled)return true;}
   if(['setup','settingbot','blacklistserver','blacklistusers'].includes(n)){
    if(!botControl.isOwner(i.user.id))return i.reply({embeds:[embed('🔒 Owner Only','Command ini hanya dapat digunakan oleh **owner bot**.',{color:0xEF4444})],ephemeral:true});
    const sub=i.options.getSubcommand(true);
@@ -61,8 +63,17 @@ export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,game
     if(sub==='activity'){
      const text=i.options.getString('text',true);
      botControl.setSetting('activity',text);
+     botControl.setSetting('activity_rotation',JSON.stringify([text]));
      await botControl.applyPresence();
-     return i.reply({embeds:[embed('✅ Activity Bot Diperbarui','Activity: **'+text+'**',{color:0x22C55E})]});
+     return i.reply({embeds:[embed('✅ Activity Bot Diperbarui','Activity: **'+text+'**\nMode: **Playing**',{color:0x22C55E})]});
+    }
+    if(sub==='rotation'){
+     const texts=i.options.getString('texts',true).split(/[|,\n]+/).map(x=>x.trim()).filter(Boolean).slice(0,20);
+     if(!texts.length)return i.reply({embeds:[embed('❌ Rotation Kosong','Masukkan minimal satu teks activity.',{color:0xEF4444})],ephemeral:true});
+     botControl.setSetting('activity_rotation',JSON.stringify(texts));
+     botControl.setSetting('activity',texts[0]);
+     await botControl.applyPresence();
+     return i.reply({embeds:[embed('🔄 Playing Rotation Aktif',texts.map((x,n)=>(n+1)+'. '+x).join('\n')+'\n\nInterval diatur oleh PRESENCE_ROTATION_INTERVAL_MS.',{color:0x22C55E})]});
     }
     if(sub==='reset'){
      db.prepare('DELETE FROM bot_settings').run();
