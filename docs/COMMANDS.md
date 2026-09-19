@@ -89,7 +89,7 @@ The simulation gacha also uses the shared 10-second game cooldown.
 - `/feed remove id:<integer>`
 - `/feed test id:<integer>`
 
-## Indonesia News
+## Restaurant Menu Prices\n\n- `/restaurantprices search city:<city> [query:<text>] [category:<category>] [min_price:<number>] [max_price:<number>] [page:<number>] [limit:<number>]`\n- `/restaurantprices menu url:<url> [query:<text>] [category:<category>] [min_price:<number>] [max_price:<number>] [page:<number>]`\n- `/restaurantprices prices city:<city> [query:<text>] [category:<category>] [min_price:<number>] [max_price:<number>] [page:<number>] [limit:<number>] [pages:<1-2>]`\n- `/restaurantprices city city:<city> [page:<number>] [limit:<number>]`\n- `/restaurantprices refresh [city:<city>] [url:<restaurant-url>] [pages:<1-6>]`\n- `/restaurantprices status`\n\nSumber: MenuKuliner.net. Data harga bukan checkout real-time dan dapat berbeda menurut cabang/platform.\n\n## Indonesia News
 
 - `/news latest [category]`
 - `/news sources`
@@ -291,4 +291,4 @@ Configure `BOT_OWNER_IDS` as a comma-separated list of Discord user IDs. The run
 ### EXP Profile Card
 `/utility level` now renders an SVG profile card containing EXP, level progress, streak, win count, and the highest JKT48 card rarity owned by the user.
 
-Current catalog: **150 features**.
+Current catalog: **151 features**.
