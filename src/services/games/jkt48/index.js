@@ -5,8 +5,7 @@ export const MODES={
  graduationPhoto:'Tebak member dari foto graduation',
  randomMember:'Tebak member random',
  setlistPhoto:'Tebak foto setlist',
- songPhoto:'Tebak lagu dari foto',
- streetView:'Tebak lokasi dari Google Street View'
+ songPhoto:'Tebak lagu dari foto'
 };
 export const RARITIES=['common','uncommon','rare','epic','legendary','mythic','secret'];
 export const WEIGHTS={common:.50,uncommon:.25,rare:.13,epic:.07,legendary:.035,mythic:.014,secret:.001};
