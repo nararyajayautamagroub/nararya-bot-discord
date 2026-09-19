@@ -1,5 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {Readable} from 'node:stream';
+import {pipeline} from 'node:stream/promises';
 import * as cheerio from 'cheerio';
 import {run} from './runner.js';
 import {MIME_BY_EXT,assertResolution,safeName,firstFile} from './utils.js';
@@ -7,6 +9,16 @@ import {MIME_BY_EXT,assertResolution,safeName,firstFile} from './utils.js';
 const YTDLP=process.env.YTDLP_PATH||'yt-dlp';
 const MAX_DOWNLOAD_MB=Number(process.env.MEDIA_MAX_DOWNLOAD_MB||200);
 const timeoutMs=Number(process.env.MEDIA_HTTP_TIMEOUT_MS||30000);
+
+async function writeResponseToFile(response,target,maxBytes){
+ if(!response?.body)throw new Error('HTTP response body is unavailable');
+ const contentLength=Number(response.headers.get('content-length')||0);
+ if(Number.isFinite(contentLength)&&contentLength>maxBytes)throw new Error('Remote file exceeds configured media size limit');
+ await pipeline(Readable.fromWeb(response.body),fs.createWriteStream(target));
+ const stat=await fs.promises.stat(target);
+ if(stat.size>maxBytes){await fs.promises.rm(target,{force:true}).catch(()=>{});throw new Error('Downloaded file exceeds configured media size limit');}
+ return stat.size;
+}
 
 function qualitySelector(resolution){
  if(resolution==='best')return 'bestvideo*+bestaudio/best';
@@ -45,10 +57,8 @@ async function directImage(url,outdir){
  if(!type.startsWith('image/'))return null;
  const ext=type==='image/jpeg'?'jpg':type==='image/png'?'png':type==='image/webp'?'webp':'bin';
  const target=path.join(outdir,'download.'+ext);
- const buffer=Buffer.from(await res.arrayBuffer());
- if(buffer.length>MAX_DOWNLOAD_MB*1024*1024)throw new Error('Downloaded file exceeds MEDIA_MAX_DOWNLOAD_MB');
- await fs.promises.writeFile(target,buffer);
- return {path:target,mime:type};
+ const size=await writeResponseToFile(res,target,MAX_DOWNLOAD_MB*1024*1024);
+ return {path:target,mime:type,size};
 }
 
 async function ogImage(url,outdir){
