@@ -195,6 +195,10 @@ Pengiriman dicatat pada `guild_config.welcome_sent_at`, sehingga pesan onboardin
 - The deprecated `whatwg-encoding` dependency chain is overridden through `encoding-sniffer` 1.0.2.
 - CI uses a pinned Node 22 container and runs JavaScript syntax checks plus the complete test suite.
 
+## JKT48 Center Website
+
+Frontend khusus fitur JKT48 tersedia di `website/jkt48/` dengan tema merah-putih, tombol merah, embedded card merah, dan hamburger `=` pada mobile. Website menampilkan member dari source publik, filter generasi/status, ringkasan game/card/feed/command, serta status sumber data. GitHub Pages deploy workflow tersedia pada `.github/workflows/jkt48-pages.yml`.
+
 ## Restaurant Menu & Price Search\n\n- `/restaurantprices search` mencari restoran berdasarkan kota, kata kunci, kategori, dan rentang harga.\n- `/restaurantprices menu url:<url>` membaca menu dan harga dari halaman restoran publik.\n- `/restaurantprices prices` menggabungkan harga menu dari beberapa restoran dalam satu kota.\n- `/restaurantprices city` menelusuri direktori kota.\n- `/restaurantprices refresh` memperbarui cache direktori/menu.\n- `/restaurantprices status` memeriksa kesehatan sumber.\n\nSumber harga restoran: MenuKuliner.net. Harga bersifat informasional dan dapat berbeda menurut cabang, lokasi, platform delivery, pajak, promo, atau perubahan menu.\n\n## Shared Tools\n\n`src/tools/toolbox.js` menjadi utilitas bersama untuk parsing, pagination, cache, validation, date/time, formatting, redaction, dan helper harga. `src/tools/http-client.js` menangani timeout, retry, rate-aware fetching, JSON/text/buffer requests, dan probe URL.\n\n## Owner Controls
 
 `/setup` is now **owner-only**. Configure `BOT_OWNER_IDS` with comma-separated Discord user IDs, while the Discord application owner is also recognized at runtime.
