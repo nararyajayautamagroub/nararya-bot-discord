@@ -23,7 +23,28 @@ const jkt48game=new SlashCommandBuilder().setName('jkt48game').setDescription('G
  .addSubcommand(s=>s.setName('leaderboard').setDescription('Lihat leaderboard game'));
 
 const sim=new SlashCommandBuilder().setName('sim').setDescription('Tycoon & simulasi ekonomi').addSubcommand(s=>s.setName('profile').setDescription('Profil kota')).addSubcommand(s=>s.setName('daily').setDescription('Daily reward')).addSubcommand(s=>s.setName('bank').setDescription('Deposit ke bank').addIntegerOption(o=>o.setName('amount').setDescription('Jumlah').setRequired(true))).addSubcommand(s=>s.setName('fish').setDescription('Memancing')).addSubcommand(s=>s.setName('build').setDescription('Bangun kota')).addSubcommand(s=>s.setName('gacha').setDescription('Gacha member JKT48'));
+const jkt48=new SlashCommandBuilder().setName('jkt48').setDescription('Jadwal, event, theater, birthday dan live JKT48')
+ .addSubcommandGroup(g=>g.setName('upcoming').setDescription('Cek yang akan datang')
+  .addSubcommand(s=>s.setName('event').setDescription('Upcoming event'))
+  .addSubcommand(s=>s.setName('theater').setDescription('Upcoming theater'))
+  .addSubcommand(s=>s.setName('setlist').setDescription('Upcoming setlist'))
+  .addSubcommand(s=>s.setName('songs').setDescription('Upcoming songs'))
+  .addSubcommand(s=>s.setName('live').setDescription('Live yang sedang aktif'))
+  .addSubcommand(s=>s.setName('birthday').setDescription('Upcoming birthday'))
+  .addSubcommand(s=>s.setName('graduation').setDescription('Upcoming graduation')))
+ .addSubcommandGroup(g=>g.setName('latest').setDescription('Cek data terbaru/terakhir')
+  .addSubcommand(s=>s.setName('event').setDescription('Latest event'))
+  .addSubcommand(s=>s.setName('theater').setDescription('Latest theater'))
+  .addSubcommand(s=>s.setName('setlist').setDescription('Latest setlist'))
+  .addSubcommand(s=>s.setName('songs').setDescription('Latest songs'))
+  .addSubcommand(s=>s.setName('live').setDescription('Latest live'))
+  .addSubcommand(s=>s.setName('birthday').setDescription('Latest birthday'))
+  .addSubcommand(s=>s.setName('graduation').setDescription('Latest graduation'))
+  .addSubcommand(s=>s.setName('live_showroom').setDescription('Latest live SHOWROOM'))
+  .addSubcommand(s=>s.setName('live_idn').setDescription('Latest live IDN')));
+
 const commands=[
+ jkt48,
  sim,
  jkt48game,
  new SlashCommandBuilder().setName('ping').setDescription('Cek latency'),
