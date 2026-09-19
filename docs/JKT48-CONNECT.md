@@ -30,3 +30,17 @@ Live monitoring has no per-event cooldown. Duplicate notifications are prevented
 YouTube membership-only status is displayed when the upstream source exposes a membership-only/visibility field. The bot does not bypass private content, DRM, login, CAPTCHA, or anti-bot controls.
 
 Instagram and TikTok live detection is not claimed from generic HTML scraping. These platforms require a supported public/API data source for reliable start/end status. The existing feed adapters can still monitor public profile metadata where available.
+
+
+## Member datasets
+
+The member database also syncs these public datasets:
+- All members (used for generations 1-13): `https://raw.githubusercontent.com/FrenzY8/JKT48-Member/refs/heads/main/AllMember.json`
+- Active members: `https://raw.githubusercontent.com/FrenzY8/JKT48-Member/refs/heads/main/ActiveMember.json`
+
+Optional overrides:
+- `JKT48_ALL_MEMBER_URL`
+- `JKT48_ACTIVE_MEMBER_URL`
+- `JKT48_MEMBER_SYNC_INTERVAL_SECONDS` (default 21600)
+
+The bot stores normalized records in SQLite and uses the same member table for member lookup, generation listings, and JKT48 gacha data. The importer only accepts generations 1-13 for this dataset and marks members found in ActiveMember.json as active.
