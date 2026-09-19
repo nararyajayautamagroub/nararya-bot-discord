@@ -1,1 +1,1 @@
-export function safeCalculator(expression){if(!/^[0-9+\\-*/().%\\s]+$/.test(expression))throw new Error("Ekspresi tidak diizinkan");return Function("return ("+expression+")")()}
+export function safeCalculator(expression){if(!/^[0-9+*/().%\s-]+$/.test(expression))throw new Error("Ekspresi tidak diizinkan");return Function("return ("+expression+")")()}
