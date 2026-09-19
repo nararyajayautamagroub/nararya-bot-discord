@@ -20,6 +20,7 @@ import {createVerificationService} from './security/verification.js';
 import {createVerificationWebServer} from './web/verification/server.js';
 import {FEATURE_REGISTRY} from './config/features.js';
 import {getIndonesiaNews,getStockQuote,getFuelPrices,getElectricityPrices,getFoodPrices,findCity,getPrayerSchedule,upcomingRamadan,refreshIndonesiaCache,DATA_SOURCES} from './services/indonesia/data.js';
+import {getElectronicsPrices} from './services/indonesia/electronics.js';
 import {createScraperOrchestrator} from './services/scrapers/orchestrator.js';
 import {ensureDisasterTables,refreshDisasterDatabase,disasterStatus,notifyDisasterConfigs} from './services/disasters/index.js';
 import {createAdditionalCommandHandler} from './services/additional-commands.js';
@@ -54,6 +55,7 @@ const scraperOrchestrator=createScraperOrchestrator({db,onDataRefresh:async row=
  if(row.key==='price.pertamina'){await getFuelPrices();return;}
  if(row.key==='price.pln'){await getElectricityPrices();return;}
  if(row.key==='price.pihps'){await getFoodPrices();return;}
+ if(row.group_name==='electronics'){await getElectronicsPrices({category:row.key.endsWith('.audio')?'audio':'all',limit:25});return;}
 }});
 const mediaService=createMediaService({db:mediaDbState.db,dir:mediaDbState.dir});
 const verificationService=createVerificationService({db,baseUrl:process.env.VERIFY_WEB_BASE_URL||'http://localhost:'+String(process.env.VERIFY_WEB_PORT||3000)});
