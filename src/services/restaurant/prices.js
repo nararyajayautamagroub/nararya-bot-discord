@@ -2,7 +2,7 @@ import * as cheerio from 'cheerio';
 import {
  asString,asTrimmed,asInteger,asNumber,normalizeWhitespace,normalizeSearch,
  slugify,toAbsoluteUrl,isHttpUrl,parsePriceRangeText,parsePriceToken,
- formatRupiah,formatRange,pageSlice,clampInt,uniqueStrings,safeJsonStringify,
+ formatRupiah,formatRange,pageSlice,clampInt,uniqueStrings,minOf,maxOf,safeJsonStringify,
  dateKeyInTimezone,formatDateId,cacheKey,createLogger,serializeError
 } from '../../tools/toolbox.js';
 import {requestText} from '../../tools/http-client.js';
