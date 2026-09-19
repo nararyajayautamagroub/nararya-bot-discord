@@ -1,6 +1,6 @@
 import {createStreetViewQuestion} from './games/streetview.js';
 import {rollRarity,rarityInfo} from './games/rarity.js';
-import {startSession} from './games/jkt48/quiz-system.js';
+import {startSession,consumeDailyQuiz} from './games/jkt48/quiz-system.js';
 import {getIndonesiaNews,getStockQuote,getFuelPrices,getElectricityPrices,getFoodPrices,upcomingRamadan,DATA_SOURCES} from './indonesia/data.js';
 import {getElectronicsPrices} from './indonesia/electronics.js';
 import {FEATURE_REGISTRY} from '../config/features.js';
@@ -173,6 +173,8 @@ export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,game
     const left=cooldown(i.guild.id,i.user.id);
     if(left)return i.reply({embeds:[embed('⏳ Game Cooldown','Tunggu **'+Math.ceil(left/1000)+' detik** sebelum memainkan game lagi.',{color:0xF59E0B})],ephemeral:true});
     try{
+     const daily=consumeDailyQuiz(jkt48QuizDb,i.guild.id,i.user.id,10);
+     if(!daily.allowed)return i.reply({embeds:[embed('Game Harian','Batas 10 permainan tebak-tebakan per hari sudah tercapai. Reset otomatis saat pergantian hari sesuai zona waktu bot.',{color:0xF59E0B})],ephemeral:true});
      const question=await createStreetViewQuestion();
      const rarity=rollRarity();
      const active=startSession(jkt48QuizDb,{guildId:i.guild.id,userId:i.user.id,channelId:i.channel.id,mode:'streetView',answer:question.answers.join('|'),mediaUrl:null,rarity,durationMs:quizTimeoutMs});
