@@ -105,10 +105,32 @@ client.on('guildMemberAdd',async m=>{const c=db.prepare('SELECT welcome_channel 
 client.on('guildMemberRemove',async m=>{const c=db.prepare('SELECT goodbye_channel FROM guild_config WHERE guild_id=?').get(m.guild.id),ch=c?.goodbye_channel?m.guild.channels.cache.get(c.goodbye_channel):null;if(ch?.isTextBased())await ch.send({embeds:[embed('👋 Sampai jumpa','Sampai jumpa '+m.user.tag+'.')]})});
 client.on('interactionCreate',async i=>{
  try{
-  if(i.isButton()&&i.customId==='ticket-create'){const ch=await openTicket(i);return i.reply({content:'Ticket dibuat: '+ch,ephemeral:true})}
+  if(i.isButton()&&i.customId==='ticket-create'){const ch=await openTicket(i);return i.reply({embeds:[embed('🎫 Ticket Dibuat','Ticket kamu sudah dibuat: '+ch)],ephemeral:true})}
   if(i.isButton()&&i.customId==='ticket-close'){db.prepare("UPDATE tickets SET status='closed',closed_at=? WHERE channel_id=? AND status='open'").run(Date.now(),i.channel.id);await i.reply({embeds:[embed('🔒 Ticket Ditutup','Ticket ditandai closed.')]});return i.channel.permissionOverwrites.edit(i.user.id,{SendMessages:false}).catch(()=>{})}
   if(!i.isChatInputCommand())return;
   const n=i.commandName;
+
+  if(n==='utility'){
+   const sub=i.options.getSubcommand(true);
+   if(sub==='ping')return i.reply({embeds:[embed('🏓 Pong','Latency Discord: **'+i.client.ws.ping+'ms**',{color:EMBED_COLORS.info})]});
+   if(sub==='server')return i.reply({embeds:[embed('🏠 Server Info','**'+i.guild.name+'**\n👥 Member: **'+i.guild.memberCount+'**\n🆔 '+i.guild.id)]});
+   if(sub==='user'){const u=i.options.getUser('target')||i.user;return i.reply({embeds:[embed('👤 User Info','**'+u.tag+'**\n🆔 '+u.id+'\n🤖 Bot: '+(u.bot?'Ya':'Tidak'))]});}
+   if(sub==='level'){const r=db.prepare('SELECT * FROM levels WHERE guild_id=? AND user_id=?').get(i.guild.id,i.user.id);return i.reply({embeds:[embed('⭐ Level','Level **'+(r?.level||0)+'**\nXP **'+(r?.xp||0)+'**',{color:EMBED_COLORS.info})]});}
+  }
+  if(n==='economy'){
+   const sub=i.options.getSubcommand(true);
+   if(sub==='balance'){const b=db.prepare('SELECT balance FROM economy WHERE guild_id=? AND user_id=?').get(i.guild.id,i.user.id)?.balance||0;return i.reply({embeds:[embed('💰 Economy','Saldo: **Rp '+b.toLocaleString('id-ID')+'**',{color:EMBED_COLORS.bank})]});}
+   if(sub==='daily'){const now=Date.now(),r=db.prepare('SELECT * FROM economy WHERE guild_id=? AND user_id=?').get(i.guild.id,i.user.id);if(r?.daily_at&&now-r.daily_at<86400000)return i.reply({embeds:[embed('⏳ Daily Cooldown','Reward harian masih cooldown.',{color:EMBED_COLORS.warning})],ephemeral:true});db.prepare('INSERT INTO economy(guild_id,user_id,balance,daily_at) VALUES(?,?,1000,?) ON CONFLICT(guild_id,user_id) DO UPDATE SET balance=balance+1000,daily_at=excluded.daily_at').run(i.guild.id,i.user.id,now);return i.reply({embeds:[embed('🎁 Daily Reward','Kamu menerima **Rp1.000**.',{color:EMBED_COLORS.success})]});}
+  }
+  if(n==='moderation'){
+   const sub=i.options.getSubcommand(true);
+   if(sub==='warn'){const u=i.options.getUser('user',true),reason=i.options.getString('reason')||'Tidak ada alasan';db.prepare('INSERT INTO warnings(guild_id,user_id,reason,moderator_id,created_at) VALUES(?,?,?,?,?)').run(i.guild.id,u.id,reason,i.user.id,Date.now());return i.reply({embeds:[embed('⚠️ Warning','User <@'+u.id+'> diberi warning.\nAlasan: **'+reason+'**',{color:EMBED_COLORS.warning})]});}
+   if(sub==='ban'){const u=i.options.getUser('user',true),m=await i.guild.members.fetch(u.id).catch(()=>null);if(!m)return i.reply({embeds:[embed('❌ Member Tidak Ditemukan','Target tidak ditemukan di server.',{color:EMBED_COLORS.error})],ephemeral:true});await m.ban({reason:i.options.getString('reason')||'Ban via Nararya Bot Discord'});return i.reply({embeds:[embed('🔨 Member Dibanned','User <@'+u.id+'> berhasil dibanned.',{color:EMBED_COLORS.error})]});}
+  }
+  if(n==='support'){
+   const sub=i.options.getSubcommand(true);
+   if(sub==='ticket'){const row=new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('ticket-create').setLabel('Buat Ticket').setEmoji('🎫').setStyle(ButtonStyle.Primary));return i.reply({embeds:[embed('🎫 Ticket Center','Tekan tombol di bawah untuk membuka ticket support.')],components:[row]});}
+  }
 
   if(n==='sim'){
    const sub=i.options.getSubcommand(true),uid=i.user.id,gid=i.guild.id;
@@ -176,8 +198,41 @@ client.on('interactionCreate',async i=>{
   }
   if(n==='members'){const gen=i.options.getInteger('generation');const rows=gen?db.prepare('SELECT name,nickname,status,team FROM jkt48_members WHERE generation=? ORDER BY name').all(gen):db.prepare('SELECT generation,COUNT(*) count FROM jkt48_members GROUP BY generation ORDER BY generation').all();if(!rows.length)return i.reply({embeds:[embed('👥 Database Member JKT48','Belum ada data member. Pastikan **JKT48CONNECT_API_KEY** aktif agar database dapat disinkronkan.',{color:EMBED_COLORS.warning})],ephemeral:true});if(gen){const active=rows.filter(x=>x.status==='active').length;const text=rows.map(x=>'• **'+x.name+'**'+(x.nickname?' ('+x.nickname+')':'')+' • '+(x.status==='active'?'🟢 Aktif':'⚪ '+x.status)+(x.team?' • '+x.team:'')).join('\\n');return i.reply({embeds:[embed('👥 JKT48 Generasi '+gen,text+'\\n\\n**Total:** '+rows.length+' • **Aktif:** '+active,{color:EMBED_COLORS.jkt48})]})}return i.reply({embeds:[embed('👥 Database JKT48','Data tersimpan per generasi:\\n'+rows.map(x=>'**Gen '+x.generation+'** • '+x.count+' member').join('\\n'),{color:EMBED_COLORS.jkt48})]});}
   if(n==='member'){const q=i.options.getString('query',true).trim();const row=db.prepare('SELECT * FROM jkt48_members WHERE name LIKE ? OR nickname LIKE ? ORDER BY status DESC,generation DESC LIMIT 1').get('%'+q+'%','%'+q+'%');if(!row)return i.reply({embeds:[embed('🔎 Member Tidak Ditemukan','Tidak menemukan member dengan kata kunci **'+q+'**.',{color:EMBED_COLORS.warning})],ephemeral:true});return i.reply({embeds:[memberEmbed(row)]});}
-  if(n==='jkt48'){\n   const group=i.options.getSubcommandGroup(true),type=i.options.getSubcommand(true);\n   if(!jkt48ConnectConfigured())return i.reply({embeds:[embed('⚙️ JKT48Connect Belum Aktif','Fitur jadwal dan live membutuhkan **JKT48CONNECT_API_KEY** pada environment bot.',{color:EMBED_COLORS.warning})],ephemeral:true});\n   try{\n    if(group==='upcoming'){const rows=await getUpcoming(type);return i.reply({embeds:[embed('📅 Upcoming '+TYPE_LABELS[type],renderList(TYPE_LABELS[type],rows),{color:EMBED_COLORS.jkt48})]});}\n    if(group==='latest'){const rows=type==='live_showroom'?await getLatestPlatform('showroom'):type==='live_idn'?await getLatestPlatform('idn'):await getLatest(type);return i.reply({embeds:[embed('🕘 Latest '+TYPE_LABELS[type],renderList(TYPE_LABELS[type],rows),{color:EMBED_COLORS.info})]});}\n   }catch(e){return i.reply({embeds:[embed('⚠️ Gagal Mengambil Data','Sumber JKT48 tidak dapat diakses saat ini.\n`'+e.message+'`',{color:EMBED_COLORS.error})],ephemeral:true});}\n  }\n  if(n==='ping')return i.reply({embeds:[embed('🏓 Pong',i.client.ws.ping+'ms')]});
-  if(n==='ticket'){const row=new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('ticket-create').setLabel('Buat Ticket').setEmoji('🎫').setStyle(ButtonStyle.Primary));return i.reply({embeds:[embed('🎫 Ticket Center','Gunakan tombol untuk membuka ticket.')],components:[row]})}
+  if(n==='jkt48'){
+   const group=i.options.getSubcommandGroup(false),type=i.options.getSubcommand(true);
+   if(!group&&type==='member'){
+    const q=i.options.getString('query',true).trim();
+    const row=db.prepare('SELECT * FROM jkt48_members WHERE name LIKE ? OR nickname LIKE ? ORDER BY status DESC,generation DESC LIMIT 1').get('%'+q+'%','%'+q+'%');
+    if(!row)return i.reply({embeds:[embed('🔎 Member Tidak Ditemukan','Tidak menemukan member dengan kata kunci **'+q+'**.',{color:EMBED_COLORS.warning})],ephemeral:true});
+    return i.reply({embeds:[memberEmbed(row)]});
+   }
+   if(!group&&type==='members'){
+    const gen=i.options.getInteger('generation');
+    const rows=gen?db.prepare('SELECT name,nickname,status,team FROM jkt48_members WHERE generation=? ORDER BY name').all(gen):db.prepare('SELECT generation,COUNT(*) count FROM jkt48_members GROUP BY generation ORDER BY generation').all();
+    if(!rows.length)return i.reply({embeds:[embed('👥 Database Member JKT48','Belum ada data member. Sinkronisasi sumber member belum menghasilkan data.',{color:EMBED_COLORS.warning})],ephemeral:true});
+    if(gen){
+      const active=rows.filter(x=>x.status==='active').length;
+      const text=rows.map(x=>'• **'+x.name+'**'+(x.nickname?' ('+x.nickname+')':'')+' • '+(x.status==='active'?'🟢 Aktif':'⚪ '+x.status)+(x.team?' • '+x.team:'')).join('\n');
+      return i.reply({embeds:[embed('👥 JKT48 Generasi '+gen,text+'\n\n**Total:** '+rows.length+' • **Aktif:** '+active,{color:EMBED_COLORS.jkt48})]});
+    }
+    return i.reply({embeds:[embed('👥 Database JKT48','Data per generasi:\n'+rows.map(x=>'**Gen '+x.generation+'** • '+x.count+' member').join('\n'),{color:EMBED_COLORS.jkt48})]});
+   }
+   if(!group)return;
+   if(!jkt48ConnectConfigured())return i.reply({embeds:[embed('⚙️ JKT48Connect Belum Aktif','Fitur jadwal dan live membutuhkan **JKT48CONNECT_API_KEY** pada environment bot.',{color:EMBED_COLORS.warning})],ephemeral:true});
+   try{
+    if(group==='upcoming'){
+      const rows=await getUpcoming(type);
+      return i.reply({embeds:[embed('📅 Upcoming '+TYPE_LABELS[type],renderList(TYPE_LABELS[type],rows),{color:EMBED_COLORS.jkt48})]});
+    }
+    if(group==='latest'){
+      const rows=type==='live_showroom'?await getLatestPlatform('showroom'):type==='live_idn'?await getLatestPlatform('idn'):await getLatest(type);
+      return i.reply({embeds:[embed('🕘 Latest '+TYPE_LABELS[type],renderList(TYPE_LABELS[type],rows),{color:EMBED_COLORS.info})]});
+    }
+   }catch(e){
+    return i.reply({embeds:[embed('⚠️ Gagal Mengambil Data','Sumber JKT48 tidak dapat diakses saat ini. '+e.message,{color:EMBED_COLORS.error})],ephemeral:true});
+   }
+  }
+
   if(n==='feed'){
    const sub=i.options.getSubcommand(false);
    if(sub==='add'){const name=i.options.getString('name',true),url=i.options.getString('url',true),channel=i.options.getChannel('channel',true),kind=i.options.getString('kind',true);new URL(url);db.prepare('INSERT INTO feed_sources(guild_id,name,url,channel_id,kind,enabled) VALUES(?,?,?,?,?,1)').run(i.guild.id,name,url,channel.id,kind);return i.reply({embeds:[embed('✅ Feed ditambahkan',name+' → '+channel)]})}
@@ -185,13 +240,8 @@ client.on('interactionCreate',async i=>{
    if(sub==='test'){const id=i.options.getInteger('id',true),row=db.prepare('SELECT * FROM feed_sources WHERE id=? AND guild_id=?').get(id,i.guild.id);if(!row)return i.reply({content:'Feed tidak ditemukan.',ephemeral:true});const count=await feedService.pollSource(row);return i.reply({embeds:[embed('🧪 Feed test',row.name+' memproses '+count+' item.')]})}
    const r=db.prepare('SELECT * FROM feed_sources WHERE guild_id=? ORDER BY id').all(i.guild.id);return i.reply({embeds:[embed('📡 Feed Sources',r.length?r.map(x=>'#'+x.id+' • '+x.name+' • '+x.kind+' → <#'+x.channel_id+'>').join('\\n'):'Belum ada feed. Gunakan /feed add')]});
   }
-  if(n==='level'){const r=db.prepare('SELECT * FROM levels WHERE guild_id=? AND user_id=?').get(i.guild.id,i.user.id);return i.reply({embeds:[embed('⭐ Level','Level '+(r?.level||0)+' • XP '+(r?.xp||0))]})}
-  if(n==='balance'){const b=db.prepare('SELECT balance FROM economy WHERE guild_id=? AND user_id=?').get(i.guild.id,i.user.id)?.balance||0;return i.reply({embeds:[embed('💰 Economy','Saldo: Rp '+b.toLocaleString('id-ID'))]})}
-  if(n==='daily'){const now=Date.now(),r=db.prepare('SELECT * FROM economy WHERE guild_id=? AND user_id=?').get(i.guild.id,i.user.id);if(r?.daily_at&&now-r.daily_at<86400000)return i.reply({content:'Daily masih cooldown.',ephemeral:true});db.prepare('INSERT INTO economy(guild_id,user_id,balance,daily_at) VALUES(?,?,1000,?) ON CONFLICT(guild_id,user_id) DO UPDATE SET balance=balance+1000,daily_at=excluded.daily_at').run(i.guild.id,i.user.id,now);return i.reply({embeds:[embed('🎁 Daily','Reward Rp 1.000 diterima.')]})}
   if(n==='serverinfo')return i.reply({embeds:[embed('🏠 Server Info','Nama: '+i.guild.name+'\\nMember: '+i.guild.memberCount)]});
   if(n==='userinfo'){const u=i.options.getUser('user')||i.user;return i.reply({embeds:[embed('👤 User Info','Username: '+u.tag+'\\nID: '+u.id)]})}
-  if(n==='warn'){const u=i.options.getUser('user',true),reason=i.options.getString('reason')||'Tidak ada alasan';db.prepare('INSERT INTO warnings(guild_id,user_id,reason,moderator_id,created_at) VALUES(?,?,?,?,?)').run(i.guild.id,u.id,reason,i.user.id,Date.now());return i.reply({embeds:[embed('⚠️ Warning','User <@'+u.id+'> diberi warning. Alasan: '+reason)]})}
-  if(n==='ban'){const u=i.options.getUser('user',true),m=await i.guild.members.fetch(u.id).catch(()=>null);if(!m)return i.reply({content:'Member tidak ditemukan.',ephemeral:true});await m.ban({reason:i.options.getString('reason')||'Ban via Nararya Bot Discord'});return i.reply({embeds:[embed('🔨 Ban','User <@'+u.id+'> diban.')]})}
  }catch(e){console.error(e);if(!i.replied&&!i.deferred)await i.reply({content:'Terjadi error: '+e.message,ephemeral:true}).catch(()=>{})}
 });
 client.once('ready',async()=>{
