@@ -1,55 +1,219 @@
 import crypto from 'node:crypto';
-import { fetch } from 'undici';
+import {fetch} from 'undici';
 import * as cheerio from 'cheerio';
 
-const UA=process.env.SCRAPER_USER_AGENT||'NararyaBotDiscord/2.0 (+public-feed-monitor)';
-const timeout=Number(process.env.SCRAPER_TIMEOUT_MS||15000);
-async function html(url){
- const res=await fetch(url,{headers:{'user-agent':UA,accept:'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'},signal:AbortSignal.timeout(timeout)});
- if(!res.ok)throw new Error('HTTP '+res.status);
- return await res.text();
+const UA=process.env.SCRAPER_USER_AGENT||'NararyaBotDiscord/3.0 (+public-feed-monitor)';
+const TIMEOUT_MS=Math.max(3000,Number(process.env.SCRAPER_TIMEOUT_MS||15000));
+const MAX_ITEMS=Math.min(100,Math.max(5,Number(process.env.SCRAPER_MAX_ITEMS||40)));
+
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+
+function hash(value){
+ return crypto.createHash('sha256').update(String(value)).digest('hex');
 }
-const key=url=>crypto.createHash('sha256').update(url).digest('hex');
-const abs=(base,href)=>{try{return new URL(href,base).href}catch{return null}};
-const norm=(title,url,description='',image=null,publishedAt=Date.now())=>({key:key(url),title:title.replace(/\s+/g,' ').trim().slice(0,240),url,description:description.replace(/\s+/g,' ').trim().slice(0,900),image,publishedAt});
-function anchors(body,base,filter,limit=30){
- const $=cheerio.load(body),out=[],seen=new Set();
- $('a[href]').each((_,el)=>{
-  const title=$(el).text().replace(/\s+/g,' ').trim(),url=abs(base,$(el).attr('href'));
-  if(!url||title.length<5||seen.has(url)||!filter(url,title))return;
-  seen.add(url);
-  const image=$(el).find('img').attr('src')?abs(base,$(el).find('img').attr('src')):null;
-  out.push(norm(title,url,title,image));
- });
- return out.slice(0,limit);
+
+function absolute(base,value){
+ try{return new URL(value,base).href}catch{return null}
 }
-export async function scrapeJkt48Web(url){
- const body=await html(url);
- const section=url.includes('/events')?'event':url.includes('/news')?'news':url.includes('/theater')?'theater':'official';
- return anchors(body,url,(href)=>href.includes('jkt48.com')&&(section==='official'||href.includes('/events')||href.includes('/news')||href.includes('/theater')),40).map(x=>({...x,sourceType:section}));
+
+function clean(value,max=900){
+ return String(value||'').replace(/\s+/g,' ').trim().slice(0,max);
 }
-export async function scrapePublicProfile(url,platform){
- const body=await html(url),$=cheerio.load(body);
- const title=$('meta[property="og:title"]').attr('content')||$('title').text()||platform+' update';
- const description=$('meta[property="og:description"]').attr('content')||$('meta[name="description"]').attr('content')||'';
- const image=$('meta[property="og:image"]').attr('content')||null;
- return [norm(title,url,description,image)];
+
+function dateValue(value){
+ const time=Date.parse(value||'');
+ return Number.isFinite(time)?time:Date.now();
 }
-export async function scrapeYoutubeRss(url){
- const id=new URL(url).searchParams.get('channel_id');
- if(!id)return scrapePublicProfile(url,'YouTube');
- const res=await fetch('https://www.youtube.com/feeds/videos.xml?channel_id='+encodeURIComponent(id),{headers:{'user-agent':UA},signal:AbortSignal.timeout(timeout)});
- if(!res.ok)throw new Error('YouTube RSS HTTP '+res.status);
- const xml=await res.text(),out=[];
- for(const m of xml.matchAll(/<entry>([\s\S]*?)<\/entry>/g)){
-  const b=m[1],video=b.match(/<yt:videoId>([^<]+)/)?.[1],title=b.match(/<title>([\s\S]*?)<\/title>/)?.[1],published=b.match(/<published>([^<]+)/)?.[1],link=b.match(/<link rel="alternate" href="([^"]+)/)?.[1];
-  if(video&&title&&link)out.push(norm(title,link,title,'https://i.ytimg.com/vi/'+video+'/hqdefault.jpg',published?Date.parse(published):Date.now()));
+
+function item({title,url,description='',image=null,publishedAt=Date.now(),sourceType='public',author=null}){
+ const safeUrl=absolute(url,url);
+ if(!safeUrl)throw new Error('URL item tidak valid');
+ return {
+  key:hash(safeUrl),
+  title:clean(title,240)||'JKT48 update',
+  url:safeUrl,
+  description:clean(description,900),
+  image:image?absolute(safeUrl,image):null,
+  publishedAt:dateValue(publishedAt),
+  sourceType,
+  author:clean(author,120)
+ };
+}
+
+async function request(url,{accept='text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',timeout=TIMEOUT_MS}={}){
+ let last;
+ for(let attempt=0;attempt<3;attempt++){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),timeout);
+  try{
+   const response=await fetch(url,{headers:{'user-agent':UA,accept},redirect:'follow',signal:controller.signal});
+   const body=await response.text();
+   if(!response.ok)throw new Error('HTTP '+response.status+' '+response.statusText);
+   return {response,body};
+  }catch(error){
+   last=error;
+   if(attempt<2)await sleep(350*(attempt+1));
+  }finally{clearTimeout(timer)}
  }
+ throw last||new Error('Request gagal');
+}
+
+function unique(items){
+ const seen=new Set();
+ return items.filter(x=>x?.url&&!seen.has(x.url)&&seen.add(x.url)).slice(0,MAX_ITEMS);
+}
+
+function meta($,name){
+ return $('meta[property="'+name+'"]').attr('content')||
+   $('meta[name="'+name+'"]').attr('content')||'';
+}
+
+function parseJsonLd($,base,sourceType){
+ const out=[];
+ $('script[type="application/ld+json"]').each((_,el)=>{
+  try{
+   const raw=$(el).text();
+   const parsed=JSON.parse(raw);
+   const rows=Array.isArray(parsed)?parsed:[parsed];
+   for(const row of rows){
+    if(!row||typeof row!=='object')continue;
+    if(row.itemListElement){
+     for(const entry of row.itemListElement){
+      const target=entry?.item||entry;
+      const url=typeof target==='string'?target:target?.url;
+      const title=typeof target==='object'?(target.name||target.headline):entry?.name;
+      if(url&&title)out.push(item({title,url:entry?.name||title,url: absolute(base,url),description:target?.description||'',image:target?.image,publishedAt:target?.datePublished,sourceType}));
+     }
+    }else if(row.url&&(row.headline||row.name)){
+     out.push(item({title:row.headline||row.name,url:absolute(base,row.url),description:row.description,image:row.image,publishedAt:row.datePublished||row.dateModified,sourceType,author:row.author?.name||row.author}));
+    }
+   }
+  }catch{}
+ });
  return out;
 }
+
+function parseAnchors($,base,filter,sourceType){
+ const out=[];
+ $('a[href]').each((_,el)=>{
+  const href=$(el).attr('href');
+  const url=absolute(base,href);
+  const title=clean($(el).attr('aria-label')||$(el).text()||$(el).attr('title'),240);
+  if(!url||!title||title.length<4||!filter(url,title,el))return;
+  const card=$(el).closest('article,li,[role="article"],div').first();
+  const image=card.find('img').first().attr('src')||$(el).find('img').first().attr('src')||null;
+  const published=card.find('time').attr('datetime')||card.find('time').text();
+  const description=clean(card.text(),900);
+  out.push(item({title,url,description,image,publishedAt:published,sourceType}));
+ });
+ return unique(out);
+}
+
+export async function scrapeHtmlPage(url,{filter=()=>true,sourceType='public'}={}){
+ const {body}=await request(url);
+ const $=cheerio.load(body);
+ const json=parseJsonLd($,url,sourceType);
+ const anchors=parseAnchors($,url,filter,sourceType);
+ return unique([...json,...anchors]);
+}
+
+export async function scrapeJkt48Web(url){
+ const section=url.includes('/events')?'event':url.includes('/news')?'news':url.includes('/theater')?'theater':'official';
+ const allowed=(href,title)=>{
+  if(!href.includes('jkt48.com'))return false;
+  if(section==='official')return /jkt48\.com\/(events|news|theater|schedule|members|about|discography|profile|blog)/i.test(href);
+  return href.includes('/'+section);
+ };
+ return scrapeHtmlPage(url,{filter:allowed,sourceType:'jkt48-'+section});
+}
+
+function youtubeIdFromHtml(body){
+ const patterns=[
+  /"channelId":"(UC[a-zA-Z0-9_-]{10,})"/,
+  /"externalId":"(UC[a-zA-Z0-9_-]{10,})"/,
+  /\/channel\/(UC[a-zA-Z0-9_-]{10,})/
+ ];
+ for(const re of patterns){const m=body.match(re);if(m)return m[1]}
+ return null;
+}
+
+async function resolveYoutubeChannelId(url){
+ const explicit=new URL(url).searchParams.get('channel_id');
+ if(explicit)return explicit;
+ const {body}=await request(url);
+ return youtubeIdFromHtml(body);
+}
+
+export async function scrapeYoutubeRss(url){
+ const channelId=await resolveYoutubeChannelId(url);
+ if(!channelId)throw new Error('YouTube channel ID tidak ditemukan dari halaman publik');
+ const feed='https://www.youtube.com/feeds/videos.xml?channel_id='+encodeURIComponent(channelId);
+ const {body}=await request(feed,{accept:'application/atom+xml,application/xml,text/xml'});
+ const out=[];
+ for(const match of body.matchAll(/<entry>([\s\S]*?)<\/entry>/g)){
+  const b=match[1];
+  const id=b.match(/<yt:videoId>([^<]+)/)?.[1];
+  const title=b.match(/<title>([\s\S]*?)<\/title>/)?.[1];
+  const published=b.match(/<published>([^<]+)/)?.[1];
+  const updated=b.match(/<updated>([^<]+)/)?.[1];
+  const link=b.match(/<link[^>]+rel=["']alternate["'][^>]+href=["']([^"']+)/)?.[1]||
+   (id?'https://www.youtube.com/watch?v='+id:null);
+  if(!id||!title||!link)continue;
+  out.push(item({title:decodeXml(title),url:link,description:decodeXml(title),image:'https://i.ytimg.com/vi/'+id+'/hqdefault.jpg',publishedAt:published||updated,sourceType:'youtube'}));
+ }
+ return unique(out);
+}
+
+function decodeXml(value){
+ return String(value||'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+}
+
+function socialFilter(platform){
+ const patterns={
+  instagram:/instagram\.com\/(p|reel|tv|stories)\//i,
+  tiktok:/tiktok\.com\/@[^/]+\/video\//i,
+  x:/(?:x|twitter)\.com\/[^/]+\/status\//i,
+  threads:/threads\.net\/@?[^/]+\/post\//i
+ };
+ return patterns[platform]||(()=>true);
+}
+
+export async function scrapePublicProfile(url,platform='public'){
+ const {body}=await request(url);
+ const $=cheerio.load(body);
+ const title=meta($,'og:title')||$('title').first().text()||platform+' update';
+ const description=meta($,'og:description')||meta($,'description')||'';
+ const image=meta($,'og:image')||null;
+ const profile=item({title,url,description,image,sourceType:platform});
+ const links=parseAnchors($,url,(href)=>socialFilter(platform)(href),platform);
+ const json=parseJsonLd($,url,platform);
+ return unique([...links,...json,profile]);
+}
+
+export async function scrapeInstagram(url){return scrapePublicProfile(url,'instagram')}
+export async function scrapeTikTok(url){return scrapePublicProfile(url,'tiktok')}
+export async function scrapeX(url){return scrapePublicProfile(url,'x')}
+export async function scrapeThreads(url){return scrapePublicProfile(url,'threads')}
+
+export async function scrapeMarketplace(url,platform){
+ const {body}=await request(url);
+ const $=cheerio.load(body);
+ const json=parseJsonLd($,url,platform);
+ const anchors=parseAnchors($,url,(href,title)=>/product|produk|item|catalog|shop|detail/i.test(href+' '+title),platform);
+ return unique([...json,...anchors]);
+}
+
 export async function scrapeSource(source){
- const u=source.url.toLowerCase();
- if(source.kind==='jkt48-web')return scrapeJkt48Web(source.url);
- if(source.kind==='youtube'&&u.includes('channel_id='))return scrapeYoutubeRss(source.url);
- return scrapePublicProfile(source.url,source.kind||'public');
+ const kind=String(source.kind||'public').toLowerCase();
+ const url=source.url;
+ if(!url)throw new Error('Feed URL kosong');
+ if(kind==='jkt48-web'||kind==='jkt48-events'||kind==='jkt48-news'||kind==='jkt48-theater')return scrapeJkt48Web(url);
+ if(kind==='youtube'||kind==='youtube-channel'||kind==='jkt48-tv'||kind==='costume-youtube')return scrapeYoutubeRss(url);
+ if(kind==='instagram'||kind==='instagram-member'||kind==='costume-instagram')return scrapeInstagram(url);
+ if(kind==='tiktok'||kind==='tiktok-member'||kind==='costume-tiktok')return scrapeTikTok(url);
+ if(kind==='x'||kind==='x-member'||kind==='twitter'||kind==='twitter-member')return scrapeX(url);
+ if(kind==='threads'||kind==='threads-member')return scrapeThreads(url);
+ if(kind==='tokopedia')return scrapeMarketplace(url,'tokopedia');
+ if(kind==='shopee')return scrapeMarketplace(url,'shopee');
+ return scrapePublicProfile(url,kind);
 }
