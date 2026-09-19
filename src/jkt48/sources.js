@@ -21,7 +21,7 @@ const base=[
  tuple('idn-jkt48','IDN JKT48 Live','idn','https://www.idn.app/'),
  tuple('showroom-jkt48','SHOWROOM JKT48','showroom','https://www.showroom-live.com/'),
  tuple('youtube-jkt48','YouTube JKT48','youtube-channel','https://www.youtube.com/@JKT48'),
- tuple('youtube-jkt48-tv','YouTube JKT48 TV','jkt48-tv','process.env.JKT48_TV_URL||'https://www.youtube.com/@JKT48TV'),
+ tuple('youtube-jkt48-tv','YouTube JKT48 TV','jkt48-tv',process.env.JKT48_TV_URL||'https://www.youtube.com/@JKT48TV'),
  tuple('instagram-jkt48','Instagram JKT48','instagram','https://www.instagram.com/jkt48/'),
  tuple('tiktok-jkt48','TikTok JKT48','tiktok','https://www.tiktok.com/@jkt48'),
  tuple('x-jkt48','X/Twitter JKT48','x','https://x.com/officialJKT48'),
