@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS ramadan_configs(guild_id TEXT PRIMARY KEY,city_id TEX
 
 `);
 ensureTables(db);
+try{db.prepare('ALTER TABLE guild_config ADD COLUMN welcome_sent_at INTEGER').run()}catch{}
 const jkt48Dbs=createJkt48FeatureDatabases();
 ensureDataAuditTables(db);
 const mediaDbState=createMediaDatabase();
