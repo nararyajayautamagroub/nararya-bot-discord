@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {matches,normalize} from '../src/services/games/jkt48/index.js';
+import {matches,normalize,MODES} from '../src/services/games/jkt48/index.js';
+import {FEATURE_REGISTRY} from '../src/config/features.js';
 import {createStreetViewQuestion} from '../src/services/games/streetview.js';
 import {upcomingRamadan} from '../src/services/indonesia/data.js';
 
@@ -19,4 +20,12 @@ test('Ramadan data exposes the configured 1448 H estimate',()=>{
  assert.equal(data.hijri,'1448 H');
  assert.match(data.estimatedStart,/^2027-02-/);
  assert.match(data.estimatedEnd,/^2027-03-/);
+});
+
+test('Street View is not registered as a JKT48 mode',()=>{
+ assert.equal(MODES.streetView,undefined);
+});
+
+test('feature registry contains the current implemented catalog',()=>{
+ assert.ok(FEATURE_REGISTRY.length>=50);
 });
