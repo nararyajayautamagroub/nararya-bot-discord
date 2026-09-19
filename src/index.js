@@ -6,6 +6,7 @@ import {DEFAULT_SOURCES} from './jkt48/sources.js';
 import {ensureTables,MODES,matches,rollGacha} from './services/games/jkt48/index.js';
 import {addAsset,getAssets} from './services/games/jkt48/assets.js';
 import {addScore} from './services/games/jkt48/scoring.js';
+import {syncMemberDatabase} from './jkt48/member-database.js';
 import {configured as jkt48ConnectConfigured} from './jkt48/connect.js';
 import {getUpcoming,getLatest,getLatestPlatform,renderList,TYPE_LABELS} from './jkt48/command-service.js';
 import {createJkt48Monitor} from './jkt48/live-monitor.js';
