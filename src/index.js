@@ -23,6 +23,7 @@ import {createStreetViewQuestion} from './services/games/jkt48/streetview.js';
 import {getIndonesiaNews,getStockQuote,getFuelPrices,getElectricityPrices,getFoodPrices,findCity,getPrayerSchedule,upcomingRamadan,refreshIndonesiaCache,NEWS_CATEGORIES,DATA_SOURCES} from './services/indonesia/data.js';
 import {createScraperOrchestrator} from './services/scrapers/orchestrator.js';
 import {DISASTER_URLS,ensureDisasterTables,refreshDisasterDatabase,recentDisasters,disasterStatus,configureDisaster,notifyDisasterConfigs} from './services/disasters/index.js';
+import {createAdditionalCommandHandler} from './services/additional-commands.js';
 
 const db=new Database(process.env.DATABASE_PATH||'./data/nararya.db');
 db.pragma('journal_mode=WAL');
@@ -53,6 +54,7 @@ const scraperOrchestrator=createScraperOrchestrator({db,onDataRefresh:async row=
  if(row.key==='price.pihps'){await getFoodPrices();return;}
 }});
 const mediaService=createMediaService({db:mediaDbState.db,dir:mediaDbState.dir});
+const additionalCommandHandler=createAdditionalCommandHandler({db,jkt48QuizDb:jkt48Dbs.quiz,client,embed:()=>null,gameCooldowns,gameCooldownMs:GAME_COOLDOWN_MS,quizTimeoutMs:QUIZ_TIMEOUT_MS,scraperOrchestrator});
 const verificationService=createVerificationService({db,baseUrl:process.env.VERIFY_WEB_BASE_URL||'http://localhost:'+String(process.env.VERIFY_WEB_PORT||3000)});
 const verificationWeb=createVerificationWebServer({service:verificationService,featureRegistry:FEATURE_REGISTRY});
 verificationWeb.start();
@@ -180,6 +182,8 @@ client.on('interactionCreate',async i=>{
   const n=i.commandName;
 
   if(n==='media')return handleMediaCommand(i,{mediaService,embed,colors:EMBED_COLORS});
+  const additionalResult=await additionalCommandHandler(i);
+  if(additionalResult)return additionalResult;
   if(n==='verify'){
    const sub=i.options.getSubcommand(true);
    if(sub==='start'){
