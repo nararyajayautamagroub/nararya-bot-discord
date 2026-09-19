@@ -196,8 +196,6 @@ client.on('interactionCreate',async i=>{
    const active=startSession(jkt48Dbs.quiz,{guildId:i.guild.id,userId:i.user.id,channelId:i.channel.id,mode,answer:q.answer,mediaUrl:q.media_url,rarity,durationMs:Number(process.env.JKT48_QUIZ_TIMEOUT_MS||60000)});
    return revealAnimation(i,{title:'🎯 '+MODES[mode],prefix:'🃏 **Challenge Card**\\n\\nBalas pesan ini dengan jawabanmu.\\n⏱️ Waktu: **'+Math.round((active.expires_at-active.started_at)/1000)+' detik**\\n\\n',rarity,finalDescription:'🃏 **Tantangan aktif**\\nMode: '+MODES[mode]+'\\nRarity: '+(rarityInfo[rarity]?.label||rarity)+'\\n⏱️ Jawab dalam **'+Math.round((active.expires_at-active.started_at)/1000)+' detik**.',finalImage:q.media_url||null});
   }
-  if(n==='members'){const gen=i.options.getInteger('generation');const rows=gen?db.prepare('SELECT name,nickname,status,team FROM jkt48_members WHERE generation=? ORDER BY name').all(gen):db.prepare('SELECT generation,COUNT(*) count FROM jkt48_members GROUP BY generation ORDER BY generation').all();if(!rows.length)return i.reply({embeds:[embed('👥 Database Member JKT48','Belum ada data member. Pastikan **JKT48CONNECT_API_KEY** aktif agar database dapat disinkronkan.',{color:EMBED_COLORS.warning})],ephemeral:true});if(gen){const active=rows.filter(x=>x.status==='active').length;const text=rows.map(x=>'• **'+x.name+'**'+(x.nickname?' ('+x.nickname+')':'')+' • '+(x.status==='active'?'🟢 Aktif':'⚪ '+x.status)+(x.team?' • '+x.team:'')).join('\\n');return i.reply({embeds:[embed('👥 JKT48 Generasi '+gen,text+'\\n\\n**Total:** '+rows.length+' • **Aktif:** '+active,{color:EMBED_COLORS.jkt48})]})}return i.reply({embeds:[embed('👥 Database JKT48','Data tersimpan per generasi:\\n'+rows.map(x=>'**Gen '+x.generation+'** • '+x.count+' member').join('\\n'),{color:EMBED_COLORS.jkt48})]});}
-  if(n==='member'){const q=i.options.getString('query',true).trim();const row=db.prepare('SELECT * FROM jkt48_members WHERE name LIKE ? OR nickname LIKE ? ORDER BY status DESC,generation DESC LIMIT 1').get('%'+q+'%','%'+q+'%');if(!row)return i.reply({embeds:[embed('🔎 Member Tidak Ditemukan','Tidak menemukan member dengan kata kunci **'+q+'**.',{color:EMBED_COLORS.warning})],ephemeral:true});return i.reply({embeds:[memberEmbed(row)]});}
   if(n==='jkt48'){
    const group=i.options.getSubcommandGroup(false),type=i.options.getSubcommand(true);
    if(!group&&type==='member'){
@@ -240,8 +238,6 @@ client.on('interactionCreate',async i=>{
    if(sub==='test'){const id=i.options.getInteger('id',true),row=db.prepare('SELECT * FROM feed_sources WHERE id=? AND guild_id=?').get(id,i.guild.id);if(!row)return i.reply({content:'Feed tidak ditemukan.',ephemeral:true});const count=await feedService.pollSource(row);return i.reply({embeds:[embed('🧪 Feed test',row.name+' memproses '+count+' item.')]})}
    const r=db.prepare('SELECT * FROM feed_sources WHERE guild_id=? ORDER BY id').all(i.guild.id);return i.reply({embeds:[embed('📡 Feed Sources',r.length?r.map(x=>'#'+x.id+' • '+x.name+' • '+x.kind+' → <#'+x.channel_id+'>').join('\\n'):'Belum ada feed. Gunakan /feed add')]});
   }
-  if(n==='serverinfo')return i.reply({embeds:[embed('🏠 Server Info','Nama: '+i.guild.name+'\\nMember: '+i.guild.memberCount)]});
-  if(n==='userinfo'){const u=i.options.getUser('user')||i.user;return i.reply({embeds:[embed('👤 User Info','Username: '+u.tag+'\\nID: '+u.id)]})}
  }catch(e){console.error(e);if(!i.replied&&!i.deferred)await i.reply({content:'Terjadi error: '+e.message,ephemeral:true}).catch(()=>{})}
 });
 client.once('ready',async()=>{
