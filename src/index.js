@@ -164,27 +164,31 @@ client.on('messageCreate',async m=>{
    const points=calculatePoints(seconds,session.rarity);
    finishSession(jkt48Dbs.quiz,session.id,'finished');
    const score=recordResult(jkt48Dbs.quiz,{guildId:m.guild.id,userId:m.author.id,mode:session.mode,rarity:session.rarity,answer:session.answer,input:m.content,correct:true,points,durationMs:Date.now()-session.started_at});
-   const member=db.prepare('SELECT * FROM jkt48_members WHERE name LIKE ? OR nickname LIKE ? ORDER BY status DESC,generation DESC LIMIT 1').get('%'+session.answer+'%','%'+session.answer+'%');
-   const card=awardCard(jkt48Dbs.cards,{
-    guildId:m.guild.id,userId:m.author.id,
-    type:member?'member':'quiz',
-    key:member?.id||session.mode+':'+session.answer,
-    name:member?.name||session.answer,
-    rarity:session.rarity,
-    generation:member?.generation||null,
-    imageUrl:member?.image_url||session.media_url||null,
-    mode:session.mode,
-    source:'quiz'
-   });
-   await revealChannel(m.channel,{
-    title:'🎯 Jawaban Benar',
-    prefix:'✅ **'+m.author.username+'** berhasil menjawab!\\n\\n',
-    rarity:session.rarity,
-    finalDescription:'🎴 **Kartu diperoleh**\\n'+card.subject_name+'\\n\\n'+(member?.generation?'Generasi '+member.generation+'\\n':'')+'⭐ **+'+points+' poin**\\n🏆 Total: **'+score.points+' poin**\\n🔥 Streak: **'+score.streak+'**',
-    finalImage:card.image_url||null
-   }).catch(console.error);
+   if(session.mode==='streetView'){
+    await m.channel.send({embeds:[embed('🌍 Street View Benar','✅ **'+m.author.username+'** berhasil menebak lokasi.\\n\\n⭐ **+'+points+' poin**\\n🏆 Total: **'+score.points+' poin**\\n🔥 Streak: **'+score.streak+'**',{color:EMBED_COLORS.game})]}).catch(()=>{});
+   }else{
+    const member=db.prepare('SELECT * FROM jkt48_members WHERE name LIKE ? OR nickname LIKE ? ORDER BY status DESC,generation DESC LIMIT 1').get('%'+session.answer+'%','%'+session.answer+'%');
+    const card=awardCard(jkt48Dbs.cards,{
+     guildId:m.guild.id,userId:m.user.id,
+     type:member?'member':'quiz',
+     key:member?.id||session.mode+':'+session.answer,
+     name:member?.name||session.answer,
+     rarity:session.rarity,
+     generation:member?.generation||null,
+     imageUrl:member?.image_url||session.media_url||null,
+     mode:session.mode,
+     source:'quiz'
+    });
+    await revealChannel(m.channel,{
+     title:'🎯 Jawaban Benar',
+     prefix:'✅ **'+m.author.username+'** berhasil menjawab!\\n\\n',
+     rarity:session.rarity,
+     finalDescription:'🎴 **Kartu diperoleh**\\n'+card.subject_name+'\\n\\n'+(member?.generation?'Generasi '+member.generation+'\\n':'')+'⭐ **+'+points+' poin**\\n🏆 Total: **'+score.points+' poin**\\n🔥 Streak: **'+score.streak+'**',
+     finalImage:card.image_url||null
+    }).catch(console.error);
+   }
   }else{
-   recordAttempt(jkt48Dbs.quiz,{guildId:m.guild.id,userId:m.author.id,mode:session.mode,rarity:session.rarity,answer:session.answer,input:m.content,correct:false,points:0,durationMs:Date.now()-session.started_at});
+   recordAttempt(jkt48Dbs.quiz,{guildId:m.guild.id,userId:m.user.id,mode:session.mode,rarity:session.rarity,answer:session.answer,input:m.content,correct:false,points:0,durationMs:Date.now()-session.started_at});
    await m.channel.send({embeds:[embed('❌ Belum Tepat','Jawabanmu belum cocok. Tantangan masih aktif.\\n'+(rarityInfo[session.rarity]?.emoji||'🎴')+' Rarity: **'+(rarityInfo[session.rarity]?.label||session.rarity)+'**',{color:EMBED_COLORS.warning})]}).catch(()=>{});
   }
  }
