@@ -1,5 +1,5 @@
 import {createStreetViewQuestion} from './games/streetview.js';
-import {rollRarity,rarityInfo} from './games/jkt48/index.js';
+import {rollRarity,rarityInfo} from './games/rarity.js';
 import {startSession} from './games/jkt48/quiz-system.js';
 import {getIndonesiaNews,getStockQuote,getFuelPrices,getElectricityPrices,getFoodPrices,upcomingRamadan,DATA_SOURCES} from './indonesia/data.js';
 import {AttachmentBuilder} from 'discord.js';
