@@ -21,7 +21,10 @@ const jkt48game=new SlashCommandBuilder().setName('jkt48game').setDescription('G
  .addSubcommand(s=>s.setName('gacha').setDescription('Gacha member JKT48'))
  .addSubcommand(s=>s.setName('inventory').setDescription('Lihat koleksi gacha'))
  .addSubcommand(s=>s.setName('leaderboard').setDescription('Lihat leaderboard game'));
+
+const sim=new SlashCommandBuilder().setName('sim').setDescription('Tycoon & simulasi ekonomi').addSubcommand(s=>s.setName('profile').setDescription('Profil kota')).addSubcommand(s=>s.setName('daily').setDescription('Daily reward')).addSubcommand(s=>s.setName('bank').setDescription('Deposit ke bank').addIntegerOption(o=>o.setName('amount').setDescription('Jumlah').setRequired(true))).addSubcommand(s=>s.setName('fish').setDescription('Memancing')).addSubcommand(s=>s.setName('build').setDescription('Bangun kota')).addSubcommand(s=>s.setName('gacha').setDescription('Gacha member JKT48'));
 const commands=[
+ sim,
  jkt48game,
  new SlashCommandBuilder().setName('ping').setDescription('Cek latency'),
  feed,
