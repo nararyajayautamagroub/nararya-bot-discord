@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import path from 'node:path';
 import {AttachmentBuilder} from 'discord.js';
 import {VIDEO_FORMATS,AUDIO_FORMATS} from './utils.js';
 
@@ -62,7 +63,7 @@ export async function handleMediaCommand(i,{mediaService,embed,colors}){
     embeds:[resultEmbed(embed,result,'Media Download')],
     files:[new AttachmentBuilder(result.path)]
    });
-   await cleanup(result.path);
+   await cleanup(path.dirname(result.path));
    return;
   }
 
