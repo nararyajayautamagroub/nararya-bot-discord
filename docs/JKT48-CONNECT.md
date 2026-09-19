@@ -44,3 +44,25 @@ Optional overrides:
 - `JKT48_MEMBER_SYNC_INTERVAL_SECONDS` (default 21600)
 
 The bot stores normalized records in SQLite and uses the same member table for member lookup, generation listings, and JKT48 gacha data. The importer only accepts generations 1-14 for this dataset and marks members found in ActiveMember.json as active.
+
+
+## JKT48 game card architecture
+
+The JKT48 game subsystem now uses separate SQLite databases under `JKT48_GAME_DATA_DIR` (default `./data/jkt48`):
+
+- `quiz.db`: quiz assets, active quiz sessions, attempts, scores, streaks.
+- `gacha.db`: gacha pull history and daily pull counters.
+- `cards.db`: card definitions, user card inventory, and card acquisition events.
+
+Each quiz challenge receives a rarity. Correct answers award a card using the challenge rarity, while gacha pulls independently roll a rarity and award member cards. Supported rarities are Common, Uncommon, Rare, Epic, Legendary, Mythic, and Secret.
+
+The Discord reveal flow uses staged embed edits for CARD SEALED → CARD SCANNING → RARITY DETECTED → final card. This is a Discord-native animation effect rather than a third-party animation service.
+
+Additional settings:
+- `JKT48_GAME_DATA_DIR`: root directory for the three feature databases.
+- `JKT48_QUIZ_TIMEOUT_MS`: quiz answer timeout, default 60000 ms.
+
+Quiz asset management:
+- `/jkt48game asset_add`: add an asset, answer aliases, public media URL, and rarity.
+- `/jkt48game asset_list`: inspect asset counts by mode or rarity.
+- `/jkt48game inventory`: view the combined card collection.
