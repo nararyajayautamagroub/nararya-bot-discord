@@ -214,7 +214,7 @@ client.on('interactionCreate',async i=>{
   if(n==='prices'){
    const sub=i.options.getSubcommand(true);
    try{
-    const render=(title,data)=>embed(title,data.items.map(x=>x.value===null?'• **'+x.name+'** • Data belum terbaca':'• **'+x.name+'** • **'+(x.unit==='Rp/kWh'?x.value.toLocaleString('id-ID'):'Rp'+Number(x.value).toLocaleString('id-ID'))+'** / '+(x.unit==='Rp/kWh'?'kWh':x.unit.replace('Rp/',''))).join('\\n')+'\\n\\nSumber: '+data.source+'\\nUpdate cache: <t:'+Math.floor(data.updatedAt/1000)+':R>',{color:EMBED_COLORS.info});
+    const render=(title,data)=>embed(title,data.items.map(x=>x.value===null?'• **'+x.name+'** • Data belum terbaca':'• **'+x.name+'** • **'+(x.unit==='Rp/kWh'?'Rp'+Number(x.value).toLocaleString('id-ID'):'Rp'+Number(x.value).toLocaleString('id-ID'))+'** / '+(x.unit==='Rp/kWh'?'kWh':x.unit.replace('Rp/',''))).join('\\n')+'\\n\\nSumber: '+data.source+'\\nUpdate cache: <t:'+Math.floor(data.updatedAt/1000)+':R>',{color:EMBED_COLORS.info});
     if(sub==='fuel')return i.reply({embeds:[render('⛽ Harga BBM Indonesia',await getFuelPrices())]});
     if(sub==='electricity')return i.reply({embeds:[render('⚡ Tarif Listrik PLN',await getElectricityPrices())]});
     if(sub==='food')return i.reply({embeds:[render('🛒 Harga Pangan Strategis',await getFoodPrices())]});
