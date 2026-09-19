@@ -2,7 +2,7 @@
 
 Dokumen ini menjadi pintu masuk katalog fitur aktif. Registry sumber berada di `src/config/features.js`.
 
-Total fitur yang saat ini didaftarkan: **50**.
+Total fitur yang saat ini didaftarkan: **51**.
 
 Kategori:
 - Discord
