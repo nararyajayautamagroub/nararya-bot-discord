@@ -239,3 +239,56 @@ The following commands are restricted to the bot owner:
 - `/blacklistusers list`
 
 Configure `BOT_OWNER_IDS` as a comma-separated list of Discord user IDs. The runtime also recognizes the Discord application owner after login. Owners bypass blacklist and maintenance restrictions.
+
+
+## Extended Features
+
+### Owner
+- `/owner dashboard`
+- `/owner broadcast text:<text>`
+- `/owner rotation texts:<text1,text2>`
+- `/owner maintenance enabled:<true|false>`
+- `/owner toggle command:<name> enabled:<true|false>`
+- `/owner schedule text:<text> delay_seconds:<seconds>`
+
+### Server Security
+- `/security status`
+- `/security setup key:<raid|nuke|mention|lock> enabled:<true|false>`
+- `/security trust user:<user>`
+- `/security incident type:<type> detail:<detail>`
+- `/security lockdown enabled:<true|false>`
+
+### Server Configuration
+- `/serverconfig view`
+- `/serverconfig set key:<key> value:<value>`
+- `/serverconfig rules text:<text>`
+- `/serverconfig stats`
+- `/serverconfig autorole role:<role>`
+- `/serverconfig autoroleremove enabled:<true|false>`
+- `/serverconfig automod mention_threshold:<2-20>`
+
+### Indonesia
+- `/indonesia time`
+- `/indonesia weather city:<city>`
+- `/indonesia currency from:<code> to:<code> amount:<number>`
+- `/indonesia gold`
+- `/indonesia fuel`
+- `/indonesia electricity kwh:<number> tariff:<number>`
+- `/indonesia toll`
+- `/indonesia holiday [year]`
+
+### Finance, Games, Community
+- `/finance transfer user:<user> amount:<amount>`
+- `/finance history`
+- `/finance leaderboard`
+- `/finance shop`
+- `/finance inventory`
+- `/finance streak`
+- `/finance bank amount:<amount>`
+- `/games number|trivia|wordchain|hangman|rps|dice|daily|leaderboard`
+- `/community poll|remind|suggest|profile|star`
+
+### EXP Profile Card
+`/utility level` now renders an SVG profile card containing EXP, level progress, streak, win count, and the highest JKT48 card rarity owned by the user.
+
+Current catalog: **150 features**.
