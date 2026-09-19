@@ -519,6 +519,11 @@ const deny=botControl.denyReason({guildId:i.guild?.id,userId:i.user.id});
     return i.reply({embeds:[embed('✅ Feed Ditambahkan',name+' → '+channel,{color:EMBED_COLORS.success})]});
    }
    if(sub==='remove'){const id=i.options.getInteger('id',true);const result=db.prepare('DELETE FROM feed_sources WHERE id=? AND guild_id=?').run(id,i.guild.id);return i.reply({embeds:[embed(result.changes?'🗑️ Feed Dihapus':'ℹ️ Feed Tidak Ditemukan',result.changes?'ID '+id:'Feed tersebut tidak ditemukan.',{color:result.changes?EMBED_COLORS.success:EMBED_COLORS.warning})]})}
+   if(sub==='health'){
+    const rows=feedService.health(i.guild.id);
+    const body=rows.length?rows.map(x=>'**#'+x.id+' '+x.name+'** • '+(x.healthy?'🟢 OK':'🔴 ERROR')+' • '+x.kind+' • '+(x.last_item_count||0)+' item'+(x.last_error?'\\nError: '+x.last_error:'')).join('\\n\\n'):'Belum ada feed.';
+    return i.reply({embeds:[embed('🩺 Feed Scraper Health',body.slice(0,3900),{color:rows.every(x=>x.healthy)?EMBED_COLORS.success:EMBED_COLORS.warning})]});
+   }
    if(sub==='test'){
     const id=i.options.getInteger('id',true),row=db.prepare('SELECT * FROM feed_sources WHERE id=? AND guild_id=?').get(id,i.guild.id);
     if(!row)return i.reply({embeds:[embed('❌ Feed Tidak Ditemukan','ID feed tersebut tidak tersedia.',{color:EMBED_COLORS.error})],ephemeral:true});
