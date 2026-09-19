@@ -16,8 +16,8 @@ function ensureGuildSecret(db,guildId){
  return secret;
 }
 
-function deriveCode(secret,nonce){
- const digest=crypto.createHmac('sha256',secret).update(nonce).digest();
+function deriveCode(secret,seed){
+ const digest=crypto.createHmac('sha256',secret).update(seed).digest();
  let out='';
  for(let i=0;i<CODE_LENGTH;i++)out+=CODE_ALPHABET[digest[i]%CODE_ALPHABET.length];
  return out;
@@ -51,14 +51,13 @@ export function createVerificationService({db,baseUrl}){
    createSession({guildId,userId}){
      const secret=ensureGuildSecret(db,guildId);
      const id=randomToken();
-     const nonce=randomToken();
-     const challenge=randomToken();
-     const code=deriveCode(secret,nonce);
+     const challenge=id;
+     const code=deriveCode(secret,id);
      const now=Date.now();
      const expiresAt=now+TTL_MS;
      db.prepare('UPDATE verification_sessions SET status=\'expired\' WHERE guild_id=? AND user_id=? AND status=\'pending\'').run(guildId,userId);
      db.prepare('INSERT INTO verification_sessions(id,guild_id,user_id,nonce_hash,challenge_hash,code_hash,issued_at,expires_at,attempts,status) VALUES(?,?,?,?,?,?,?,?,0,\'pending\')').run(
-       id,guildId,userId,hash(nonce),hash(challenge),hash(code),now,expiresAt
+       id,guildId,userId,hash(id),hash(challenge),hash(code),now,expiresAt
      );
      return {
        ticket:id,
@@ -91,8 +90,9 @@ export function createVerificationService({db,baseUrl}){
      const elapsed=Date.now()-Number(startedAt||0);
      if(elapsed<1000)throw new Error('Selesaikan verifikasi secara normal.');
      if(hash(challenge)!==row.challenge_hash)throw new Error('Challenge tidak valid.');
-     const code=db.prepare('SELECT code_hash FROM verification_sessions WHERE id=?').get(ticket);
-     return {ticket,codeHash:code.code_hash,expiresAt:row.expires_at};
+     const secret=db.prepare('SELECT secret FROM verification_guilds WHERE guild_id=?').get(row.guild_id)?.secret;
+     if(!secret)throw new Error('Secret server verifikasi tidak tersedia.');
+     return {ticket,code:deriveCode(secret,ticket),expiresAt:row.expires_at};
    },
 
    redeemCode({guildId,userId,code}){
