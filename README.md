@@ -78,6 +78,7 @@ Project/legal documentation:
 - [FEATURE REGISTRY](./docs/FEATURE-REGISTRY.md)
 - [VERIFICATION](./docs/VERIFICATION.md)
 - [STRUCTURE](./docs/STRUCTURE.md)
+- [INDONESIA DATA](./docs/INDONESIA-DATA.md)
 
 ## Current version
 
