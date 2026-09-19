@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("logs").setDescription("Atur channel log").setDefaultMemberPermissions("32");

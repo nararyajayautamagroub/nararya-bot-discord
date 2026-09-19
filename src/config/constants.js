@@ -1,0 +1,1 @@
+export const APP_NAME="Nararya Bot Discord";export const VERSION="2.0.0";export const XP_COOLDOWN_MS=60000;export const DAILY_COOLDOWN_MS=86400000;export const MAX_TICKET_PER_USER=3;

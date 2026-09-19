@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("poll").setDescription("Buat polling").addStringOption(o=>o.setName("question").setDescription("Pertanyaan").setRequired(true));

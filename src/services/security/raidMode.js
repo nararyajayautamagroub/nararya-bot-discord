@@ -1,0 +1,1 @@
+let active=new Set();export const enableRaidMode=id=>active.add(id);export const disableRaidMode=id=>active.delete(id);export const isRaidMode=id=>active.has(id);

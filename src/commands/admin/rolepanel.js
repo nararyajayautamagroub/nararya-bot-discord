@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("rolepanel").setDescription("Buat panel role").setDefaultMemberPermissions("268435456");

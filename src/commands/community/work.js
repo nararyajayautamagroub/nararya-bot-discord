@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("work").setDescription("Kerja dan dapat saldo");

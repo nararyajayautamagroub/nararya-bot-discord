@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("maintenance").setDescription("Atur maintenance").setDefaultMemberPermissions("32").addBooleanOption(o=>o.setName("enabled").setDescription("Aktif"));

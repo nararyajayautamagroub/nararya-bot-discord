@@ -1,0 +1,1 @@
+export async function safeInteraction(i,fn){try{return await fn()}catch(e){console.error(e);if(i.deferred||i.replied)return i.followUp({content:"Terjadi kesalahan.",ephemeral:true}).catch(()=>{});return i.reply({content:"Terjadi kesalahan.",ephemeral:true}).catch(()=>{})}}

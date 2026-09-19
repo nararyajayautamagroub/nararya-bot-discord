@@ -1,0 +1,1 @@
+export const featureEnabled=(settings,key)=>settings?.features?.[key]!==false;export function requireFeature(settings,key){if(!featureEnabled(settings,key))throw new Error("Fitur sedang dinonaktifkan.")}

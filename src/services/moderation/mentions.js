@@ -1,0 +1,1 @@
+export const mentionCount=m=>m?.mentions?.users?.size||0;export const isMentionSpam=(m,max=5)=>mentionCount(m)>=max;

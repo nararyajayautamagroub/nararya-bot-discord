@@ -1,0 +1,1 @@
+export const isSnowflake=x=>/^\\d{17,20}$/.test(String(x));export const clamp=(n,min,max)=>Math.min(max,Math.max(min,Number(n)));export const nonEmpty=x=>String(x||"").trim().length>0;

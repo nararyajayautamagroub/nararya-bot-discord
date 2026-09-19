@@ -1,0 +1,1 @@
+export function addWarning(db,guildId,userId,reason,moderatorId){return db.prepare("INSERT INTO warnings(guild_id,user_id,reason,moderator_id,created_at) VALUES(?,?,?,?,?)").run(guildId,userId,reason,moderatorId,Date.now())}export const warningCount=(db,g,u)=>db.prepare("SELECT COUNT(*) n FROM warnings WHERE guild_id=? AND user_id=?").get(g,u).n;

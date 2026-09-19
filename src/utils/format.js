@@ -1,0 +1,1 @@
+export const rupiah=n=>"Rp "+Number(n||0).toLocaleString("id-ID");export const truncate=(s,n=1000)=>String(s||"").length>n?String(s).slice(0,n-1)+"…":String(s||"");

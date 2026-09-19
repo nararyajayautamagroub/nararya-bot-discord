@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("config").setDescription("Atur konfigurasi server").setDefaultMemberPermissions("32");

@@ -1,0 +1,1 @@
+export const checkAnswer=(answer,correct)=>String(answer).trim().toLocaleLowerCase()===String(correct).trim().toLocaleLowerCase();

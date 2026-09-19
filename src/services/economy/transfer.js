@@ -1,0 +1,1 @@
+export function transfer(db,g,from,to,amount){const n=Math.floor(Number(amount));if(!Number.isFinite(n)||n<=0)throw new Error("Jumlah tidak valid");return db.transaction(()=>{const f=balance(db,g,from);if(f<n)throw new Error("Saldo tidak cukup");credit(db,g,from,-n);credit(db,g,to,n);return n})()}

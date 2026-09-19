@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("lock").setDescription("Kunci channel").setDefaultMemberPermissions("16").addBooleanOption(o=>o.setName("enabled").setDescription("Aktif"));

@@ -1,1 +1,1 @@
-export function reminderDue(reminder,now=Date.now()){return Boolean(reminder?.enabled&&reminder.run_at<=now)}
+export const reminderDue=(r,now=Date.now())=>Boolean(r?.enabled&&r.run_at<=now);

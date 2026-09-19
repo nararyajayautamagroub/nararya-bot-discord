@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("announce").setDescription("Kirim pengumuman").setDefaultMemberPermissions("8192").addStringOption(o=>o.setName("message").setDescription("Pesan").setRequired(true));

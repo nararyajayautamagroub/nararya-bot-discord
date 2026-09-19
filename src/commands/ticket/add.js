@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("ticket-add").setDescription("Tambah user ke ticket").addUserOption(o=>o.setName("user").setDescription("User").setRequired(true));

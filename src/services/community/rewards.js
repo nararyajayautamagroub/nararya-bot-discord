@@ -1,0 +1,1 @@
+export const rewardForLevel=level=>Math.max(0,Number(level))*100;

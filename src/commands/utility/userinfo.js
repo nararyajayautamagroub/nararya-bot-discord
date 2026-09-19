@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("userinfo").setDescription("Info user").addUserOption(o=>o.setName("user").setDescription("User"));

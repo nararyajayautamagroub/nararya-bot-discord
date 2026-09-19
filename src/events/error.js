@@ -1,0 +1,1 @@
+export function registerErrorEvents(client){client.on("error",e=>console.error("Discord client error",e));client.on("shardError",e=>console.error("Shard error",e))}

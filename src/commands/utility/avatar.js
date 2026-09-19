@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("avatar").setDescription("Lihat avatar").addUserOption(o=>o.setName("user").setDescription("User"));

@@ -1,0 +1,1 @@
+import {SlashCommandBuilder,PermissionFlagsBits} from "discord.js";export const data=new SlashCommandBuilder().setName("autorole").setDescription("Atur auto role").setDefaultMemberPermissions(PermissionFlagsBits.ManageRoles).addRoleOption(o=>o.setName("role").setDescription("Role").setRequired(true));

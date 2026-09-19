@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("raid").setDescription("Atur mode raid").setDefaultMemberPermissions("32").addBooleanOption(o=>o.setName("enabled").setDescription("Aktif").setRequired(true));

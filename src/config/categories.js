@@ -1,0 +1,1 @@
+export const TICKET_CATEGORIES=[{id:"support",label:"Support",emoji:"🛠️"},{id:"purchase",label:"Pembelian",emoji:"🛒"},{id:"report",label:"Report",emoji:"🚨"},{id:"partnership",label:"Partnership",emoji:"🤝"},{id:"appeal",label:"Appeal",emoji:"📨"}];

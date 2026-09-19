@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("clear").setDescription("Hapus pesan").setDefaultMemberPermissions("8192").addIntegerOption(o=>o.setName("amount").setDescription("Jumlah").setMinValue(1).setMaxValue(100).setRequired(true));

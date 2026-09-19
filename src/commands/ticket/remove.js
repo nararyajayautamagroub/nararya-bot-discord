@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("ticket-remove").setDescription("Hapus user dari ticket").addUserOption(o=>o.setName("user").setDescription("User").setRequired(true));

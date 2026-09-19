@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("play").setDescription("Putar musik").addStringOption(o=>o.setName("query").setDescription("URL atau pencarian").setRequired(true));

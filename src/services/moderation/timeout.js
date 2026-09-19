@@ -1,0 +1,1 @@
+export async function timeoutMember(member,duration,reason="Moderation"){if(!member?.moderatable)return false;await member.timeout(duration,reason);return true}

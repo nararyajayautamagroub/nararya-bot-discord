@@ -1,0 +1,1 @@
+export function leaderboard(db,guildId,limit=10){return db.prepare("SELECT user_id,xp,level FROM levels WHERE guild_id=? ORDER BY xp DESC LIMIT ?").all(guildId,limit)}

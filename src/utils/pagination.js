@@ -1,0 +1,1 @@
+export function page(items,page,size=10){const total=Math.max(1,Math.ceil(items.length/size));const p=Math.min(total,Math.max(1,page));return{page:p,total,items:items.slice((p-1)*size,p*size)}}

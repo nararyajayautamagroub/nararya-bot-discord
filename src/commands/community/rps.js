@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("rps").setDescription("Rock Paper Scissors").addStringOption(o=>o.setName("choice").setDescription("Pilihan").setRequired(true).addChoices({name:"Rock",value:"rock"},{name:"Paper",value:"paper"},{name:"Scissors",value:"scissors"}));

@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("whitelist").setDescription("Kelola whitelist").setDefaultMemberPermissions("32").addUserOption(o=>o.setName("user").setDescription("User").setRequired(true));

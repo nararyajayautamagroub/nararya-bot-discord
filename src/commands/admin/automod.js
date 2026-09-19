@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("automod").setDescription("Atur automod").setDefaultMemberPermissions("32").addBooleanOption(o=>o.setName("enabled").setDescription("Aktif").setRequired(true));

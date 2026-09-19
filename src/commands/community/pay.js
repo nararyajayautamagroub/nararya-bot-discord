@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("pay").setDescription("Kirim saldo").addUserOption(o=>o.setName("user").setDescription("Penerima").setRequired(true)).addIntegerOption(o=>o.setName("amount").setDescription("Jumlah").setMinValue(1).setRequired(true));

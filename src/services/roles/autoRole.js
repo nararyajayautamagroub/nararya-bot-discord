@@ -1,1 +1,1 @@
-export async function applyAutoRole(member,roleId){const role=member.guild.roles.cache.get(roleId);if(!role)return false;await member.roles.add(role).catch(()=>{});return true;}
+export async function applyAutoRole(member,roleId){const role=member.guild.roles.cache.get(roleId);if(!role)return false;await member.roles.add(role).catch(()=>{});return true}

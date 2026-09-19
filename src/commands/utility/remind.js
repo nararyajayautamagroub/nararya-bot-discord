@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("remind").setDescription("Buat pengingat").addIntegerOption(o=>o.setName("minutes").setDescription("Menit").setMinValue(1).setRequired(true)).addStringOption(o=>o.setName("message").setDescription("Pesan").setRequired(true));

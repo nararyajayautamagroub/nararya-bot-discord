@@ -1,0 +1,1 @@
+export const dailyAvailable=(last,now=Date.now())=>!last||now-last>=86400000;export const dailyReward=streak=>1000+Math.min(5000,Math.max(0,streak)*250);

@@ -1,0 +1,1 @@
+export class UserError extends Error{constructor(message){super(message);this.name="UserError"}}export function errorMessage(error){return error instanceof UserError?error.message:"Terjadi kesalahan internal."}

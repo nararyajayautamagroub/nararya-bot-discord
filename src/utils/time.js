@@ -1,0 +1,1 @@
+export const unixSeconds=ms=>Math.floor(ms/1000);export const discordTimestamp=ms=>`<t:${unixSeconds(ms)}:R>`;export const sleep=ms=>new Promise(r=>setTimeout(r,ms));

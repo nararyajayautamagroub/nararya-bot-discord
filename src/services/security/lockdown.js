@@ -1,0 +1,1 @@
+export async function setLockdown(channel,enabled){if(!channel?.permissionOverwrites)return false;await channel.permissionOverwrites.edit(channel.guild.roles.everyone,{SendMessages:enabled?false:null}).catch(()=>{});return true}

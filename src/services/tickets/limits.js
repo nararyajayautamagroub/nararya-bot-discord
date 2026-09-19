@@ -1,0 +1,1 @@
+export const canOpenTicket=(openCount,max=3)=>openCount<max;export const ticketCooldown=(last,now=Date.now(),ms=60000)=>!last||now-last>=ms;

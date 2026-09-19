@@ -1,0 +1,1 @@
+import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("afk").setDescription("Atur status AFK").addStringOption(o=>o.setName("message").setDescription("Pesan"));

@@ -1,0 +1,1 @@
+export function commandResult(content,ephemeral=true){return{content,ephemeral}}export function requireGuild(i){if(!i.guild)throw new Error("Command hanya dapat digunakan di server.")}

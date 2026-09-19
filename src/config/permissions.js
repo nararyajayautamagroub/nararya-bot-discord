@@ -1,0 +1,1 @@
+export const STAFF_PERMISSIONS=["ManageGuild","ManageMessages","ModerateMembers","KickMembers","BanMembers"];export const COMMAND_PERMISSION={warn:"ModerateMembers",timeout:"ModerateMembers",kick:"KickMembers",ban:"BanMembers",lock:"ManageChannels"};

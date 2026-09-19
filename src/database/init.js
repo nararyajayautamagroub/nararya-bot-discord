@@ -1,0 +1,1 @@
+import Database from "better-sqlite3";import {SCHEMA} from "./schema.js";export function openDatabase(path="./data/nararya.db"){const db=new Database(path);db.pragma("journal_mode=WAL");for(const sql of SCHEMA)db.exec(sql);return db}
