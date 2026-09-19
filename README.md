@@ -82,7 +82,7 @@ Project/legal documentation:
 
 ## Current version
 
-**v1.9.0** — 2026-09-19
+**v2.0.0** — 2026-09-19
 
 ### Modern command layout
 
@@ -198,4 +198,4 @@ Owner-only commands:
 - `/blacklistserver`
 - `/blacklistusers`
 
-`/settingbot` controls global maintenance mode and bot activity. Blacklists persist in the main database, block normal bot activity, and allow bot owners to bypass restrictions for recovery.
+`/settingbot` controls global maintenance mode, activity, and Playing-status rotation. The bot can rotate multiple Playing activities automatically. Blacklists persist in the main database, block normal bot activity, and allow bot owners to bypass restrictions for recovery.
