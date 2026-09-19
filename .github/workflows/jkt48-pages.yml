@@ -1,34 +1,49 @@
-name: JKT48 Website Build
+name: JKT48 Website
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - 'website/jkt48/**'
-      - '.github/workflows/jkt48-pages.yml'
+      - "website/jkt48/**"
+      - "src/utils/embeds.js"
+      - "test/jkt48-website.test.js"
+      - ".github/workflows/jkt48-pages.yml"
   pull_request:
     paths:
-      - 'website/jkt48/**'
-      - '.github/workflows/jkt48-pages.yml'
+      - "website/jkt48/**"
+      - "src/utils/embeds.js"
+      - "test/jkt48-website.test.js"
+      - ".github/workflows/jkt48-pages.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 concurrency:
-  group: jkt48-website-build
+  group: jkt48-pages
   cancel-in-progress: true
 
 jobs:
-  build:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Validate website JavaScript
-        run: node --check website/jkt48/app.js
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Validate JavaScript syntax
+        run: |
+          node --check website/jkt48/app.js
+          node --check src/utils/embeds.js
+
+      - name: Run repository tests
+        run: npm test
 
       - name: Validate required website assets
         run: |
@@ -43,16 +58,28 @@ jobs:
           grep -q 'class="hamburger"' website/jkt48/index.html
           grep -q -- '--red:#d71920' website/jkt48/style.css
           grep -q 'background:var(--white)' website/jkt48/style.css
+          grep -q 'prefers-reduced-motion' website/jkt48/style.css
+          grep -q 'setColor(EMBED_RED)' src/utils/embeds.js
 
-      - name: Build static artifact
-        run: |
-          rm -rf _site
-          mkdir -p _site
-          cp -R website/jkt48/. _site/
-          touch _site/.nojekyll
+  deploy:
+    if: github.event_name == "push" || github.event_name == "workflow_dispatch"
+    needs: validate
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
 
-      - name: Upload website artifact
-        uses: actions/upload-artifact@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
         with:
-          name: jkt48-center-website
-          path: _site
+          path: website/jkt48
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
