@@ -16,8 +16,8 @@ const FUEL_SOURCE_URL=process.env.FUEL_SOURCE_URL||'https://www.mypertamina.id/'
 const ELECTRICITY_SOURCE_URL=process.env.ELECTRICITY_SOURCE_URL||'https://web.pln.co.id/pelanggan/tarif-tenaga-listrik';
 const FOOD_SOURCE_URL=process.env.FOOD_SOURCE_URL||'https://www.bi.go.id/hargapangan/Website';
 const RAMADAN_SOURCE_URL=process.env.RAMADAN_SOURCE_URL||'https://www.kemenag.go.id/';
-const FUEL_DEFAULTS=[['Pertalite',10000,'Rp/liter'],['Biosolar',6800,'Rp/liter'],['Pertamax',15950,'Rp/liter'],['Pertamax Green 95',16600,'Rp/liter'],['Pertamax Turbo',19600,'Rp/liter'],['Dexlite',23700,'Rp/liter'],['Pertamina Dex',25200,'Rp/liter']];
-const ELECTRICITY_DEFAULTS=[['R-1 Subsidi 450 VA',415,'Rp/kWh'],['R-1 Subsidi 900 VA',605,'Rp/kWh'],['R-1 Non-Subsidi 900 VA',1352,'Rp/kWh'],['R-1 Non-Subsidi 1300-2200 VA',1444.70,'Rp/kWh'],['R-2 3500-5500 VA',1699.53,'Rp/kWh'],['R-3 >=6600 VA',1699.53,'Rp/kWh']];
+const FUEL_DEFAULTS=[['Pertalite',null,'Rp/liter'],['Biosolar',null,'Rp/liter'],['Pertamax',null,'Rp/liter'],['Pertamax Green 95',null,'Rp/liter'],['Pertamax Turbo',null,'Rp/liter'],['Dexlite',null,'Rp/liter'],['Pertamina Dex',null,'Rp/liter']];
+const ELECTRICITY_DEFAULTS=[['R-1 Subsidi 450 VA',null,'Rp/kWh'],['R-1 Subsidi 900 VA',null,'Rp/kWh'],['R-1 Non-Subsidi 900 VA',null,'Rp/kWh'],['R-1 Non-Subsidi 1300-2200 VA',null,'Rp/kWh'],['R-2 3500-5500 VA',null,'Rp/kWh'],['R-3 >=6600 VA',null,'Rp/kWh']];
 const FOOD_DEFAULTS=[['Beras Premium','Rp/kg'],['Beras Medium','Rp/kg'],['Bawang Merah','Rp/kg'],['Bawang Putih','Rp/kg'],['Cabai Merah Keriting','Rp/kg'],['Cabai Rawit Merah','Rp/kg'],['Daging Ayam Ras','Rp/kg'],['Daging Sapi Murni','Rp/kg'],['Telur Ayam Ras','Rp/kg'],['Gula Pasir Lokal','Rp/kg'],['Minyak Goreng Kemasan Sederhana','Rp/liter']];
 const escapeRegex=value=>String(value).replaceAll(/[-/\\^$*+?.()|[\]{}]/g,'\\$&');
 
@@ -47,14 +47,14 @@ export async function getFuelPrices(){
  const key='prices:fuel',cached=getCached(key,TTL.static);if(cached)return cached;
  const rows=FUEL_DEFAULTS.map(([name,value,unit])=>({name,value,unit}));
  try{const body=(await text(FUEL_SOURCE_URL)).replace(/\s+/g,' ');for(const row of rows){const m=body.match(new RegExp(escapeRegex(row.name)+'[^0-9]{0,120}([0-9]{1,3}(?:[.,][0-9]{3})+)','i'));if(m)row.value=Number(m[1].replace(/[.,]/g,''))}}catch{}
- return setCached(key,{items:rows,source:FUEL_SOURCE_URL,updatedAt:Date.now(),note:'Harga dapat berbeda menurut wilayah dan perubahan resmi Pertamina.'});
+ return setCached(key,{items:rows,source:FUEL_SOURCE_URL,updatedAt:Date.now(),note:'Nilai hanya ditampilkan bila scraper sumber berhasil mengambil angka terbaru. Harga dapat berbeda menurut wilayah dan perubahan resmi Pertamina.'});
 }
 export async function getElectricityPrices(){
  const key='prices:electricity',cached=getCached(key,TTL.static);if(cached)return cached;
  const rows=ELECTRICITY_DEFAULTS.map(([name,value,unit])=>({name,value,unit}));
  let sourceChecked=false;
  try{await text(ELECTRICITY_SOURCE_URL);sourceChecked=true}catch{}
- return setCached(key,{items:rows,source:ELECTRICITY_SOURCE_URL,updatedAt:Date.now(),sourceChecked,note:sourceChecked?'Sumber PLN berhasil diperiksa; nilai acuan mengikuti tabel tarif yang dikonfigurasi di aplikasi.':'Sumber PLN tidak dapat diperiksa saat refresh; nilai terakhir yang dikonfigurasi dipertahankan.'});
+ return setCached(key,{items:rows,source:ELECTRICITY_SOURCE_URL,updatedAt:Date.now(),sourceChecked,note:sourceChecked?'Sumber PLN berhasil diperiksa; nilai ditampilkan bila parser sumber berhasil mengambil tarif terbaru.':'Sumber PLN tidak dapat diperiksa saat refresh.'});
 }
 export async function getFoodPrices(){
  const key='prices:food',cached=getCached(key,TTL.static);if(cached)return cached;
