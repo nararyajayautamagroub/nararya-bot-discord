@@ -77,7 +77,7 @@ export async function runDataAudit({databases}){
  auditRunning=true;
  const started=Date.now(),runIdHolder={id:null};
  const primary=databases[0]?.db;
- if(!primary)throw new Error('No audit database configured.');
+ if(!primary){auditRunning=false;throw new Error('No audit database configured.');}
  ensureDataAuditTables(primary);
  const run=primary.prepare("INSERT INTO data_audit_runs(started_at,finished_at,status) VALUES(?,?,?)").run(started,null,'running');
  runIdHolder.id=run.lastInsertRowid;
