@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.8.0] - 2026-09-19
+
+### Help and Setup
+- Added `/help` with embedded feature catalog, category filters, and pagination.
+- Added `/setup overview`, `/setup welcome`, and `/setup log`.
+
+### Electronics Prices
+- Added `/electronics` with product category, keyword, and result-limit filters.
+- Added public electronics and audio scraper sources with 30-minute source refresh.
+- Supported categories include smartphone, laptop, tablet, TV, monitor, audio, camera, printer, router, storage, gaming, keyboard, mouse, smartwatch, and other electronics.
+- Source results include price, platform, product link, scan count, and update time.
+
+
 ## [1.7.1] - 2026-09-19
 
 ### Guild Welcome
