@@ -485,14 +485,13 @@ const deny=botControl.denyReason({guildId:i.guild?.id,userId:i.user.id});
     return i.reply({embeds:[embed('👥 Database JKT48','Data per generasi:\n'+rows.map(x=>'**Gen '+x.generation+'** • '+x.count+' member').join('\n'),{color:EMBED_COLORS.jkt48})]});
    }
    if(!group)return;
-   if(!jkt48ConnectConfigured())return i.reply({embeds:[embed('⚙️ JKT48Connect Belum Aktif','Fitur jadwal dan live membutuhkan **JKT48CONNECT_API_KEY** pada environment bot.',{color:EMBED_COLORS.warning})],ephemeral:true});
    try{
     if(group==='upcoming'){
-      const rows=await getUpcoming(type);
+      const rows=await getUpcoming(type,db);
       return i.reply({embeds:[embed('📅 Upcoming '+TYPE_LABELS[type],renderList(TYPE_LABELS[type],rows),{color:EMBED_COLORS.jkt48})]});
     }
     if(group==='latest'){
-      const rows=type==='live_showroom'?await getLatestPlatform('showroom'):type==='live_idn'?await getLatestPlatform('idn'):await getLatest(type);
+      const rows=type==='live_showroom'?await getLatestPlatform('showroom'):type==='live_idn'?await getLatestPlatform('idn'):await getLatest(type,db);
       return i.reply({embeds:[embed('🕘 Latest '+TYPE_LABELS[type],renderList(TYPE_LABELS[type],rows),{color:EMBED_COLORS.info})]});
     }
    }catch(e){
