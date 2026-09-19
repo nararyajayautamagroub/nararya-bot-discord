@@ -28,7 +28,7 @@ import {ensureDataAuditTables,runDataAudit,getAuditStatus} from './services/audi
 const db=new Database(process.env.DATABASE_PATH||'./data/nararya.db');
 db.pragma('journal_mode=WAL');
 db.exec(`
-CREATE TABLE IF NOT EXISTS jkt48_members(id TEXT PRIMARY KEY,name TEXT NOT NULL,nickname TEXT,generation INTEGER,virtual_generation INTEGER,status TEXT DEFAULT 'active',team TEXT,image_url TEXT,profile_url TEXT,join_date TEXT,graduation_date TEXT,showroom_url TEXT,idn_url TEXT,youtube_url TEXT,instagram_url TEXT,tiktok_url TEXT,x_url TEXT,updated_at INTEGER DEFAULT 0);\nCREATE TABLE IF NOT EXISTS guild_config(guild_id TEXT PRIMARY KEY,welcome_channel TEXT,goodbye_channel TEXT,log_channel TEXT,ticket_category TEXT,ticket_staff_role TEXT,feed_channel TEXT);
+CREATE TABLE IF NOT EXISTS jkt48_members(id TEXT PRIMARY KEY,name TEXT NOT NULL,nickname TEXT,generation INTEGER,virtual_generation INTEGER,status TEXT DEFAULT 'active',team TEXT,image_url TEXT,profile_url TEXT,join_date TEXT,graduation_date TEXT,showroom_url TEXT,idn_url TEXT,youtube_url TEXT,instagram_url TEXT,tiktok_url TEXT,x_url TEXT,updated_at INTEGER DEFAULT 0);\nCREATE TABLE IF NOT EXISTS guild_config(guild_id TEXT PRIMARY KEY,welcome_channel TEXT,goodbye_channel TEXT,log_channel TEXT,ticket_category TEXT,ticket_staff_role TEXT,feed_channel TEXT,welcome_sent_at INTEGER);
 CREATE TABLE IF NOT EXISTS feed_sources(id INTEGER PRIMARY KEY AUTOINCREMENT,guild_id TEXT,name TEXT,url TEXT,channel_id TEXT,kind TEXT DEFAULT 'public',enabled INTEGER DEFAULT 1);
 CREATE TABLE IF NOT EXISTS feed_items(source_id INTEGER,item_key TEXT,title TEXT,url TEXT,published_at INTEGER,PRIMARY KEY(source_id,item_key));
 CREATE TABLE IF NOT EXISTS levels(guild_id TEXT,user_id TEXT,xp INTEGER DEFAULT 0,level INTEGER DEFAULT 0,PRIMARY KEY(guild_id,user_id));
@@ -77,6 +77,39 @@ function addXp(m){
  const xp=(r?.xp||0)+5+Math.floor(Math.random()*8),lv=Math.floor(Math.sqrt(xp/100));
  if(r)db.prepare('UPDATE levels SET xp=?,level=? WHERE guild_id=? AND user_id=?').run(xp,lv,m.guild.id,m.author.id);
  else db.prepare('INSERT INTO levels(guild_id,user_id,xp,level) VALUES(?,?,?,?)').run(m.guild.id,m.author.id,xp,lv);
+}
+function findGuildWelcomeChannel(guild){
+ const system=guild.systemChannel;
+ if(system?.isTextBased()&&system.permissionsFor(client.user)?.has([PermissionFlagsBits.ViewChannel,PermissionFlagsBits.SendMessages]))return system;
+ const candidates=guild.channels.cache
+  .filter(ch=>ch.type===ChannelType.GuildText&&ch.viewable&&ch.permissionsFor(client.user)?.has([PermissionFlagsBits.ViewChannel,PermissionFlagsBits.SendMessages]))
+  .sort((a,b)=>a.rawPosition-b.rawPosition);
+ return candidates.first()||null;
+}
+async function sendGuildInviteWelcome(guild){
+ const channel=findGuildWelcomeChannel(guild);
+ if(!channel)return;
+ const existing=db.prepare('SELECT 1 FROM guild_config WHERE guild_id=?').get(guild.id);
+ if(existing?.welcome_sent_at)return;
+ db.prepare('INSERT INTO guild_config(guild_id,welcome_channel) VALUES(?,?) ON CONFLICT(guild_id) DO UPDATE SET welcome_channel=COALESCE(guild_config.welcome_channel,excluded.welcome_channel)').run(guild.id,channel.id);
+ await channel.send({
+  embeds:[embed('🤖 Terima kasih sudah mengundang BOT NARARYA GROUB',
+   'Halo **'+guild.name+'**! Saya sudah berhasil masuk ke server ini. 🎉\\n\\n'+
+   '**Fitur utama:**\\n'+
+   '• 📰 Berita Indonesia dan data publik\\n'+
+   '• 🚨 Monitoring gempa, tsunami, gunung api, dan bencana lain\\n'+
+   '• 🌍 Game Google Street View\\n'+
+   '• 🎴 JKT48 game, gacha, dan collection\\n'+
+   '• 🎬 Media downloader dan media tools\\n'+
+   '• 🔐 Sistem verifikasi\\n'+
+   '• 🌙 Ramadan, imsakiyah, sahur, dan buka puasa\\n'+
+   '• 🛠️ Audit scraper dan status sistem\\n\\n'+
+   'Mulai dengan **/bot info**, **/bot features**, atau **/status system**.\\n'+
+   'Untuk bantuan, gunakan **/support ticket**.',
+   {color:EMBED_COLORS.default}
+  )]
+ }).catch(()=>{});
+ db.prepare('UPDATE guild_config SET welcome_channel=?,welcome_sent_at=COALESCE(welcome_sent_at,?) WHERE guild_id=?').run(channel.id,Date.now(),guild.id);
 }
 async function openTicket(i){
  const cfg=db.prepare('SELECT * FROM guild_config WHERE guild_id=?').get(i.guild.id);
@@ -206,6 +239,15 @@ client.on('messageCreate',async m=>{
   }
  }
  const a=moderate(m);if(a?.delete)await m.delete().catch(()=>{});if(a?.timeout)await m.member.timeout(a.timeout,'Auto moderation').catch(()=>{});addXp(m)
+});
+client.on('guildCreate',async guild=>{
+ try{
+  db.prepare('INSERT OR IGNORE INTO guild_config(guild_id) VALUES(?)').run(guild.id);
+  await sendGuildInviteWelcome(guild);
+  console.log('[guildCreate] welcome sent for '+guild.name+' ('+guild.id+')');
+ }catch(error){
+  console.warn('[guildCreate] '+guild.id+' '+error.message);
+ }
 });
 client.on('guildMemberAdd',async m=>{const c=db.prepare('SELECT welcome_channel FROM guild_config WHERE guild_id=?').get(m.guild.id),ch=c?.welcome_channel?m.guild.channels.cache.get(c.welcome_channel):null;if(ch?.isTextBased())await ch.send({embeds:[embed('👋 Selamat datang','Selamat datang '+m.user.tag+'!')]})});
 client.on('guildMemberRemove',async m=>{const c=db.prepare('SELECT goodbye_channel FROM guild_config WHERE guild_id=?').get(m.guild.id),ch=c?.goodbye_channel?m.guild.channels.cache.get(c.goodbye_channel):null;if(ch?.isTextBased())await ch.send({embeds:[embed('👋 Sampai jumpa','Sampai jumpa '+m.user.tag+'.')]})});
