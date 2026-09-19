@@ -502,8 +502,10 @@ const deny=botControl.denyReason({guildId:i.guild?.id,userId:i.user.id});
   if(n==='feed'){
    const sub=i.options.getSubcommand(false);
    if(sub==='defaults'){
-    const channel=db.prepare('SELECT feed_channel FROM guild_config WHERE guild_id=?').get(i.guild.id)?.feed_channel;
-    if(!channel)return i.reply({embeds:[embed('⚙️ Feed Channel Belum Diatur','Atur feed channel terlebih dahulu melalui konfigurasi server.',{color:EMBED_COLORS.warning})],ephemeral:true});
+    const requestedChannel=i.options.getChannel('channel');
+    const channel=requestedChannel?.id||db.prepare('SELECT feed_channel FROM guild_config WHERE guild_id=?').get(i.guild.id)?.feed_channel;
+    if(!channel)return i.reply({embeds:[embed('⚙️ Feed Channel Belum Diatur','Pilih channel pada opsi **channel** atau atur feed channel pada konfigurasi server.',{color:EMBED_COLORS.warning})],ephemeral:true});
+    if(requestedChannel)db.prepare('INSERT INTO guild_config(guild_id,feed_channel) VALUES(?,?) ON CONFLICT(guild_id) DO UPDATE SET feed_channel=excluded.feed_channel').run(i.guild.id,channel);
     let added=0;
     for(const [id,label,kind,url] of DEFAULT_SOURCES){
      if(db.prepare('SELECT 1 FROM feed_sources WHERE guild_id=? AND url=?').get(i.guild.id,url))continue;
