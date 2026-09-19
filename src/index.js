@@ -511,8 +511,9 @@ const deny=botControl.denyReason({guildId:i.guild?.id,userId:i.user.id});
    }
    if(sub==='add'){
     const name=i.options.getString('name',true).trim(),url=i.options.getString('url',true).trim(),channel=i.options.getChannel('channel',true),kind=i.options.getString('kind',true);
-    if(!/^https?:\\/\\//i.test(url))return i.reply({embeds:[embed('❌ URL Tidak Valid','Gunakan URL publik http/https.',{color:EMBED_COLORS.error})],ephemeral:true});
-    new URL(url);
+    let parsedUrl;
+    try{parsedUrl=new URL(url);}catch{return i.reply({embeds:[embed('❌ URL Tidak Valid','Gunakan URL publik http/https.',{color:EMBED_COLORS.error})],ephemeral:true});}
+    if(parsedUrl.protocol!=='http:'&&parsedUrl.protocol!=='https:')return i.reply({embeds:[embed('❌ URL Tidak Valid','Gunakan URL publik http/https.',{color:EMBED_COLORS.error})],ephemeral:true});
     const exists=db.prepare('SELECT id FROM feed_sources WHERE guild_id=? AND url=?').get(i.guild.id,url);
     if(exists)return i.reply({embeds:[embed('ℹ️ Feed Sudah Ada','URL tersebut sudah terdaftar sebagai feed **#'+exists.id+'**.',{color:EMBED_COLORS.warning})],ephemeral:true});
     db.prepare('INSERT INTO feed_sources(guild_id,name,url,channel_id,kind,enabled) VALUES(?,?,?,?,?,1)').run(i.guild.id,name,url,channel.id,kind);
