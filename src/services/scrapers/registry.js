@@ -13,7 +13,7 @@ export const SCRAPER_REGISTRY=[
  {key:'disaster.bmkg.earthquake',url:'https://www.bmkg.go.id/gempabumi',intervalMs:60*1000,group:'disaster'},
  {key:'disaster.bmkg.tsunami',url:'https://www.bmkg.go.id/gempabumi/berpotensi-tsunami',intervalMs:60*1000,group:'disaster'},
  {key:'market.yahoo.idx',url:'https://query1.finance.yahoo.com/v8/finance/chart/BBCA.JK?range=1d&interval=1d',intervalMs:10*60*1000,group:'market'},
- {key:'streetview.google',url:'https://maps.googleapis.com/maps/api/streetview/metadata',intervalMs:10*60*1000,group:'game'},
+ {key:'streetview.google',url:'https://maps.googleapis.com/',intervalMs:10*60*1000,group:'game'},
  {key:'disaster.bnpb.weekly',url:'https://gis.bnpb.go.id/server/rest/services/Kejadian_Bencana_Mingguan/MapServer/25',intervalMs:5*60*1000,group:'disaster'},
  {key:'disaster.magma',url:'https://magma.esdm.go.id/',intervalMs:5*60*1000,group:'disaster'},
  {key:'ramadan.kemenag',url:'https://www.kemenag.go.id/',intervalMs:24*60*60*1000,group:'ramadan'},
