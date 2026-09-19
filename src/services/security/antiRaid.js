@@ -1,0 +1,1 @@
+const joins=new Map();export function registerJoin(guildId,limit=8,windowMs=30000){const n=Date.now(),a=(joins.get(guildId)||[]).filter(x=>n-x<windowMs);a.push(n);joins.set(guildId,a);return a.length>=limit;}

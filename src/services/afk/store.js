@@ -1,0 +1,1 @@
+const afk=new Map();export const setAFK=(id,text)=>afk.set(id,{text,at:Date.now()});export const getAFK=id=>afk.get(id);export const clearAFK=id=>afk.delete(id);

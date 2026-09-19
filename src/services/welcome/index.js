@@ -1,0 +1,1 @@
+export const welcomeText=m=>`Selamat datang <@${m.id}> di ${m.guild.name}! 🎉`;export const goodbyeText=m=>`Sampai jumpa ${m.user.tag}. 👋`;

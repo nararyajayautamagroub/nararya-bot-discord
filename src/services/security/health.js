@@ -1,0 +1,1 @@
+export function healthSnapshot(client,db){return{discordReady:client.isReady(),guilds:client.guilds.cache.size,database:!!db,uptime:Math.round(process.uptime())}}

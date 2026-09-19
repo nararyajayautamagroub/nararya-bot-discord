@@ -1,0 +1,1 @@
+export const formatTranscript=messages=>messages.map(m=>`[${new Date(m.createdTimestamp).toISOString()}] ${m.author?.tag||"unknown"}: ${m.content||"[attachment/embed]"}`).join("\n");

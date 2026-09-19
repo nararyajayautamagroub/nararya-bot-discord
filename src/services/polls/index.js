@@ -1,0 +1,1 @@
+export const pollOptions=options=>options.filter(Boolean).slice(0,10).map((x,i)=>`${i+1}. ${x}`).join("\n");

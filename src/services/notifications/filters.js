@@ -1,0 +1,1 @@
+export function filterItems(items,{keywords=[],exclude=[]}={}){return items.filter(x=>{const t=(x.title+" "+(x.description||"")).toLowerCase();return (!keywords.length||keywords.some(k=>t.includes(k.toLowerCase())))&&!exclude.some(k=>t.includes(k.toLowerCase()))})}

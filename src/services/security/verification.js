@@ -1,0 +1,1 @@
+export const buildVerificationConfig=({roleId,channelId}={})=>({roleId:roleId||null,channelId:channelId||null,enabled:Boolean(roleId&&channelId)});

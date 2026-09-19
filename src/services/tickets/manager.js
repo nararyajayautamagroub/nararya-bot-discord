@@ -1,0 +1,1 @@
+export const ticketName=(userId,n)=>`ticket-${n}-${String(userId).slice(-6)}`;export const validTicketStatus=s=>["open","claimed","closed","reopened"].includes(s)?s:"open";

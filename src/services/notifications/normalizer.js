@@ -1,0 +1,1 @@
+export function normalizeItem(item,source){return {key:item.key||item.url,title:String(item.title||"Update").replace(/\s+/g," ").slice(0,250),url:new URL(item.url||source.url,source.url).href,description:String(item.description||"Update baru terdeteksi.").slice(0,4000),publishedAt:item.publishedAt||Date.now(),thumbnail:item.thumbnail||null,source:source.name};}

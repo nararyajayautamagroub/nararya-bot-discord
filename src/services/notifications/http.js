@@ -1,0 +1,1 @@
+import {fetch} from "undici"; export async function getText(url,timeout=15000){const r=await fetch(url,{headers:{"user-agent":process.env.SCRAPER_USER_AGENT||"NararyaBotDiscord/2.0","accept":"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"},signal:AbortSignal.timeout(timeout)});if(!r.ok)throw new Error("HTTP "+r.status);return r.text();}

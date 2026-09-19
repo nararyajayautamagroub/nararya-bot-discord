@@ -1,0 +1,1 @@
+export function startNotificationScheduler(run,interval=120000){let busy=false;const tick=async()=>{if(busy)return;busy=true;try{await run()}finally{busy=false}};setTimeout(tick,5000);return setInterval(tick,Math.max(30000,interval));}

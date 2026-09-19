@@ -1,0 +1,1 @@
+export const xpForLevel=l=>l*l*100;export const levelFromXP=x=>Math.floor(Math.sqrt(Math.max(0,x)/100));export const progress=x=>{const l=levelFromXP(x);return{level:l,current:x-xpForLevel(l),next:xpForLevel(l+1)}};

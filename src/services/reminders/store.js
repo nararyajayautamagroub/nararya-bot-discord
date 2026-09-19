@@ -1,0 +1,1 @@
+export function reminderDue(reminder,now=Date.now()){return Boolean(reminder?.enabled&&reminder.run_at<=now)}

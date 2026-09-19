@@ -1,0 +1,1 @@
+const map=new Map();export function checkSpam(guildId,userId,limit=6,windowMs=8000){const k=guildId+":"+userId,n=Date.now(),a=(map.get(k)||[]).filter(x=>n-x<windowMs);a.push(n);map.set(k,a);return a.length>=limit;}

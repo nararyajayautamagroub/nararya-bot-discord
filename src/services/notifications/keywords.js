@@ -1,0 +1,1 @@
+export function matchesKeywords(text,keywords=[]){const s=String(text||"").toLocaleLowerCase("id-ID");return keywords.some(k=>s.includes(String(k).toLocaleLowerCase("id-ID")))}

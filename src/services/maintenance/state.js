@@ -1,0 +1,1 @@
+let enabled=false;export const setMaintenance=v=>enabled=Boolean(v);export const isMaintenance=()=>enabled;

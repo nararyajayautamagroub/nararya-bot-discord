@@ -1,0 +1,1 @@
+const queues=new Map();export function getQueue(guildId){if(!queues.has(guildId))queues.set(guildId,[]);return queues.get(guildId)}export function enqueue(guildId,item){getQueue(guildId).push(item);return getQueue(guildId)}

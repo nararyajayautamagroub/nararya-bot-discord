@@ -1,0 +1,1 @@
+export const DAILY_AMOUNT=1000;export const addBalance=(b,a)=>Math.max(0,Number(b||0)+Number(a||0));export const canClaimDaily=(last,now=Date.now())=>!last||now-last>=86400000;

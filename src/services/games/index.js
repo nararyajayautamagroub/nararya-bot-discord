@@ -1,0 +1,1 @@
+export const dice=()=>Math.floor(Math.random()*6)+1;export const coinflip=()=>Math.random()<.5?"heads":"tails";export const rps=(a,b)=>a===b?"draw":({rock:"scissors",scissors:"paper",paper:"rock"}[a]===b?"win":"lose");
