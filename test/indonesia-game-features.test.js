@@ -28,7 +28,7 @@ test('Street View is not registered as a JKT48 mode',()=>{
 });
 
 test('feature registry contains the current implemented catalog',()=>{
- assert.equal(FEATURE_REGISTRY.length,151);
+ assert.equal(FEATURE_REGISTRY.length,150);
 });
 
 test('electronics scraper exposes public category sources',()=>{
