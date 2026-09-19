@@ -67,10 +67,10 @@
 <label class="select-wrap"><span class="sr-only">Filter generasi</span><select id="generationFilter"><option value="all">Semua Generasi</option><option value="1">Generasi 1</option><option value="2">Generasi 2</option><option value="3">Generasi 3</option><option value="4">Generasi 4</option><option value="5">Generasi 5</option><option value="6">Generasi 6</option><option value="7">Generasi 7</option><option value="8">Generasi 8</option><option value="9">Generasi 9</option><option value="10">Generasi 10</option><option value="11">Generasi 11</option><option value="12">Generasi 12</option><option value="13">Generasi 13</option><option value="14">Generasi 14</option></select></label>
 <label class="select-wrap"><span class="sr-only">Filter status</span><select id="statusFilter"><option value="all">Semua Status</option><option value="active">Aktif</option><option value="graduated">Graduated</option><option value="historical">Historical</option></select></label>
 </div>
-<div class="member-meta"><span id="memberResultCount">0 member</span><span id="memberUpdatedAt">Belum dimuat</span></div>
+<div class="member-meta"><span id="memberResultCount">0 member</span><span id="memberUpdatedAt">Belum dimuat</span><button class="mini-button" id="refreshMembers" type="button">Refresh Data</button></div>
 <div class="member-grid" id="memberGrid" aria-live="polite"><article class="loading-card embed-card"><span class="loader"></span><p>Memuat data member...</p></article></div>
 <div class="empty-state hidden" id="memberEmpty"><strong>Data member tidak ditemukan.</strong><span>Coba kata kunci atau filter lain.</span></div>
-<div class="error-state hidden" id="memberError"><strong>Sumber data JKT48 tidak dapat dibaca.</strong><span id="memberErrorText">Periksa source URL yang dikonfigurasi pada bot.</span></div>
+<div class="pagination" id="memberPagination" aria-label="Pagination member"><button class="mini-button" id="prevMembers" type="button">← Sebelumnya</button><span id="memberPageLabel">Halaman 1</span><button class="mini-button" id="nextMembers" type="button">Berikutnya →</button></div><div class="error-state hidden" id="memberError"><strong>Sumber data JKT48 tidak dapat dibaca.</strong><span id="memberErrorText">Periksa source URL yang dikonfigurasi pada bot.</span></div>
 </section>
 <section class="section section-muted" id="games">
 <div class="section-heading"><div><span class="section-kicker">GAMES & CARDS</span><h2>Game JKT48</h2></div><p>Game dimainkan melalui Discord. Website menjadi pusat informasi dan panduan.</p></div>
