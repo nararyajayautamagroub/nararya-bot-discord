@@ -275,6 +275,8 @@ client.on('interactionCreate',async i=>{
     return i.reply({embeds:[embed('🗂️ Quiz Asset Database',body,{color:EMBED_COLORS.game})]});
    }
    if(sub==='gacha'){
+    const cooldown=gameCooldownLeft(i.guild.id,i.user.id);
+    if(cooldown)return i.reply({embeds:[embed('⏳ Cooldown Gacha','Tunggu **'+Math.ceil(cooldown/1000)+' detik** sebelum menggunakan game/gacha lagi.',{color:EMBED_COLORS.warning})],ephemeral:true});
     const members=db.prepare("SELECT id as key,name,image_url,generation,status FROM jkt48_members WHERE generation BETWEEN 1 AND 14 ORDER BY name").all();
     if(!members.length)return i.reply({embeds:[embed('🎴 Gacha Belum Siap','Database member generasi **1–14** belum tersedia. Sinkronisasi member perlu berhasil terlebih dahulu.',{color:EMBED_COLORS.warning})],ephemeral:true});
     const r=rollGacha(members); const key=r.member.key||r.member.name;
@@ -296,11 +298,28 @@ client.on('interactionCreate',async i=>{
     const rows=getLeaderboard(jkt48Dbs.quiz,i.guild.id);
     return i.reply({embeds:[embed('🏆 JKT48 Game Leaderboard',rows.length?rows.map((x,n)=>'#'+(n+1)+' <@'+x.user_id+'> • '+x.points+' poin • '+x.wins+' menang • '+x.games+' game').join('\\n'):'Belum ada skor.') ]});
    }
-   const mode=i.options.getString('mode',true),assets=getQuizAssets(jkt48Dbs.quiz,mode);
+   const mode=i.options.getString('mode',true);
+   const cooldown=gameCooldownLeft(i.guild.id,i.user.id);
+   if(cooldown)return i.reply({embeds:[embed('⏳ Game Cooldown','Tunggu **'+Math.ceil(cooldown/1000)+' detik** sebelum memainkan tebak-tebakan lagi.',{color:EMBED_COLORS.warning})],ephemeral:true});
+
+   if(mode==='streetView'){
+    try{
+      const question=await createStreetViewQuestion();
+      const rarity=rollRarity();
+      const active=startSession(jkt48Dbs.quiz,{guildId:i.guild.id,userId:i.user.id,channelId:i.channel.id,mode,answer:question.answers.join('|'),mediaUrl:question.mediaUrl,rarity,durationMs:QUIZ_TIMEOUT_MS});
+      scheduleQuizExpiry(active);
+      return i.reply({embeds:[embed('🌍 Tebak Lokasi Google Street View','Tebak **kota** dari foto Street View berikut.\\n\\n⏱️ Waktu menjawab: **1 menit**\\n🎴 Rarity: **'+(rarityInfo[rarity]?.label||rarity)+'**\\n\\nJawab langsung di channel ini.',{color:EMBED_COLORS.info,image:question.mediaUrl,fields:[{name:'Petunjuk',value:question.region||'Indonesia'}]})]});
+    }catch(e){
+      return i.reply({embeds:[embed('❌ Street View Tidak Tersedia',e.message,{color:EMBED_COLORS.error})],ephemeral:true});
+    }
+   }
+
+   const assets=getQuizAssets(jkt48Dbs.quiz,mode);
    if(!assets.length)return i.reply({embeds:[embed('🎯 Asset Game Kosong','Asset untuk mode **'+MODES[mode]+'** belum tersedia. Admin perlu menambah asset ke database quiz.',{color:EMBED_COLORS.warning})],ephemeral:true});
    const q=assets[0],rarity=q.rarity||rollRarity();
-   const active=startSession(jkt48Dbs.quiz,{guildId:i.guild.id,userId:i.user.id,channelId:i.channel.id,mode,answer:q.answer,mediaUrl:q.media_url,rarity,durationMs:Number(process.env.JKT48_QUIZ_TIMEOUT_MS||60000)});
-   return revealAnimation(i,{title:'🎯 '+MODES[mode],prefix:'🃏 **Challenge Card**\\n\\nBalas pesan ini dengan jawabanmu.\\n⏱️ Waktu: **'+Math.round((active.expires_at-active.started_at)/1000)+' detik**\\n\\n',rarity,finalDescription:'🃏 **Tantangan aktif**\\nMode: '+MODES[mode]+'\\nRarity: '+(rarityInfo[rarity]?.label||rarity)+'\\n⏱️ Jawab dalam **'+Math.round((active.expires_at-active.started_at)/1000)+' detik**.',finalImage:q.media_url||null});
+   const active=startSession(jkt48Dbs.quiz,{guildId:i.guild.id,userId:i.user.id,channelId:i.channel.id,mode,answer:q.answer,mediaUrl:q.media_url,rarity,durationMs:QUIZ_TIMEOUT_MS});
+   scheduleQuizExpiry(active);
+   return revealAnimation(i,{title:'🎯 '+MODES[mode],prefix:'🃏 **Challenge Card**\\n\\nBalas pesan ini dengan jawabanmu.\\n⏱️ Waktu: **1 menit**\\n\\n',rarity,finalDescription:'🃏 **Tantangan aktif**\\nMode: '+MODES[mode]+'\\nRarity: '+(rarityInfo[rarity]?.label||rarity)+'\\n⏱️ Jawab dalam **1 menit**.',finalImage:q.media_url||null});
   }
   if(n==='jkt48'){
    const group=i.options.getSubcommandGroup(false),type=i.options.getSubcommand(true);
