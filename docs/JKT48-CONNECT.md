@@ -35,7 +35,7 @@ Instagram and TikTok live detection is not claimed from generic HTML scraping. T
 ## Member datasets
 
 The member database also syncs these public datasets:
-- All members (used for generations 1-13): `https://raw.githubusercontent.com/FrenzY8/JKT48-Member/refs/heads/main/AllMember.json`
+- All members (used for generations 1-14): `https://raw.githubusercontent.com/FrenzY8/JKT48-Member/refs/heads/main/AllMember.json`
 - Active members: `https://raw.githubusercontent.com/FrenzY8/JKT48-Member/refs/heads/main/ActiveMember.json`
 
 Optional overrides:
@@ -43,4 +43,4 @@ Optional overrides:
 - `JKT48_ACTIVE_MEMBER_URL`
 - `JKT48_MEMBER_SYNC_INTERVAL_SECONDS` (default 21600)
 
-The bot stores normalized records in SQLite and uses the same member table for member lookup, generation listings, and JKT48 gacha data. The importer only accepts generations 1-13 for this dataset and marks members found in ActiveMember.json as active.
+The bot stores normalized records in SQLite and uses the same member table for member lookup, generation listings, and JKT48 gacha data. The importer only accepts generations 1-14 for this dataset and marks members found in ActiveMember.json as active.
