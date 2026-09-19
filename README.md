@@ -82,7 +82,7 @@ Project/legal documentation:
 
 ## Current version
 
-**v1.6.0** — 2026-09-19
+**v1.7.0** — 2026-09-19
 
 ### Modern command layout
 
@@ -141,3 +141,28 @@ New slash-command namespaces provide:
 - Automated sahur and iftar notifications.
 
 See [docs/INDONESIA-DATA.md](./docs/INDONESIA-DATA.md) for sources, refresh behavior, and limitations.
+
+
+## Data Integrity and Scrapers
+
+The repository now uses a centralized scraper registry for external data.
+
+The background integrity pipeline runs every 10 seconds:
+1. checks registered scraper URLs;
+2. scans all bot databases;
+3. re-checks stored URLs;
+4. compares each URL against the scraper registry;
+5. exempts configured JKT48 repository URLs;
+6. marks unknown sources as `missing_scraper`;
+7. suggests the appropriate scraper/API method.
+
+Use:
+- `/status system`
+- `/status scrapers`
+- `/status data`
+- `/status disasters`
+- `/status sources`
+
+News has a 24-hour background full refresh. Slash commands may refresh their own short-lived cache sooner.
+
+See [docs/SCRAPER-MATRIX.md](./docs/SCRAPER-MATRIX.md).
