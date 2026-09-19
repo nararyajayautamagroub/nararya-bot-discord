@@ -491,7 +491,7 @@ const deny=botControl.denyReason({guildId:i.guild?.id,userId:i.user.id});
       return i.reply({embeds:[embed('📅 Upcoming '+TYPE_LABELS[type],renderList(TYPE_LABELS[type],rows),{color:EMBED_COLORS.jkt48})]});
     }
     if(group==='latest'){
-      const rows=type==='live_showroom'?await getLatestPlatform('showroom'):type==='live_idn'?await getLatestPlatform('idn'):await getLatest(type,db);
+      const rows=type==='live_showroom'?await getLatestPlatform('showroom',db):type==='live_idn'?await getLatestPlatform('idn',db):await getLatest(type,db);
       return i.reply({embeds:[embed('🕘 Latest '+TYPE_LABELS[type],renderList(TYPE_LABELS[type],rows),{color:EMBED_COLORS.info})]});
     }
    }catch(e){
