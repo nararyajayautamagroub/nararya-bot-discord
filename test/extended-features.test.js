@@ -7,10 +7,10 @@ import {createExtendedFeatures} from "../src/services/extended-features.js";
 import {createXpCardSvg,createXpCardBuffer,levelFromXp,xpForLevel} from "../src/services/leveling/xp-card.js";
 import {createPresenceRotation} from "../src/services/presence-rotation.js";
 
-test("feature catalog reaches exactly 151",()=>{
+test("feature catalog reaches exactly 150",()=>{
  assert.equal(EXTENDED_FEATURES.length,89);
  assert.equal(FEATURE_REGISTRY.length,150);
- assert.equal(new Set(FEATURE_REGISTRY.map(x=>x.id)).size,151);
+ assert.equal(new Set(FEATURE_REGISTRY.map(x=>x.id)).size,150);
 });
 
 test("extended feature manager initializes persistent tables",()=>{
