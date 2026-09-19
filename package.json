@@ -1,6 +1,6 @@
 {
   "name":"nararya-bot-discord",
-  "version":"1.6.0",
+  "version":"1.7.0",
   "private":true,
   "type":"module",
   "scripts":{"start":"node src/index.js","dev":"node --watch src/index.js","deploy":"node src/deploy-commands.js","check":"tsc --noEmit","test":"node --test"},
