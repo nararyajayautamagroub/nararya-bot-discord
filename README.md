@@ -74,6 +74,10 @@ Project/legal documentation:
 - [LICENSE NOTICE](./LICENSE-NOTICE.md)
 - [TRADEMARK NOTICE](./TRADEMARK.md)
 - [VERSION](./VERSION.md)
+- [SECURITY](./SECURITY.md)
+- [FEATURE REGISTRY](./docs/FEATURE-REGISTRY.md)
+- [VERIFICATION](./docs/VERIFICATION.md)
+- [STRUCTURE](./docs/STRUCTURE.md)
 
 ## Current version
 
