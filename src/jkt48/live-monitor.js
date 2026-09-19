@@ -1,4 +1,5 @@
 import {allLive,recentLive,events,theater} from './connect.js';
+import {scrapeLivePage} from './adapters.js';
 const key=x=>String(x.data_id||x.id||x.stream_id||x.url||x.room_url||x.title||JSON.stringify(x));
 const label=x=>(x.member?.name||x.member_name||x.name||'JKT48')+' • '+String(x.platform||'live').toUpperCase();
 const membership=x=>x.is_members_only||x.members_only||x.membership_only||x.visibility==='members_only'?'🔒 Membership Live':'🌐 Public Live';
@@ -7,8 +8,22 @@ export function createJkt48Monitor({db,client,embed,interval=30000}){
  const get=k=>{const r=db.prepare('SELECT payload FROM jkt48_monitor_state WHERE kind=?').get(k);try{return r?JSON.parse(r.payload):[]}catch{return[]}};
  const set=(k,v)=>db.prepare('INSERT INTO jkt48_monitor_state(kind,payload,updated_at) VALUES(?,?,?) ON CONFLICT(kind) DO UPDATE SET payload=excluded.payload,updated_at=excluded.updated_at').run(k,JSON.stringify(v),Date.now());
  async function broadcast(e){for(const g of client.guilds.cache.values()){const id=db.prepare('SELECT feed_channel FROM guild_config WHERE guild_id=?').get(g.id)?.feed_channel;const ch=id?await client.channels.fetch(id).catch(()=>null):null;if(ch?.isTextBased())await ch.send({embeds:[e]}).catch(()=>{});}}
+ async function scrapeConfiguredLives(){
+  const rows=db.prepare("SELECT * FROM feed_sources WHERE enabled=1 AND kind IN ('idn','showroom','youtube','youtube-channel','jkt48-tv','tiktok','tiktok-member','instagram','instagram-member')").all();
+  const results=[];
+  for(const row of rows.slice(0,40)){
+   try{
+    const items=await scrapeLivePage(row.url,row.kind);
+    for(const x of items)results.push({...x,platform:row.kind,source_name:row.name,source_id:row.id});
+   }catch{}
+  }
+  return results;
+ }
  async function pollLive(){
-  const now=await allLive(),old=get('live_keys'),keys=now.map(key),misses=get('live_misses');
+  const apiLive=process.env.JKT48CONNECT_API_KEY?await allLive():[];
+  const scrapedLive=await scrapeConfiguredLives();
+  const now=[...apiLive,...scrapedLive].filter((x,index,arr)=>arr.findIndex(y=>key(y)===key(x))===index);
+  const old=get('live_keys'),keys=now.map(key),misses=get('live_misses');
   for(const x of now.filter(x=>!old.includes(key(x))))await broadcast(embed('🔴 START LIVE • '+label(x),membership(x)+'\nLive baru terdeteksi.\nPlatform: **'+String(x.platform||'').toUpperCase()+'**\n'+(x.room_url||x.url||x.stream_url||''),{color:0xEF4444,image:x.image||x.thumbnail||x.thumbnail_url}));
   const nextMisses={};
   for(const k of old){if(keys.includes(k))continue;const count=Number(misses[k]||0)+1;if(count>=2)await broadcast(embed('⚫ END LIVE','Siaran live dengan ID **'+k+'** terdeteksi sudah berakhir.',{color:0x64748B}));else nextMisses[k]=count;}
@@ -25,6 +40,6 @@ export function createJkt48Monitor({db,client,embed,interval=30000}){
   for(const x of fresh.slice(0,10))await broadcast(embed('✅ RECENT/LATEST '+(x.__kind==='event'?'EVENT':'THEATER'),'Acara yang sudah selesai terdeteksi.\n**'+(x.title||x.name||x.show_name||'JKT48')+'**\n'+(x.end_at||x.end_time||x.date_time||x.date||'-')+'\n'+(x.url||x.link||''),{color:0x22C55E,image:x.image||x.poster||x.thumbnail}));
   set('finished_keys',rows.slice(-100).map(key));
  }
- async function poll(){if(!process.env.JKT48CONNECT_API_KEY)return;try{await pollLive();await pollRecent();await pollFinished()}catch(e){console.warn('[jkt48-monitor] '+e.message)}}
+ async function poll(){try{await pollLive();if(process.env.JKT48CONNECT_API_KEY){await pollRecent();await pollFinished()}}catch(e){console.warn('[jkt48-monitor] '+e.message)}}
  return {poll,start(){poll();return setInterval(poll,Math.max(15000,interval))}};
 }
