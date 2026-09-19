@@ -24,6 +24,7 @@ import {getIndonesiaNews,getStockQuote,getFuelPrices,getElectricityPrices,getFoo
 import {createScraperOrchestrator} from './services/scrapers/orchestrator.js';
 import {DISASTER_URLS,ensureDisasterTables,refreshDisasterDatabase,recentDisasters,disasterStatus,configureDisaster,notifyDisasterConfigs} from './services/disasters/index.js';
 import {createAdditionalCommandHandler} from './services/additional-commands.js';
+import {ensureDataAuditTables,runDataAudit,getAuditStatus} from './services/audit/data-audit.js';
 
 const db=new Database(process.env.DATABASE_PATH||'./data/nararya.db');
 db.pragma('journal_mode=WAL');
@@ -44,10 +45,11 @@ CREATE TABLE IF NOT EXISTS ramadan_configs(guild_id TEXT PRIMARY KEY,city_id TEX
 `);
 ensureTables(db);
 const jkt48Dbs=createJkt48FeatureDatabases();
+ensureDataAuditTables(db);
 const mediaDbState=createMediaDatabase();
 ensureDisasterTables(db);
 const scraperOrchestrator=createScraperOrchestrator({db,onDataRefresh:async row=>{
- if(row.group_name==='disaster'){if(!globalThis.__nararyaDisasterRefreshAt||Date.now()-globalThis.__nararyaDisasterRefreshAt>=60*1000){globalThis.__nararyaDisasterRefreshAt=Date.now();await refreshDisasterDatabase({db})}return;}
+ if(row.group_name==='disaster'){if(!globalThis.__nararyaDisasterRefreshAt||Date.now()-globalThis.__nararyaDisasterRefreshAt>=60*1000){globalThis.__nararyaDisasterRefreshAt=Date.now();await refreshDisasterDatabase({db});await notifyDisasterConfigs({db,client,embed})}return;}
  if(row.key.startsWith('news.antaranews.')){const category=row.key.split('.').pop();await getIndonesiaNews(category,8);return;}
  if(row.key==='price.pertamina'){await getFuelPrices();return;}
  if(row.key==='price.pln'){await getElectricityPrices();return;}
@@ -96,6 +98,18 @@ function gameCooldownLeft(guildId,userId){const key=guildId+':'+userId,last=game
 function scheduleQuizExpiry(session){setTimeout(async()=>{const current=jkt48Dbs.quiz.prepare('SELECT * FROM quiz_sessions WHERE id=?').get(session.id);if(!current||current.status!=='active')return;if(current.expires_at>Date.now())return scheduleQuizExpiry({...current});finishSession(jkt48Dbs.quiz,current.id,'expired');recordResult(jkt48Dbs.quiz,{guildId:current.guild_id,userId:current.user_id,mode:current.mode,rarity:current.rarity,answer:current.answer,input:'[timeout]',correct:false,points:0,durationMs:QUIZ_TIMEOUT_MS});const ch=await client.channels.fetch(current.channel_id).catch(()=>null);if(ch?.isTextBased())await ch.send({embeds:[embed('⏰ Waktu Habis','Tantangan **'+current.mode+'** gagal karena tidak dijawab dalam **1 menit**. Coba lagi setelah cooldown.',{color:EMBED_COLORS.error})]}).catch(()=>{});},Math.max(100,current.expires_at-Date.now()+100));}
 function money(v){return Number.isFinite(Number(v))?'Rp'+Number(v).toLocaleString('id-ID'):'-';}
 const additionalCommandHandler=createAdditionalCommandHandler({db,jkt48QuizDb:jkt48Dbs.quiz,client,embed,gameCooldowns,gameCooldownMs:GAME_COOLDOWN_MS,quizTimeoutMs:QUIZ_TIMEOUT_MS,scraperOrchestrator,onQuizStarted:scheduleQuizExpiry});
+const auditDatabases=[
+ {name:'main',db},
+ {name:'media',db:mediaDbState.db},
+ {name:'jkt48-quiz',db:jkt48Dbs.quiz},
+ {name:'jkt48-gacha',db:jkt48Dbs.gacha},
+ {name:'jkt48-cards',db:jkt48Dbs.cards}
+];
+async function runDataPipelineCheck(){
+ try{await scraperOrchestrator.checkNow();return await runDataAudit({databases:auditDatabases});}
+ catch(error){console.warn('[data-audit] '+error.message);return null;}
+}
+
 async function sendIndonesiaDataRefresh(){return refreshIndonesiaCache().catch(error=>[{ok:false,error:error.message}]);}
 function jakartaClock(date=new Date()){
  const parts=new Intl.DateTimeFormat('en-GB',{timeZone:process.env.BOT_TIMEZONE||'Asia/Jakarta',hour12:false,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}).formatToParts(date);
@@ -414,6 +428,9 @@ client.on('interactionCreate',async i=>{
 });
 client.once('ready',async()=>{
  console.log('Nararya Bot Discord online as '+client.user.tag);
+ scraperOrchestrator.start();
+ void runDataPipelineCheck();
+ setInterval(()=>void runDataPipelineCheck(),10000);
  for(const g of client.guilds.cache.values()){
   const existing=db.prepare('SELECT COUNT(*) c FROM feed_sources WHERE guild_id=?').get(g.id)?.c||0;
   if(existing===0){const ch=db.prepare('SELECT feed_channel FROM guild_config WHERE guild_id=?').get(g.id)?.feed_channel;if(ch)for(const [name,label,kind,url] of DEFAULT_SOURCES)db.prepare('INSERT INTO feed_sources(guild_id,name,url,channel_id,kind,enabled) VALUES(?,?,?,?,?,1)').run(g.id,label,url,ch,kind)}
