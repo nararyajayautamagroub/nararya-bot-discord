@@ -9,6 +9,7 @@
 - `src/web/verification/` — verification HTTP server and static website.
 - `src/media/` — media database, download, service, and transforms.
 - `src/jkt48/` — JKT48 source synchronization, feed, live monitoring, and command service.
+- `src/services/indonesia/` — Indonesia news, stock, fuel, electricity, food, prayer, and Ramadan data adapters.
 - `src/services/games/jkt48/` — quiz, gacha, cards, rarity, and reveal subsystems.
 - `tools/media/` — Python helpers for media transforms.
 
@@ -28,6 +29,7 @@
 - `docs/FEATURE-REGISTRY.md` — detailed feature registry.
 - `docs/VERIFICATION.md` — verification deployment and flow.
 - `docs/MEDIA.md` — media subsystem requirements.
+- `docs/INDONESIA-DATA.md` — Indonesia data sources, cache policies, and Ramadan behavior.
 - `docs/JKT48-SOURCES.md` — JKT48 source mapping.
 
 ## Quality
