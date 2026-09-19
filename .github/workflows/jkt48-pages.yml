@@ -37,7 +37,7 @@ jobs:
         with:
           node-version: 22
 
-      - name: Validate JavaScript syntax
+      - name: Install dependencies\n        run: npm install\n\n      - name: Validate JavaScript syntax
         run: |
           node --check website/jkt48/app.js
           node --check src/utils/embeds.js
