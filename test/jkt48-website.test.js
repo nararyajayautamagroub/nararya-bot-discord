@@ -18,7 +18,7 @@ test('JKT48 website assets exist and contain required responsive controls',()=>{
   assert.match(html,/id="memberSearch"/);
   assert.match(css,/--red:#d71920/);
   assert.match(css,/background:var\(--white\)/);
-  assert.match(css,/\A?\.hamburger/.source);
+  assert.match(css,/\\.hamburger/);
   assert.match(css,/@media\(max-width:760px\)/);
   assert.match(js,/AllMember\.json/);
   assert.match(js,/ActiveMember\.json/);
