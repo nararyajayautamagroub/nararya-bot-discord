@@ -9,6 +9,25 @@ const ipHits=new Map();
 const WINDOW_MS=60_000;
 const MAX_REQUESTS_PER_WINDOW=60;
 
+function allowRequest(ip){
+ const now=Date.now();
+ const current=ipHits.get(ip);
+ if(!current||now-current.startedAt>=WINDOW_MS){
+  ipHits.set(ip,{startedAt:now,count:1});
+  return true;
+ }
+ current.count+=1;
+ return current.count<=MAX_REQUESTS_PER_WINDOW;
+}
+
+function pruneRateLimits(){
+ const cutoff=Date.now()-WINDOW_MS;
+ for(const [ip,row] of ipHits){
+  if(row.startedAt<cutoff)ipHits.delete(ip);
+ }
+}
+setInterval(pruneRateLimits,WINDOW_MS).unref?.();
+
 const json=(res,status,payload)=>{
  res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
  res.end(JSON.stringify(payload));
@@ -28,6 +47,8 @@ export function createVerificationWebServer({service,featureRegistry}){
 
  const server=http.createServer(async(req,res)=>{
    try{
+     const ip=String(req.headers['x-forwarded-for']||req.socket.remoteAddress||'unknown').split(',')[0].trim();
+     if(!allowRequest(ip))return json(res,429,{ok:false,error:'Terlalu banyak request. Coba lagi nanti.'});
      const url=new URL(req.url||'/',`http://${req.headers.host||'localhost'}`);
      if(req.method==='GET'&&url.pathname==='/health'){
        return json(res,200,{ok:true,service:'verification',version:process.env.npm_package_version||'1.6.0',verification:service.health()});
