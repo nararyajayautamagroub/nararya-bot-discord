@@ -4,20 +4,20 @@
 
 ~~~
 src/
-  config/
-  commands/
-  jkt48/
-  media/
-  music/
-  security/
-  services/
-  tools/
-  web/
-  index.js
-  deploy-commands.js
+ config/
+ commands/
+ jkt48/
+ media/
+ music/
+ security/
+ services/
+ tools/
+ web/
+ index.js
+ deploy-commands.js
 
 tools/
-  media/
+ media/
 
 test/
 docs/
