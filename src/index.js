@@ -123,7 +123,10 @@ async function checkRamadanNotifications(){
 client.on('messageCreate',async m=>{
  if(m.author.bot||!m.guild)return;
  const session=getActiveSession(jkt48Dbs.quiz,m.guild.id,m.author.id,m.channel.id);
- if(session){
+ if(session?.timed_out){
+  recordResult(jkt48Dbs.quiz,{guildId:session.guild_id,userId:session.user_id,mode:session.mode,rarity:session.rarity,answer:session.answer,input:'[timeout]',correct:false,points:0,durationMs:QUIZ_TIMEOUT_MS});
+  await m.channel.send({embeds:[embed('⏰ Waktu Habis','Tantangan **'+session.mode+'** gagal karena tidak dijawab dalam **1 menit**.',{color:EMBED_COLORS.error})]}).catch(()=>{});
+ }else if(session){
   const answers=session.answer.split(/\\s*[|;]\\s*/).map(x=>x.trim()).filter(Boolean);
   const correct=matches(m.content,answers);
   if(correct){
