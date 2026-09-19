@@ -14,7 +14,7 @@ const first=(...values)=>values.find(v=>v!==undefined&&v!==null&&text(v)!=='');
 function generationOf(m){
  const raw=first(m.generation,m.generation_number,m.gen,m.generasi,m.generationName,m.generasiName);
  if(typeof raw==='number')return Number.isInteger(raw)&&raw>=1&&raw<=13?raw:null;
- const match=text(raw).match(/(?:gen(?:eration)?|generasi)?\\s*([0-9]{1,2})/i);
+ const match=text(raw).match(/(?:gen(?:eration)?|generasi)?\s*([0-9]{1,2})/i);
  const n=match?Number(match[1]):null;
  return Number.isInteger(n)&&n>=1&&n<=13?n:null;
 }
