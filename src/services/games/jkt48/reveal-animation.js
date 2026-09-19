@@ -1,7 +1,7 @@
 import {rarityInfo} from './index.js';
 
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-const frame=(title,description,color)=>({title,description,color,timestamp:new Date().toISOString(),footer:{text:'PT NARARYA JAYA UTAMA GROUB - All Right Reserved'}});
+const frame=(title,description,color)=>({title,description,color,timestamp:new Date().toISOString(),author:{name:'BOT NARARYA GROUB'},footer:{text:'PT NARARYA JAYA UTAMA GROUB - All Right Reserved'}});
 
 async function animate(send,edit,{title='🎴 Card Reveal',prefix='',rarity,finalDescription,finalImage=null}){
  const info=rarityInfo[rarity]||rarityInfo.common;
