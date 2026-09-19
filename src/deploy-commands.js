@@ -174,6 +174,28 @@ const ramadan=new SlashCommandBuilder().setName('ramadan').setDescription('Ramad
  .addSubcommand(s=>s.setName('disable').setDescription('Matikan notifikasi Ramadan').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild))
  .addSubcommand(s=>s.setName('test').setDescription('Tes notifikasi Ramadan').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild));
 
+const help=new SlashCommandBuilder().setName('help').setDescription('Bantuan dan katalog semua fitur bot')
+ .addStringOption(o=>o.setName('category').setDescription('Filter kategori fitur').addChoices(
+  {name:'Semua',value:'all'},{name:'Discord',value:'Discord'},{name:'JKT48',value:'JKT48'},{name:'Notification',value:'Notification'},
+  {name:'Game',value:'Game'},{name:'Community',value:'Community'},{name:'Security',value:'Security'},{name:'Support',value:'Support'},
+  {name:'Media',value:'Media'},{name:'Developer',value:'Developer'},{name:'Indonesia',value:'Indonesia'},{name:'Ramadan',value:'Ramadan'}))
+ .addIntegerOption(o=>o.setName('page').setDescription('Halaman bantuan').setMinValue(1));
+
+const setup=new SlashCommandBuilder().setName('setup').setDescription('Konfigurasi fitur server')
+ .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+ .addSubcommand(s=>s.setName('overview').setDescription('Lihat seluruh status konfigurasi fitur'))
+ .addSubcommand(s=>s.setName('welcome').setDescription('Atur channel welcome/onboarding').addChannelOption(o=>o.setName('channel').setDescription('Channel welcome').addChannelTypes(ChannelType.GuildText).setRequired(true)))
+ .addSubcommand(s=>s.setName('log').setDescription('Atur channel log audit').addChannelOption(o=>o.setName('channel').setDescription('Channel log').addChannelTypes(ChannelType.GuildText).setRequired(true)));
+
+const electronics=new SlashCommandBuilder().setName('electronics').setDescription('Cek harga produk elektronik Indonesia')
+ .addStringOption(o=>o.setName('category').setDescription('Kategori elektronik').addChoices(
+  {name:'Semua',value:'all'},{name:'Smartphone',value:'smartphone'},{name:'Laptop',value:'laptop'},{name:'Tablet',value:'tablet'},
+  {name:'TV',value:'tv'},{name:'Monitor',value:'monitor'},{name:'Audio',value:'audio'},{name:'Kamera',value:'camera'},
+  {name:'Printer',value:'printer'},{name:'Router/WiFi',value:'router'},{name:'Storage',value:'storage'},{name:'Gaming',value:'gaming'},
+  {name:'Keyboard',value:'keyboard'},{name:'Mouse',value:'mouse'},{name:'Smartwatch',value:'smartwatch'},{name:'Lainnya',value:'other'}))
+ .addStringOption(o=>o.setName('query').setDescription('Nama atau model produk yang dicari'))
+ .addIntegerOption(o=>o.setName('limit').setDescription('Jumlah hasil 1-25').setMinValue(1).setMaxValue(25));
+
 const game=new SlashCommandBuilder().setName('game').setDescription('Game umum bot')
  .addSubcommand(s=>s.setName('streetview').setDescription('Tebak lokasi dari foto Google Street View'))
  .addSubcommand(s=>s.setName('status').setDescription('Lihat cooldown dan sesi game aktif'));
@@ -202,7 +224,7 @@ const upcoming=new SlashCommandBuilder().setName('upcoming').setDescription('Inf
  .addSubcommand(s=>s.setName('ramadan').setDescription('Perkiraan Ramadan berikutnya'))
  .addSubcommand(s=>s.setName('disasters').setDescription('Status peringatan bencana resmi'));
 
-const commands=[jkt48,jkt48game,sim,utility,economy,moderation,support,feed,media,verify,bot,news,market,prices,ramadan,game,disaster,status,upcoming];
+const commands=[jkt48,jkt48game,sim,utility,economy,moderation,support,feed,media,verify,bot,news,market,prices,ramadan,game,disaster,status,upcoming,help,setup,electronics];
 
 const rest=new REST({version:'10'}).setToken(process.env.DISCORD_TOKEN);
 await rest.put(Routes.applicationCommands(process.env.CLIENT_ID),{body:commands.map(x=>x.toJSON())});
