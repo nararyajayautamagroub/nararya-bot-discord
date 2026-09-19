@@ -83,3 +83,10 @@ Source cache policies:
 - Prayer schedule: 24 hours
 
 Data retrieval is best-effort. If a public page changes structure or becomes unavailable, the bot reports the source failure rather than pretending the value is current.
+
+
+## Electronics
+
+`/electronics` uses the public Bandingin.id electronics and audio catalog pages as an HTML scraper source. The command supports category and keyword filtering and returns product title, price, marketplace when detectable, and product URL.
+
+The source is registered for a 30-minute refresh interval. URL health remains part of the 10-second integrity checks.
