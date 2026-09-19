@@ -2,7 +2,7 @@
 
 Dokumen ini menjadi pintu masuk katalog fitur aktif. Registry sumber berada di `src/config/features.js`.
 
-Total fitur yang saat ini didaftarkan: **43**.
+Total fitur yang saat ini didaftarkan: **50**.
 
 Kategori:
 - Discord
@@ -17,6 +17,6 @@ Kategori:
 - Indonesia
 - Ramadan
 
-Lihat [FEATURE-REGISTRY.md](./FEATURE-REGISTRY.md) untuk daftar rinci dan [COMMANDS.md](./COMMANDS.md) untuk command yang terdaftar.
+JKT48 tetap menggunakan integrasi sumber/repository yang sudah ditentukan dan tidak dipaksa masuk ke generic scraper pipeline.
 
-Bot hanya mendokumentasikan fitur yang benar-benar diimplementasikan repository ini.
+Semua fitur lain yang mengambil data eksternal harus memiliki source contract atau scraper/API adapter. Lihat [SCRAPER-MATRIX.md](./SCRAPER-MATRIX.md) dan [FEATURE-REGISTRY.md](./FEATURE-REGISTRY.md).
