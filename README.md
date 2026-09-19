@@ -82,7 +82,7 @@ Project/legal documentation:
 
 ## Current version
 
-**v1.7.0** — 2026-09-19
+**v1.7.1** — 2026-09-19
 
 ### Modern command layout
 
@@ -166,3 +166,12 @@ Use:
 News has a 24-hour background full refresh. Slash commands may refresh their own short-lived cache sooner.
 
 See [docs/SCRAPER-MATRIX.md](./docs/SCRAPER-MATRIX.md).
+
+
+## Guild Invite Welcome
+
+Saat bot berhasil diundang ke server baru, bot otomatis mengirim satu pesan onboarding ke system channel server. Bila system channel tidak dapat digunakan, bot memilih text channel pertama yang bisa ditulis bot.
+
+Pesan mencakup ringkasan fitur utama dan command awal seperti `/bot info`, `/bot features`, `/status system`, dan `/support ticket`.
+
+Pengiriman dicatat pada `guild_config.welcome_sent_at`, sehingga pesan onboarding tidak dikirim ulang hanya karena bot restart.
