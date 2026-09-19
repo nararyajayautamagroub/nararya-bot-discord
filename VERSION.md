@@ -1,6 +1,6 @@
 # Version
 
-Current version: 2.1.0
+Current version: 2.1.2
 
 Release date: 2026-09-20
 
