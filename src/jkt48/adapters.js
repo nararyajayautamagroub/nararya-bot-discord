@@ -12,9 +12,7 @@ function hash(value){
 
 function absolute(base,value){return safePublicUrl(value,base)}
 
-function clean(value,max=900){
- return String(value||'').replace(/\s+/g,' ').trim().slice(0,max);
-}
+function clean(value,max=900){return cleanText(value,max)}
 
 function dateValue(value){
  return parseDate(value);
