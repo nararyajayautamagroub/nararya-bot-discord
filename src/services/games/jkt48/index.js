@@ -11,13 +11,13 @@ export const RARITIES=['common','uncommon','rare','epic','legendary','mythic','s
 export const WEIGHTS={common:.50,uncommon:.25,rare:.13,epic:.07,legendary:.035,mythic:.014,secret:.001};
 export const rarityEmoji={common:'⚪',uncommon:'🟢',rare:'🔵',epic:'🟣',legendary:'🟠',mythic:'🔴',secret:'🌈'};
 export const rarityInfo={
- common:{label:'Common',emoji:'⚪',color:0x94A3B8,multiplier:1.0},
- uncommon:{label:'Uncommon',emoji:'🟢',color:0x22C55E,multiplier:1.15},
- rare:{label:'Rare',emoji:'🔵',color:0x3B82F6,multiplier:1.35},
- epic:{label:'Epic',emoji:'🟣',color:0x8B5CF6,multiplier:1.6},
- legendary:{label:'Legendary',emoji:'🟠',color:0xF59E0B,multiplier:2.0},
- mythic:{label:'Mythic',emoji:'🔴',color:0xEF4444,multiplier:2.75},
- secret:{label:'Secret',emoji:'🌈',color:0xEC4899,multiplier:4.5}
+ common:{label:'Common',emoji:'⚪',color:0x94A3B8,multiplier:1.0,chance:50},
+ uncommon:{label:'Uncommon',emoji:'🟢',color:0x22C55E,multiplier:1.15,chance:25},
+ rare:{label:'Rare',emoji:'🔵',color:0x3B82F6,multiplier:1.35,chance:13},
+ epic:{label:'Epic',emoji:'🟣',color:0x8B5CF6,multiplier:1.6,chance:7},
+ legendary:{label:'Legendary',emoji:'🟠',color:0xF59E0B,multiplier:2.0,chance:3.5},
+ mythic:{label:'Mythic',emoji:'🔴',color:0xEF4444,multiplier:2.75,chance:1.4},
+ secret:{label:'Secret',emoji:'🌈',color:0xEC4899,multiplier:4.5,chance:0.1}
 };
 export function normalize(v=''){return v.normalize('NFKC').toLowerCase().replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim()}
 export function matches(input,answers=[]){const n=normalize(input);return answers.some(x=>normalize(x)===n)}
@@ -26,3 +26,6 @@ export function rollGacha(members=[]){const member=pick(members),rarity=rollRari
 export function pick(items=[]){return items.length?items[Math.floor(Math.random()*items.length)]:null}
 export function ensureTables(db){db.exec('CREATE TABLE IF NOT EXISTS jkt48_game_assets(id INTEGER PRIMARY KEY AUTOINCREMENT,kind TEXT NOT NULL,answer TEXT NOT NULL,media_url TEXT NOT NULL,active INTEGER DEFAULT 1);')}
 export function validMedia(url=''){try{return['http:','https:'].includes(new URL(url).protocol)}catch{return false}}
+
+export const rarityPercentage=Object.freeze(Object.fromEntries(Object.entries(rarityInfo).map(([key,value])=>[key,value.chance])));
+export function rarityLabel(rarity){const x=rarityInfo[rarity]||rarityInfo.common;return x.emoji+' **'+x.label+'** • '+x.chance+'%';}
