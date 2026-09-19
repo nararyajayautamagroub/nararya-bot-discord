@@ -1,0 +1,62 @@
+name: JKT48 Website Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'website/jkt48/**'
+      - '.github/workflows/jkt48-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-jkt48
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Validate website JavaScript
+        run: node --check website/jkt48/app.js
+
+      - name: Validate required website assets
+        run: |
+          test -f website/jkt48/index.html
+          test -f website/jkt48/style.css
+          test -f website/jkt48/app.js
+          test -f website/jkt48/README.md
+
+      - name: Build static site
+        run: |
+          rm -rf _site
+          mkdir -p _site
+          cp -R website/jkt48/. _site/
+          touch _site/.nojekyll
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+
+  deploy:
+    environment:
+      name: github-pages
+      url: \${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
