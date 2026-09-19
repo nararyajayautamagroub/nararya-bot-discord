@@ -1,1 +1,1 @@
-export const hasInvite=s=>/discord(?:app)?\\.com\\/invite\\//i.test(String(s||""));export const hasURL=s=>/https?:\\/\\//i.test(String(s||""));
+export const hasInvite=s=>/discord(?:app)?\.com\/invite\//i.test(String(s||""));export const hasURL=s=>/https?:\/\//i.test(String(s||""));
