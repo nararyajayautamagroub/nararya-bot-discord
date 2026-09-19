@@ -174,16 +174,21 @@ function memberCard(member,index){
   const image=member.image_url;
   const imageHtml=image?'<img src="'+escapeHtml(image)+'" alt="'+escapeHtml(member.name)+'" loading="lazy" decoding="async" referrerpolicy="no-referrer">':"";
   const status=member.status==="active"?"AKTIF":member.status==="graduated"?"GRADUATED":"HISTORICAL";
-  return '<article class="member-card embed-card" style="animation-delay:'+Math.min(index,11)*25+'ms">'+
-    '<div class="member-photo">'+imageHtml+'<div class="member-photo-fallback" '+(image?"hidden":"")+'>'+initials+"</div>"+
-    '<span class="member-status">'+status+"</span></div><div class="member-body">"+
-    '<h3 class="member-name">'+escapeHtml(member.name)+"</h3>"+
-    '<p class="member-nickname">'+escapeHtml(member.nickname||("JKT48 Generation "+(member.generation||"?")))+"</p>"+
-    '<div class="member-tags">'+(member.generation?'<span class="member-tag">GEN '+member.generation+"</span>":"")+(member.team?'<span class="member-tag">'+escapeHtml(member.team)+"</span>":"")+"</div>"+
-    '<div class="member-links">'+(member.profile_url?'<a href="'+escapeHtml(member.profile_url)+'" target="_blank" rel="noopener noreferrer">Profil</a>':"")+socialLinks(member)+"</div>"+
-    "</div></article>";
+  const profile=member.profile_url?'<a href="'+escapeHtml(member.profile_url)+'" target="_blank" rel="noopener noreferrer">Profil</a>':"";
+  const tags=(member.generation?'<span class="member-tag">GEN '+member.generation+"</span>":"")+
+    (member.team?'<span class="member-tag">'+escapeHtml(member.team)+"</span>":"");
+  return `<article class="member-card embed-card" style="animation-delay:${Math.min(index,11)*25}ms">
+    <div class="member-photo">${imageHtml}<div class="member-photo-fallback" ${image?"hidden":""}>${initials}</div>
+      <span class="member-status">${status}</span>
+    </div>
+    <div class="member-body">
+      <h3 class="member-name">${escapeHtml(member.name)}</h3>
+      <p class="member-nickname">${escapeHtml(member.nickname||("JKT48 Generation "+(member.generation||"?")))}</p>
+      <div class="member-tags">${tags}</div>
+      <div class="member-links">${profile}${socialLinks(member)}</div>
+    </div>
+  </article>`;
 }
-
 function filteredMembers(){
   const query=normalize($("#memberSearch")?.value);
   const generation=$("#generationFilter")?.value||"all";
