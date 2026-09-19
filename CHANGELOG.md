@@ -1,3 +1,14 @@
+## [2.0.0] - 2026-09-20
+
+### Stability and 150-Feature Expansion
+- Added 93 extended features, bringing the registry to 150.
+- Added EXP Profile Card rendering to `/utility level`.
+- Added JKT48 card rarity display to EXP cards.
+- Added Discord Playing status rotation with persistent owner configuration.
+- Added extended owner, security, server configuration, finance, games, and community command namespaces.
+- Added syntax validation to CI before the test suite.
+- Added extended security persistence, owner action audit storage, reminders, economy transaction history, game score storage, and runtime diagnostics.
+
 # Changelog
 
 ## [1.9.0] - 2026-09-19
