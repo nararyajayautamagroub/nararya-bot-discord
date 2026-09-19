@@ -65,7 +65,7 @@ export async function getPrayerSchedule(cityId,date=new Date()){
  if(!data.data?.jadwal)throw new Error('Jadwal sholat tidak tersedia.');
  return setCached(key,{location:data.data.lokasi,region:data.data.daerah,jadwal:data.data.jadwal,updatedAt:Date.now(),source:'MyQuran API'});
 }
-export function upcomingRamadan(){return{hijri:'1448 H',estimatedStart:'2027-02-08',estimatedEnd:'2027-03-09',nuzul:'2027-02-24',officialStatus:'Belum ditetapkan pemerintah Indonesia; keputusan awal Ramadan mengikuti Sidang Isbat Kementerian Agama.',source:RAMADAN_SOURCE_URL}}
+export function upcomingRamadan(){return{hijri:'1448 H',estimatedStart:process.env.RAMADAN_START_OVERRIDE||'2027-02-08',estimatedEnd:process.env.RAMADAN_END_OVERRIDE||'2027-03-09',nuzul:'2027-02-24',officialStatus:'Belum ditetapkan pemerintah Indonesia; keputusan awal Ramadan mengikuti Sidang Isbat Kementerian Agama.',source:RAMADAN_SOURCE_URL}}
 export async function refreshIndonesiaCache(){const jobs=[['news:latest',()=>getIndonesiaNews('latest',5)],['prices:fuel',()=>getFuelPrices()],['prices:electricity',()=>getElectricityPrices()],['prices:food',()=>getFoodPrices()]],result=[];for(const [key,fn] of jobs){try{await fn();result.push({key,ok:true,updatedAt:sourceStamp(key)||Date.now()})}catch(error){result.push({key,ok:false,error:error.message})}}return result}
 export const NEWS_CATEGORIES=Object.freeze(Object.keys(NEWS_FEEDS));
 export const DATA_SOURCES=Object.freeze({news:NEWS_FEEDS,fuel:FUEL_SOURCE_URL,electricity:ELECTRICITY_SOURCE_URL,food:FOOD_SOURCE_URL,ramadan:RAMADAN_SOURCE_URL,stock:'https://finance.yahoo.com/'});
