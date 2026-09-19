@@ -85,7 +85,8 @@ async function fetchSourceMembers(){
 async function fetchApiMembers(){
  if(!API_KEY)return [];
  try{
-  const u=new URL(API_BASE.replace(/\\/$/,'')+'/members');
+  const base=API_BASE.endsWith('/')?API_BASE.slice(0,-1):API_BASE;
+  const u=new URL(base+'/members');
   u.searchParams.set('apikey',API_KEY);u.searchParams.set('include_graduated','true');
   const res=await request(u,{headers:{accept:'application/json','user-agent':'Nararya-Bot-Discord/1.0'}});
   if(res.statusCode<200||res.statusCode>=300)return [];
