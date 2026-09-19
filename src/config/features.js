@@ -1,3 +1,4 @@
+import {EXTENDED_FEATURES} from "./extended-features.js";
 export const FEATURE_REGISTRY=[
  {id:'discord-commands',name:'Slash Command Registry',category:'Discord',description:'Namespace slash command terdaftar untuk JKT48, game, simulasi, utility, economy, moderation, support, feed, media, verification, dan developer tools.',status:'active'},
  {id:'jkt48-members',name:'JKT48 Member Database',category:'JKT48',description:'Sinkronisasi member generasi 1-14 dari sumber JSON publik.',status:'active'},
@@ -56,7 +57,7 @@ export const FEATURE_REGISTRY=[
  {id:'disaster-monitor',name:'Disaster Monitor',category:'Security',description:'Monitoring gempa, tsunami, gunung api, dan kejadian bencana umum dari sumber resmi.',status:'active'},
  {id:'disaster-notification',name:'Disaster Notification',category:'Security',description:'Notifikasi kejadian baru dengan lokasi dan sumber ke channel server.',status:'active'},
  {id:'system-status',name:'System Status',category:'Developer',description:'Slash command untuk runtime, database, scraper, audit, source, dan disaster status.',status:'active'}
-];
+].concat(EXTENDED_FEATURES);
 
 export function getFeatures({category}={}){
  const rows=category?FEATURE_REGISTRY.filter(x=>x.category.toLowerCase()===String(category).toLowerCase()):FEATURE_REGISTRY;
