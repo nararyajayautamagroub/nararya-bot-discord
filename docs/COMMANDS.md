@@ -100,3 +100,14 @@ npm run deploy
 ```
 
 Command registration is separate from starting the bot process.
+
+
+## Media
+
+- `/media download type:<video|audio|image> url:<url> [resolution] [format]`
+- `/media vocals [url|file] [format]`
+- `/media background type:<image|video> [url|file]`
+- `/media watermark type:<image|video> [url|file] x:<integer> y:<integer> width:<integer> height:<integer>`
+- `/media settings [resolution] [video_format] [audio_format]`
+
+Media operations are processed asynchronously from the Discord interaction perspective and return the generated file when it is within the configured upload limit.
