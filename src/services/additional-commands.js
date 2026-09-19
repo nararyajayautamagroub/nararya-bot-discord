@@ -5,7 +5,7 @@ import {getIndonesiaNews,getStockQuote,getFuelPrices,getElectricityPrices,getFoo
 import {AttachmentBuilder} from 'discord.js';
 import {DISASTER_URLS,recentDisasters,disasterStatus,configureDisaster} from './disasters/index.js';
 
-export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,gameCooldowns,gameCooldownMs,quizTimeoutMs,scraperOrchestrator,getAuditStatus}){
+export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,gameCooldowns,gameCooldownMs,quizTimeoutMs,scraperOrchestrator,getAuditStatus,onQuizStarted}){
  const cooldown=(guildId,userId)=>{
   const key=guildId+':'+userId;
   const last=gameCooldowns.get(key)||0;
