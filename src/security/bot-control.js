@@ -27,9 +27,9 @@ export function createBotControl({db,client}={}){
  const applicationOwnerIds=()=> {
   const owner=client?.application?.owner;
   if(!owner)return [];
+  if(owner.members?.map) return [...owner.members.keys()];
   if(owner.user) return [owner.user.id];
   if(owner.id) return [owner.id];
-  if(owner.members?.map) return [...owner.members.keys()];
   return [];
  };
 
