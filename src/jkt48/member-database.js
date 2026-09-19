@@ -1,18 +1,97 @@
 import {request} from 'undici';
 import {JKT48V_MEMBERS} from './jkt48v-members.js';
 
+const SOURCES={
+ all:process.env.JKT48_ALL_MEMBER_URL||'https://raw.githubusercontent.com/FrenzY8/JKT48-Member/refs/heads/main/AllMember.json',
+ active:process.env.JKT48_ACTIVE_MEMBER_URL||'https://raw.githubusercontent.com/FrenzY8/JKT48-Member/refs/heads/main/ActiveMember.json'
+};
 const API_BASE=process.env.JKT48CONNECT_BASE_URL||'https://v2.jkt48connect.com/api/jkt48';
 const API_KEY=process.env.JKT48CONNECT_API_KEY||'';
 
-async function fetchMembers(){
+const text=v=>String(v??'').trim();
+const norm=v=>text(v).toLowerCase().normalize('NFKC').replace(/[^a-z0-9]+/g,' ').trim();
+const first=(...values)=>values.find(v=>v!==undefined&&v!==null&&text(v)!=='');
+function generationOf(m){
+ const raw=first(m.generation,m.generation_number,m.gen,m.generasi,m.generationName,m.generasiName);
+ if(typeof raw==='number')return Number.isInteger(raw)&&raw>=1&&raw<=13?raw:null;
+ const match=text(raw).match(/(?:gen(?:eration)?|generasi)?\\s*([0-9]{1,2})/i);
+ const n=match?Number(match[1]):null;
+ return Number.isInteger(n)&&n>=1&&n<=13?n:null;
+}
+function arrayFrom(data){
+ if(Array.isArray(data))return data;
+ if(!data||typeof data!=='object')return [];
+ for(const key of ['data','members','results','items','all_members','active_members','AllMember','ActiveMember']){
+  if(Array.isArray(data[key]))return data[key];
+ }
+ const values=Object.values(data);
+ if(values.every(v=>v&&typeof v==='object'&&!Array.isArray(v)))return values;
+ return [];
+}
+function extractName(m){
+ if(typeof m==='string')return m.trim();
+ return text(first(m.name,m.member_name,m.memberName,m.nama,m.full_name,m.fullName,m.real_name,m.stage_name));
+}
+function memberRecord(raw,active=false){
+ if(typeof raw==='string')return {id:norm(raw),name:raw.trim(),active:true};
+ const name=extractName(raw);if(!name)return null;
+ const social=raw.social||raw.links||raw.accounts||{};
+ const image=first(raw.image_url,raw.image,raw.photo,raw.photo_url,raw.avatar,raw.img);
+ const profile=first(raw.profile_url,raw.profile,raw.url,raw.detail_url);
+ return {
+  id:text(first(raw.id,raw.member_id,raw.slug,raw.key))||norm(name),
+  name,
+  nickname:text(first(raw.nickname,raw.nicknames,raw.panggilan))||null,
+  generation:generationOf(raw),
+  status:active||raw.is_active===true||text(raw.status).toLowerCase()==='active'?'active':(raw.graduation_date||raw.graduated_at||text(raw.status).toLowerCase()==='graduated'?'graduated':'historical'),
+  team:text(first(raw.team,raw.team_name,raw.unit,raw.division))||null,
+  image_url:image||null,
+  profile_url:profile||null,
+  join_date:text(first(raw.join_date,raw.joined_at,raw.joining_date))||null,
+  graduation_date:text(first(raw.graduation_date,raw.graduated_at,raw.graduate_date))||null,
+  showroom_url:text(first(raw.showroom_url,raw.showroom,raw.showroom_id,social.showroom))||null,
+  idn_url:text(first(raw.idn_url,raw.idn,social.idn))||null,
+  youtube_url:text(first(raw.youtube_url,raw.youtube,raw.youtube_channel,social.youtube))||null,
+  instagram_url:text(first(raw.instagram_url,raw.instagram,social.instagram))||null,
+  tiktok_url:text(first(raw.tiktok_url,raw.tiktok,social.tiktok))||null,
+  x_url:text(first(raw.x_url,raw.twitter,raw.x,social.x,social.twitter))||null
+ };
+}
+async function fetchJson(url){
+ const res=await request(url,{method:'GET',headers:{accept:'application/json','user-agent':'Nararya-Bot-Discord/1.0'},maxRedirections:3});
+ if(res.statusCode<200||res.statusCode>=300)throw new Error('HTTP '+res.statusCode+' '+url);
+ return res.body.json();
+}
+async function fetchSourceMembers(){
+ const [allData,activeData]=await Promise.all([fetchJson(SOURCES.all),fetchJson(SOURCES.active)]);
+ const all=arrayFrom(allData).map(x=>memberRecord(x,false)).filter(Boolean);
+ const activeRows=arrayFrom(activeData).map(x=>memberRecord(x,true)).filter(Boolean);
+ const activeKeys=new Set(activeRows.flatMap(x=>[x.id,norm(x.name)]));
+ const merged=new Map();
+ for(const row of all){
+  if(row.generation===null||row.generation===undefined||row.generation<1||row.generation>13)continue;
+  const active=activeKeys.has(row.id)||activeKeys.has(norm(row.name));
+  merged.set(row.id,{...row,status:active?'active':row.status==='graduated'?'graduated':'historical'});
+ }
+ for(const row of activeRows){
+  if(!row.name)continue;
+  const id=row.id||norm(row.name);
+  const existing=merged.get(id)||merged.get(norm(row.name));
+  if(existing){merged.set(existing.id,{...existing,...row,generation:existing.generation??row.generation,status:'active'});}
+  else if(row.generation&&row.generation<=13)merged.set(id,row);
+ }
+ return [...merged.values()];
+}
+async function fetchApiMembers(){
  if(!API_KEY)return [];
- const u=new URL(API_BASE.replace(/\\/$/,'')+'/members');
- u.searchParams.set('apikey',API_KEY);
- u.searchParams.set('include_graduated','true');
- const res=await request(u,{headers:{accept:'application/json','user-agent':'Nararya-Bot-Discord/1.0'}});
- if(res.statusCode<200||res.statusCode>=300)throw new Error('Members API HTTP '+res.statusCode);
- const data=await res.body.json();
- return Array.isArray(data)?data:(data.data||data.members||[]);
+ try{
+  const u=new URL(API_BASE.replace(/\\/$/,'')+'/members');
+  u.searchParams.set('apikey',API_KEY);u.searchParams.set('include_graduated','true');
+  const res=await request(u,{headers:{accept:'application/json','user-agent':'Nararya-Bot-Discord/1.0'}});
+  if(res.statusCode<200||res.statusCode>=300)return [];
+  const data=await res.body.json();
+  return arrayFrom(data).map(x=>memberRecord(x,false)).filter(x=>x&&x.generation>=1&&x.generation<=13);
+ }catch{return []}
 }
 
 export async function syncMemberDatabase(db){
@@ -25,22 +104,19 @@ export async function syncMemberDatabase(db){
  );
  CREATE INDEX IF NOT EXISTS idx_jkt48_members_generation ON jkt48_members(generation);
  CREATE INDEX IF NOT EXISTS idx_jkt48_members_status ON jkt48_members(status);
- CREATE TABLE IF NOT EXISTS jkt48_virtual_members(
-  id TEXT PRIMARY KEY,name TEXT NOT NULL,cohort TEXT,status TEXT NOT NULL DEFAULT 'historical',
-  youtube_url TEXT,x_url TEXT,instagram_url TEXT,tiktok_url TEXT,graduation_date TEXT,updated_at INTEGER DEFAULT 0
- );
  `);
- const rows=await fetchMembers();
- if(rows.length){
-  const up=db.prepare(`INSERT INTO jkt48_members(id,name,nickname,generation,virtual_generation,status,team,image_url,profile_url,join_date,graduation_date,showroom_url,idn_url,youtube_url,instagram_url,tiktok_url,x_url,updated_at)
-  VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-  ON CONFLICT(id) DO UPDATE SET name=excluded.name,nickname=excluded.nickname,generation=excluded.generation,virtual_generation=excluded.virtual_generation,status=excluded.status,team=excluded.team,image_url=excluded.image_url,profile_url=excluded.profile_url,join_date=excluded.join_date,graduation_date=excluded.graduation_date,showroom_url=excluded.showroom_url,idn_url=excluded.idn_url,youtube_url=excluded.youtube_url,instagram_url=excluded.instagram_url,tiktok_url=excluded.tiktok_url,x_url=excluded.x_url,updated_at=excluded.updated_at`);
-  const tx=db.transaction(items=>{for(const m of items){const id=String(m.id||m.member_id||m.slug||m.name);up.run(id,m.name||'Unknown',m.nickname||null,Number(m.generation)||null,m.virtual_generation||null,m.is_active===true||m.status==='active'?'active':m.graduation_date?'graduated':(m.status||'historical'),m.team||null,m.image||m.image_url||m.photo||null,m.profile_url||m.url||null,m.join_date||null,m.graduation_date||null,m.showroom_url||m.showroom?.url||null,m.idn_url||m.idn?.url||null,m.youtube_url||m.youtube||null,m.instagram_url||m.instagram||null,m.tiktok_url||m.tiktok||null,m.x_url||m.twitter||m.x||null,Date.now())}});
-  tx(rows);
- }
- const uv=db.prepare(`INSERT INTO jkt48_virtual_members(id,name,cohort,status,youtube_url,x_url,instagram_url,tiktok_url,graduation_date,updated_at)
- VALUES(?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,cohort=excluded.cohort,status=excluded.status,youtube_url=excluded.youtube_url,x_url=excluded.x_url,instagram_url=excluded.instagram_url,tiktok_url=excluded.tiktok_url,graduation_date=excluded.graduation_date,updated_at=excluded.updated_at`);
- const tv=db.transaction(items=>{for(const m of items)uv.run(m.id,m.name,m.cohort,m.status,m.youtube_url||null,m.x_url||null,m.instagram_url||null,m.tiktok_url||null,m.graduation_date||null,Date.now())});
- tv(JKT48V_MEMBERS);
+ let rows=[];
+ try{rows=await fetchSourceMembers()}catch(error){console.warn('[jkt48-member-source] '+error.message);rows=await fetchApiMembers();}
+ if(!rows.length)return 0;
+ const up=db.prepare(`
+ INSERT INTO jkt48_members(id,name,nickname,generation,virtual_generation,status,team,image_url,profile_url,join_date,graduation_date,showroom_url,idn_url,youtube_url,instagram_url,tiktok_url,x_url,updated_at)
+ VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+ ON CONFLICT(id) DO UPDATE SET name=excluded.name,nickname=excluded.nickname,generation=excluded.generation,status=excluded.status,team=excluded.team,image_url=excluded.image_url,profile_url=excluded.profile_url,join_date=excluded.join_date,graduation_date=excluded.graduation_date,showroom_url=excluded.showroom_url,idn_url=excluded.idn_url,youtube_url=excluded.youtube_url,instagram_url=excluded.instagram_url,tiktok_url=excluded.tiktok_url,x_url=excluded.x_url,updated_at=excluded.updated_at
+ `);
+ const tx=db.transaction(items=>{for(const m of items)up.run(m.id,m.name,m.nickname,m.generation,null,m.status,m.team,m.image_url,m.profile_url,m.join_date,m.graduation_date,m.showroom_url,m.idn_url,m.youtube_url,m.instagram_url,m.tiktok_url,m.x_url,Date.now())});
+ tx(rows);
  return rows.length;
 }
+
+export {SOURCES};
+export const virtualMembers=()=>JKT48V_MEMBERS;
