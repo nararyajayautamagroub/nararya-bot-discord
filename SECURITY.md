@@ -56,3 +56,8 @@ Session verifikasi sebaiknya dibersihkan secara berkala. Database produksi harus
 ## Dependency Security
 
 Jalankan audit dependency dan pertahankan yt-dlp, FFmpeg, Python packages, Node.js, dan dependency aplikasi pada versi yang masih didukung.
+
+
+## API Keys
+
+Treat `GOOGLE_MAPS_API_KEY` and any future market/data provider API keys as secrets. Restrict Google Maps keys to the APIs and applications required by the deployment, and never expose them in frontend source, Discord messages, logs, or public repository files.
