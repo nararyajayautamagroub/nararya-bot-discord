@@ -32,6 +32,7 @@ const feed=new SlashCommandBuilder().setName('feed').setDescription('Kelola sumb
    {name:'JKT48 TV',value:'jkt48-tv'},{name:'Costume YouTube',value:'costume-youtube'},
    {name:'Costume Instagram',value:'costume-instagram'},{name:'Costume TikTok',value:'costume-tiktok'})))
  .addSubcommand(s=>s.setName('defaults').setDescription('Pasang semua sumber JKT48 dari registry ke channel'))
+ .addSubcommand(s=>s.setName('health').setDescription('Lihat kesehatan scraper feed'))
  .addSubcommand(s=>s.setName('remove').setDescription('Hapus feed').addIntegerOption(o=>o.setName('id').setDescription('ID feed').setRequired(true)))
  .addSubcommand(s=>s.setName('test').setDescription('Tes scraper feed').addIntegerOption(o=>o.setName('id').setDescription('ID feed').setRequired(true)));
 
