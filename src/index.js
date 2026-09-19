@@ -17,10 +17,14 @@ CREATE TABLE IF NOT EXISTS levels(guild_id TEXT,user_id TEXT,xp INTEGER DEFAULT 
 CREATE TABLE IF NOT EXISTS economy(guild_id TEXT,user_id TEXT,balance INTEGER DEFAULT 0,daily_at INTEGER DEFAULT 0,PRIMARY KEY(guild_id,user_id));
 CREATE TABLE IF NOT EXISTS warnings(id INTEGER PRIMARY KEY AUTOINCREMENT,guild_id TEXT,user_id TEXT,reason TEXT,moderator_id TEXT,created_at INTEGER);
 CREATE TABLE IF NOT EXISTS tickets(id INTEGER PRIMARY KEY AUTOINCREMENT,guild_id TEXT,channel_id TEXT,user_id TEXT,status TEXT DEFAULT 'open',claimed_by TEXT,created_at INTEGER,closed_at INTEGER);
+CREATE TABLE IF NOT EXISTS tycoon(guild_id TEXT,user_id TEXT,money INTEGER DEFAULT 10000,bank INTEGER DEFAULT 0,energy INTEGER DEFAULT 100,city_level INTEGER DEFAULT 1,fish_level INTEGER DEFAULT 1,daily_at INTEGER DEFAULT 0,gacha_count INTEGER DEFAULT 0,PRIMARY KEY(guild_id,user_id));
+CREATE TABLE IF NOT EXISTS shop_items(id TEXT PRIMARY KEY,name TEXT NOT NULL,price INTEGER NOT NULL,category TEXT NOT NULL,stock INTEGER DEFAULT -1);
+CREATE TABLE IF NOT EXISTS owned_items(guild_id TEXT,user_id TEXT,item_id TEXT,qty INTEGER DEFAULT 1,PRIMARY KEY(guild_id,user_id,item_id));
+
 `);
 ensureTables(db);
 try{db.prepare('ALTER TABLE feed_sources ADD COLUMN kind TEXT DEFAULT "public"').run()}catch{}
-const embed=(title,description='',opts={})=>{const e=new EmbedBuilder().setTitle(title).setDescription(description).setTimestamp().setFooter({text:'Nararya Bot Discord'});if(opts.url)e.setURL(opts.url);if(opts.image)e.setThumbnail(opts.image);return e};
+const embed=(title,description='',opts={})=>{const e=new EmbedBuilder().setTitle(title).setDescription(description).setTimestamp().setAuthor({name:'BOT NARARYA GROUB'}).setFooter({text:'PT NARARYA JAYA UTAMA GROUB - All Right Reserved'});if(opts.url)e.setURL(opts.url);if(opts.image)e.setThumbnail(opts.image);return e};
 const feedEmbed=x=>embed('📡 '+x.sourceName,x.description||'Update baru terdeteksi.',{url:x.url,image:x.image});
 const client=new Client({intents:[GatewayIntentBits.Guilds,GatewayIntentBits.GuildMembers,GatewayIntentBits.GuildMessages,GatewayIntentBits.MessageContent,GatewayIntentBits.GuildVoiceStates,GatewayIntentBits.GuildModeration],partials:[Partials.Channel,Partials.Message]});
 const recent=new Map();
@@ -56,6 +60,18 @@ client.on('interactionCreate',async i=>{
   if(i.isButton()&&i.customId==='ticket-close'){db.prepare("UPDATE tickets SET status='closed',closed_at=? WHERE channel_id=? AND status='open'").run(Date.now(),i.channel.id);await i.reply({embeds:[embed('🔒 Ticket Ditutup','Ticket ditandai closed.')]});return i.channel.permissionOverwrites.edit(i.user.id,{SendMessages:false}).catch(()=>{})}
   if(!i.isChatInputCommand())return;
   const n=i.commandName;
+
+  if(n==='sim'){
+   const sub=i.options.getSubcommand(true),uid=i.user.id,gid=i.guild.id;
+   db.prepare('INSERT OR IGNORE INTO tycoon(guild_id,user_id) VALUES(?,?)').run(gid,uid);
+   let p=db.prepare('SELECT * FROM tycoon WHERE guild_id=? AND user_id=?').get(gid,uid);
+   if(sub==='profile')return i.reply({embeds:[embed('🏙️ Profil Simulasi','💰 Cash: Rp'+p.money.toLocaleString('id-ID')+'\\n🏦 Bank: Rp'+p.bank.toLocaleString('id-ID')+'\\n🏙️ Kota Lv.'+p.city_level+'\\n🎣 Pancing Lv.'+p.fish_level)]});
+   if(sub==='daily'){if(Date.now()-p.daily_at<86400000)return i.reply({content:'Daily reward sudah diambil hari ini.',ephemeral:true});db.prepare('UPDATE tycoon SET money=money+50000,daily_at=? WHERE guild_id=? AND user_id=?').run(Date.now(),gid,uid);return i.reply({embeds:[embed('🎁 Daily Reward','Kamu mendapatkan **Rp50.000**!')]})}
+   if(sub==='bank'){const amount=i.options.getInteger('amount',true);if(amount<=0||amount>p.money)return i.reply({content:'Jumlah tidak valid.',ephemeral:true});db.prepare('UPDATE tycoon SET money=money-?,bank=bank+? WHERE guild_id=? AND user_id=?').run(amount,amount,gid,uid);return i.reply({content:'🏦 Deposit berhasil: Rp'+amount.toLocaleString('id-ID')})}
+   if(sub==='fish'){const gain=5000+p.fish_level*1000;db.prepare('UPDATE tycoon SET money=money+?,energy=MAX(0,energy-10) WHERE guild_id=? AND user_id=?').run(gain,gid,uid);return i.reply({content:'🎣 Kamu memancing dan mendapat Rp'+gain.toLocaleString('id-ID')+' dari hasil tangkapan.'})}
+   if(sub==='build'){const cost=25000*p.city_level;if(p.money<cost)return i.reply({content:'💸 Uang tidak cukup. Kota memang mahal, manusia suka beton.',ephemeral:true});db.prepare('UPDATE tycoon SET money=money-?,city_level=city_level+1 WHERE guild_id=? AND user_id=?').run(cost,gid,uid);return i.reply({content:'🏗️ Kota naik ke Level '+(p.city_level+1)+'!'})}
+   if(sub==='gacha'){if(p.gacha_count>=10)return i.reply({content:'🎴 Batas gacha 10 kali per hari sudah tercapai.',ephemeral:true});const members=JSON.parse(process.env.JKT48_GACHA_MEMBERS_JSON||'[]');if(!members.length)return i.reply({content:'Gacha member belum dikonfigurasi.',ephemeral:true});const r=rollGacha(members);db.prepare('UPDATE tycoon SET gacha_count=gacha_count+1,money=MAX(0,money-10000) WHERE guild_id=? AND user_id=?').run(gid,uid);return i.reply({embeds:[embed('🎴 Gacha Member JKT48',r.emoji+' **'+r.rarity.toUpperCase()+'**\\n'+(r.member.name||r.member.key))]})}
+  }
   if(n==='jkt48game'){
    const sub=i.options.getSubcommand(true);
    if(sub==='gacha'){
