@@ -5,3 +5,7 @@ data/*.db
 data/*.db-*
 coverage/
 .DS_Store
+
+data/**/*.db
+data/**/*.db-*
+data/media/jobs/
