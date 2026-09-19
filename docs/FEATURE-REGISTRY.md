@@ -2,7 +2,7 @@
 
 Daftar fitur aktif bot berasal dari `src/config/features.js`.
 
-## 57 fitur aktif
+## 151 fitur aktif
 
 ### Discord
 1. Slash Command Registry
@@ -201,5 +201,6 @@ See [INDONESIA-DATA.md](./INDONESIA-DATA.md) for data-source details.
 148. **Suggestion System** — Server suggestion box.
 149. **Starboard** — Starboard entries.
 150. **User Profile Card** — EXP profile card with streak and card rarity.
+151. **Restaurant Menu Prices** — Agregasi menu dan harga restoran publik Indonesia melalui MenuKuliner.net dengan pencarian, filter, pagination, cache, dan refresh.
 
-Total active features: **150**.
+Total active features: **151**.
