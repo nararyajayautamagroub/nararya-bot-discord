@@ -174,7 +174,35 @@ const ramadan=new SlashCommandBuilder().setName('ramadan').setDescription('Ramad
  .addSubcommand(s=>s.setName('disable').setDescription('Matikan notifikasi Ramadan').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild))
  .addSubcommand(s=>s.setName('test').setDescription('Tes notifikasi Ramadan').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild));
 
-const commands=[jkt48,jkt48game,sim,utility,economy,moderation,support,feed,media,verify,bot,news,market,prices,ramadan];
+const game=new SlashCommandBuilder().setName('game').setDescription('Game umum bot')
+ .addSubcommand(s=>s.setName('streetview').setDescription('Tebak lokasi dari foto Google Street View'))
+ .addSubcommand(s=>s.setName('status').setDescription('Lihat cooldown dan sesi game aktif'));
+
+const disaster=new SlashCommandBuilder().setName('disaster').setDescription('Informasi kebencanaan Indonesia')
+ .addSubcommand(s=>s.setName('status').setDescription('Status sumber dan kejadian bencana terbaru'))
+ .addSubcommand(s=>s.setName('latest').setDescription('Kejadian bencana terbaru').addStringOption(o=>o.setName('type').setDescription('Jenis').addChoices(
+  {name:'Semua',value:'all'},{name:'Gempa',value:'earthquake'},{name:'Tsunami',value:'tsunami'},{name:'Gunung Api',value:'volcano'},{name:'Bencana Umum',value:'bnpb'})))
+ .addSubcommand(s=>s.setName('earthquake').setDescription('Gempa bumi terbaru'))
+ .addSubcommand(s=>s.setName('tsunami').setDescription('Status potensi tsunami'))
+ .addSubcommand(s=>s.setName('volcano').setDescription('Status aktivitas gunung api'))
+ .addSubcommand(s=>s.setName('general').setDescription('Bencana umum dari BNPB'))
+ .addSubcommand(s=>s.setName('setup').setDescription('Aktifkan notifikasi bencana').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+  .addChannelOption(o=>o.setName('channel').setDescription('Channel notifikasi').addChannelTypes(ChannelType.GuildText).setRequired(true))
+  .addNumberOption(o=>o.setName('min_magnitude').setDescription('Minimum magnitudo gempa').setMinValue(0).setMaxValue(10)))
+ .addSubcommand(s=>s.setName('disable').setDescription('Matikan notifikasi bencana').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild));
+
+const status=new SlashCommandBuilder().setName('status').setDescription('Status sistem dan scraper')
+ .addSubcommand(s=>s.setName('system').setDescription('Status runtime dan database'))
+ .addSubcommand(s=>s.setName('scrapers').setDescription('Status pemeriksaan URL scraper'))
+ .addSubcommand(s=>s.setName('data').setDescription('Audit database, URL, dan scraper'))
+ .addSubcommand(s=>s.setName('disasters').setDescription('Status sumber kebencanaan'))
+ .addSubcommand(s=>s.setName('sources').setDescription('Daftar sumber data aktif'));
+
+const upcoming=new SlashCommandBuilder().setName('upcoming').setDescription('Informasi yang akan datang')
+ .addSubcommand(s=>s.setName('ramadan').setDescription('Perkiraan Ramadan berikutnya'))
+ .addSubcommand(s=>s.setName('disasters').setDescription('Status peringatan bencana resmi'));
+
+const commands=[jkt48,jkt48game,sim,utility,economy,moderation,support,feed,media,verify,bot,news,market,prices,ramadan,game,disaster,status,upcoming];
 
 const rest=new REST({version:'10'}).setToken(process.env.DISCORD_TOKEN);
 await rest.put(Routes.applicationCommands(process.env.CLIENT_ID),{body:commands.map(x=>x.toJSON())});
