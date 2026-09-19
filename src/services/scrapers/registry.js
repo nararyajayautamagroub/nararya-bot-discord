@@ -10,6 +10,8 @@ export const SCRAPER_REGISTRY=[
  {key:'price.pertamina',url:'https://www.mypertamina.id/',intervalMs:24*60*60*1000,group:'prices'},
  {key:'price.pln',url:'https://web.pln.co.id/pelanggan/tarif-tenaga-listrik',intervalMs:24*60*60*1000,group:'prices'},
  {key:'price.pihps',url:'https://www.bi.go.id/hargapangan/Website',intervalMs:24*60*60*1000,group:'prices'},
+ {key:'price.electronics',url:'https://www.bandingin.id/kategori/elektronik',intervalMs:30*60*1000,group:'electronics'},
+ {key:'price.electronics.audio',url:'https://www.bandingin.id/kategori/audio',intervalMs:30*60*1000,group:'electronics'},
  {key:'disaster.bmkg.earthquake',url:'https://www.bmkg.go.id/gempabumi',intervalMs:60*1000,group:'disaster'},
  {key:'disaster.bmkg.tsunami',url:'https://www.bmkg.go.id/gempabumi/berpotensi-tsunami',intervalMs:60*1000,group:'disaster'},
  {key:'market.yahoo.idx',url:'https://query1.finance.yahoo.com/v8/finance/chart/BBCA.JK?range=1d&interval=1d',intervalMs:10*60*1000,group:'market'},
