@@ -1,0 +1,1 @@
+export function getAssets(db,kind){return db.prepare('SELECT * FROM jkt48_game_assets WHERE active=1 AND kind=? ORDER BY RANDOM()').all(kind)} export function addAsset(db,kind,answer,mediaUrl){db.prepare('INSERT INTO jkt48_game_assets(kind,answer,media_url) VALUES(?,?,?)').run(kind,answer,mediaUrl)}
