@@ -85,12 +85,40 @@ function gameCooldownLeft(guildId,userId){const key=guildId+':'+userId,last=game
 function scheduleQuizExpiry(session){setTimeout(async()=>{const current=jkt48Dbs.quiz.prepare('SELECT * FROM quiz_sessions WHERE id=?').get(session.id);if(!current||current.status!=='active')return;if(current.expires_at>Date.now())return scheduleQuizExpiry({...current});finishSession(jkt48Dbs.quiz,current.id,'expired');recordResult(jkt48Dbs.quiz,{guildId:current.guild_id,userId:current.user_id,mode:current.mode,rarity:current.rarity,answer:current.answer,input:'[timeout]',correct:false,points:0,durationMs:QUIZ_TIMEOUT_MS});const ch=await client.channels.fetch(current.channel_id).catch(()=>null);if(ch?.isTextBased())await ch.send({embeds:[embed('⏰ Waktu Habis','Tantangan **'+current.mode+'** gagal karena tidak dijawab dalam **1 menit**. Coba lagi setelah cooldown.',{color:EMBED_COLORS.error})]}).catch(()=>{});},Math.max(100,current.expires_at-Date.now()+100));}
 function money(v){return Number.isFinite(Number(v))?'Rp'+Number(v).toLocaleString('id-ID'):'-';}
 async function sendIndonesiaDataRefresh(){return refreshIndonesiaCache().catch(error=>[{ok:false,error:error.message}]);}
+function jakartaClock(date=new Date()){
+ const parts=new Intl.DateTimeFormat('en-GB',{timeZone:process.env.BOT_TIMEZONE||'Asia/Jakarta',hour12:false,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}).formatToParts(date);
+ const out=Object.fromEntries(parts.filter(x=>x.type!=='literal').map(x=>[x.type,x.value]));
+ return {...out,minutes:Number(out.hour)*60+Number(out.minute),seconds:Number(out.second),date:`${out.year}-${out.month}-${out.day}`};
+}
 async function checkRamadanNotifications(){
  const rows=db.prepare('SELECT * FROM ramadan_configs WHERE enabled=1').all();
- const now=new Date(),today=now.toLocaleDateString('en-CA',{timeZone:process.env.BOT_TIMEZONE||'Asia/Jakarta'}),estimated=upcomingRamadan();
- if(today<estimated.estimatedStart||today>estimated.estimatedEnd)return;
+ const now=new Date(),clock=jakartaClock(now),estimated=upcomingRamadan();
+ if(clock.date<estimated.estimatedStart||clock.date>estimated.estimatedEnd)return;
  for(const cfg of rows){
-  try{const schedule=await getPrayerSchedule(cfg.city_id,now);const channel=await client.channels.fetch(cfg.channel_id).catch(()=>null);if(!channel?.isTextBased())continue;const [ih,im]=String(schedule.jadwal.imsak||'').split(':').map(Number);const [mh,mm]=String(schedule.jadwal.maghrib||'').split(':').map(Number);if(Number.isFinite(ih)&&Number.isFinite(im)){const sahurAt=new Date();sahurAt.setHours(ih,im,0,0);sahurAt.setMinutes(sahurAt.getMinutes()-30);if(Math.abs(now-sahurAt)<30000&&cfg.last_sahur!==today){await channel.send({embeds:[embed('🌙 Pengingat Sahur','Waktu sahur untuk **'+cfg.city_name+'** mendekati batas.\n🕐 Imsak: **'+schedule.jadwal.imsak+'**\n🍽️ Segera selesaikan sahur.',{color:EMBED_COLORS.gacha})]}).catch(()=>{});db.prepare('UPDATE ramadan_configs SET last_sahur=?,updated_at=? WHERE guild_id=?').run(today,Date.now(),cfg.guild_id)}}if(Number.isFinite(mh)&&Number.isFinite(mm)){const bukaAt=new Date();bukaAt.setHours(mh,mm,0,0);if(Math.abs(now-bukaAt)<30000&&cfg.last_buka!==today){await channel.send({embeds:[embed('🌇 Waktu Berbuka','Waktu Maghrib untuk **'+cfg.city_name+'** telah tiba.\n🕌 Maghrib: **'+schedule.jadwal.maghrib+'**\n🥤 Selamat berbuka puasa.',{color:EMBED_COLORS.success})]}).catch(()=>{});db.prepare('UPDATE ramadan_configs SET last_buka=?,updated_at=? WHERE guild_id=?').run(today,Date.now(),cfg.guild_id)}}}catch(error){console.warn('[ramadan] '+cfg.guild_id+' '+error.message)}}
+  try{
+   const schedule=await getPrayerSchedule(cfg.city_id,now);
+   const channel=await client.channels.fetch(cfg.channel_id).catch(()=>null);
+   if(!channel?.isTextBased())continue;
+   const [ih,im]=String(schedule.jadwal.imsak||'').split(':').map(Number);
+   const [mh,mm]=String(schedule.jadwal.maghrib||'').split(':').map(Number);
+   const sendWindow=75;
+   if(Number.isFinite(ih)&&Number.isFinite(im)){
+    const target=((ih*60+im)-30+1440)%1440;
+    const nowSec=clock.minutes*60+clock.seconds,targetSec=target*60;
+    if(Math.abs(nowSec-targetSec)<=sendWindow&&cfg.last_sahur!==clock.date){
+      await channel.send({embeds:[embed('🌙 Pengingat Sahur','Waktu sahur untuk **'+cfg.city_name+'** mendekati batas.\n🕐 Imsak: **'+schedule.jadwal.imsak+'**\n🍽️ Segera selesaikan sahur.',{color:EMBED_COLORS.gacha})]}).catch(()=>{});
+      db.prepare('UPDATE ramadan_configs SET last_sahur=?,updated_at=? WHERE guild_id=?').run(clock.date,Date.now(),cfg.guild_id);
+    }
+   }
+   if(Number.isFinite(mh)&&Number.isFinite(mm)){
+    const targetSec=(mh*60+mm)*60,nowSec=clock.minutes*60+clock.seconds;
+    if(Math.abs(nowSec-targetSec)<=sendWindow&&cfg.last_buka!==clock.date){
+      await channel.send({embeds:[embed('🌇 Waktu Berbuka','Waktu Maghrib untuk **'+cfg.city_name+'** telah tiba.\n🕌 Maghrib: **'+schedule.jadwal.maghrib+'**\n🥤 Selamat berbuka puasa.',{color:EMBED_COLORS.success})]}).catch(()=>{});
+      db.prepare('UPDATE ramadan_configs SET last_buka=?,updated_at=? WHERE guild_id=?').run(clock.date,Date.now(),cfg.guild_id);
+    }
+   }
+  }catch(error){console.warn('[ramadan] '+cfg.guild_id+' '+error.message)}
+ }
 }
 client.on('messageCreate',async m=>{
  if(m.author.bot||!m.guild)return;
@@ -248,6 +276,8 @@ client.on('interactionCreate',async i=>{
    if(sub==='fish'){const gain=5000+p.fish_level*1000;db.prepare('UPDATE tycoon SET money=money+?,energy=MAX(0,energy-10) WHERE guild_id=? AND user_id=?').run(gain,gid,uid);return i.reply({embeds:[embed('🎣 Fishing','Hasil tangkapan: **Rp'+gain.toLocaleString('id-ID')+'**',{color:EMBED_COLORS.fishing})]})}
    if(sub==='build'){const cost=25000*p.city_level;if(p.money<cost)return i.reply({embeds:[embed('🏗️ Build Gagal','Uang tidak cukup. Biaya upgrade: **Rp'+cost.toLocaleString('id-ID')+'**.',{color:EMBED_COLORS.warning})],ephemeral:true});db.prepare('UPDATE tycoon SET money=money-?,city_level=city_level+1 WHERE guild_id=? AND user_id=?').run(cost,gid,uid);return i.reply({embeds:[embed('🏗️ City Upgrade','Kota naik ke **Level '+(p.city_level+1)+'**.',{color:EMBED_COLORS.city})]})}
    if(sub==='gacha'){
+ const cooldown=gameCooldownLeft(gid,uid);
+ if(cooldown)return i.reply({embeds:[embed('⏳ Cooldown Gacha','Tunggu **'+Math.ceil(cooldown/1000)+' detik** sebelum menggunakan game/gacha lagi.',{color:EMBED_COLORS.warning})],ephemeral:true});
  const daily=consumeDailyPull(jkt48Dbs.gacha,gid,uid,10);
  if(!daily.allowed)return i.reply({embeds:[embed('🎴 Gacha Harian','Batas **10 kali per hari** sudah tercapai.',{color:EMBED_COLORS.warning})],ephemeral:true});
  if(p.money<10000){jkt48Dbs.gacha.prepare('UPDATE gacha_daily SET pulls=MAX(0,pulls-1) WHERE guild_id=? AND user_id=? AND day=?').run(gid,uid,daily.day);return i.reply({embeds:[embed('💸 Saldo Tidak Cukup','Gacha membutuhkan **Rp10.000**.',{color:EMBED_COLORS.warning})],ephemeral:true});}
@@ -376,6 +406,10 @@ client.once('ready',async()=>{
  setInterval(()=>syncMemberDatabase(db).catch(error=>console.warn('[jkt48-members] '+error.message)),Math.max(3600,Number(process.env.JKT48_MEMBER_SYNC_INTERVAL_SECONDS||21600))*1000);
  await feedService.poll();
  setInterval(()=>feedService.poll().catch(console.error),Math.max(30,Number(process.env.SCRAPER_INTERVAL_SECONDS||120))*1000);
+ await sendIndonesiaDataRefresh();
+ const dataRefreshMinutes=Math.max(15,Number(process.env.INDONESIA_DATA_REFRESH_MINUTES||15));
+ setInterval(()=>sendIndonesiaDataRefresh().catch(console.error),dataRefreshMinutes*60*1000);
+ setInterval(()=>checkRamadanNotifications().catch(console.error),30*1000);
  if(jkt48ConnectConfigured())jkt48Monitor.start();
 });
 client.login(process.env.DISCORD_TOKEN);
