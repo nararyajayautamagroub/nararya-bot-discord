@@ -3,6 +3,9 @@ import Database from 'better-sqlite3';
 import {Client,GatewayIntentBits,Partials,EmbedBuilder,ActionRowBuilder,ButtonBuilder,ButtonStyle,ChannelType,PermissionFlagsBits,SlashCommandBuilder} from 'discord.js';
 import {createFeedService} from './jkt48/feed-service.js';
 import {DEFAULT_SOURCES} from './jkt48/sources.js';
+import {ensureTables,MODES,matches,rollGacha} from './services/games/jkt48/index.js';
+import {addAsset,getAssets} from './services/games/jkt48/assets.js';
+import {addScore} from './services/games/jkt48/scoring.js';
 
 const db=new Database(process.env.DATABASE_PATH||'./data/nararya.db');
 db.pragma('journal_mode=WAL');
@@ -15,6 +18,7 @@ CREATE TABLE IF NOT EXISTS economy(guild_id TEXT,user_id TEXT,balance INTEGER DE
 CREATE TABLE IF NOT EXISTS warnings(id INTEGER PRIMARY KEY AUTOINCREMENT,guild_id TEXT,user_id TEXT,reason TEXT,moderator_id TEXT,created_at INTEGER);
 CREATE TABLE IF NOT EXISTS tickets(id INTEGER PRIMARY KEY AUTOINCREMENT,guild_id TEXT,channel_id TEXT,user_id TEXT,status TEXT DEFAULT 'open',claimed_by TEXT,created_at INTEGER,closed_at INTEGER);
 `);
+ensureTables(db);
 try{db.prepare('ALTER TABLE feed_sources ADD COLUMN kind TEXT DEFAULT "public"').run()}catch{}
 const embed=(title,description='',opts={})=>{const e=new EmbedBuilder().setTitle(title).setDescription(description).setTimestamp().setFooter({text:'Nararya Bot Discord'});if(opts.url)e.setURL(opts.url);if(opts.image)e.setThumbnail(opts.image);return e};
 const feedEmbed=x=>embed('📡 '+x.sourceName,x.description||'Update baru terdeteksi.',{url:x.url,image:x.image});
@@ -52,6 +56,20 @@ client.on('interactionCreate',async i=>{
   if(i.isButton()&&i.customId==='ticket-close'){db.prepare("UPDATE tickets SET status='closed',closed_at=? WHERE channel_id=? AND status='open'").run(Date.now(),i.channel.id);await i.reply({embeds:[embed('🔒 Ticket Ditutup','Ticket ditandai closed.')]});return i.channel.permissionOverwrites.edit(i.user.id,{SendMessages:false}).catch(()=>{})}
   if(!i.isChatInputCommand())return;
   const n=i.commandName;
+  if(n==='jkt48game'){
+   const sub=i.options.getSubcommand(true);
+   if(sub==='gacha'){
+    const members=JSON.parse(process.env.JKT48_GACHA_MEMBERS_JSON||'[]');
+    if(!members.length)return i.reply({content:'Gacha belum dikonfigurasi. Isi JKT48_GACHA_MEMBERS_JSON dengan daftar member.',ephemeral:true});
+    const r=rollGacha(members); const key=r.member.key||r.member.name;
+    db.prepare('INSERT INTO jkt48_gacha(guild_id,user_id,member_key,rarity,count) VALUES(?,?,?,?,1) ON CONFLICT(guild_id,user_id,member_key,rarity) DO UPDATE SET count=count+1').run(i.guild.id,i.user.id,key,r.rarity);
+    return i.reply({embeds:[embed('🎴 Gacha JKT48',r.emoji+' **'+r.rarity.toUpperCase()+'**\\n'+(r.member.name||key))]});
+   }
+   if(sub==='inventory'){const rows=db.prepare('SELECT member_key,rarity,count FROM jkt48_gacha WHERE guild_id=? AND user_id=? ORDER BY count DESC').all(i.guild.id,i.user.id);return i.reply({embeds:[embed('🎴 Koleksi Gacha',rows.length?rows.map(x=>x.rarity+' • '+x.member_key+' ×'+x.count).join('\\n'):'Belum punya kartu.') ]})}
+   if(sub==='leaderboard'){const rows=db.prepare('SELECT user_id,points,wins FROM jkt48_game_scores WHERE guild_id=? ORDER BY points DESC LIMIT 10').all(i.guild.id);return i.reply({embeds:[embed('🏆 JKT48 Game Leaderboard',rows.length?rows.map((x,n)=>'#'+(n+1)+' <@'+x.user_id+'> • '+x.points+' poin • '+x.wins+' menang').join('\\n'):'Belum ada skor.') ]})}
+   const mode=i.options.getString('mode',true),assets=getAssets(db,mode);if(!assets.length)return i.reply({content:'Asset game untuk mode **'+MODES[mode]+'** belum tersedia. Admin perlu menambah asset.',ephemeral:true});
+   const q=assets[0]; return i.reply({embeds:[embed('🎯 '+MODES[mode],'Tebak jawabannya!\\nBalas pesan ini dengan jawabanmu.').setImage(q.media_url)],ephemeral:false});
+  }
   if(n==='ping')return i.reply({embeds:[embed('🏓 Pong',i.client.ws.ping+'ms')]});
   if(n==='ticket'){const row=new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('ticket-create').setLabel('Buat Ticket').setEmoji('🎫').setStyle(ButtonStyle.Primary));return i.reply({embeds:[embed('🎫 Ticket Center','Gunakan tombol untuk membuka ticket.')],components:[row]})}
   if(n==='feed'){
