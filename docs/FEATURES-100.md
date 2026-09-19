@@ -1,10 +1,11 @@
 # Feature Catalog
 
-Dokumen ini menjadi pintu masuk katalog fitur aktif. Registry sumber berada di `src/config/features.js`.
+Current active feature count: 150.
 
-Total fitur yang saat ini didaftarkan: **151**.
+The canonical registry is src/config/features.js.
 
-Kategori:
+## Categories
+
 - Discord
 - JKT48
 - Notification
@@ -17,6 +18,8 @@ Kategori:
 - Indonesia
 - Ramadan
 
-JKT48 tetap menggunakan integrasi sumber/repository yang sudah ditentukan dan tidak dipaksa masuk ke generic scraper pipeline.
+## Registration requirements
 
-Semua fitur lain yang mengambil data eksternal harus memiliki source contract atau scraper/API adapter. Lihat [SCRAPER-MATRIX.md](./SCRAPER-MATRIX.md) dan [FEATURE-REGISTRY.md](./FEATURE-REGISTRY.md).
+Every feature must have an implementation and, when applicable, a command, tests, documentation, and a registry entry.
+
+Every non-JKT48 external data feature must also have a registered source contract and adapter.
