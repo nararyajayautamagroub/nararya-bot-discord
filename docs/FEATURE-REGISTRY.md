@@ -2,7 +2,7 @@
 
 Daftar fitur aktif bot berasal dari `src/config/features.js`.
 
-## 54 fitur aktif
+## 57 fitur aktif
 
 ### Discord
 1. Slash Command Registry
