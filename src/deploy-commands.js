@@ -227,6 +227,7 @@ const settingbot=new SlashCommandBuilder().setName('settingbot').setDescription(
  .addSubcommand(s=>s.setName('status').setDescription('Lihat pengaturan global bot'))
  .addSubcommand(s=>s.setName('maintenance').setDescription('Aktifkan/nonaktifkan maintenance').addBooleanOption(o=>o.setName('enabled').setDescription('Status maintenance').setRequired(true)))
  .addSubcommand(s=>s.setName('activity').setDescription('Atur activity/status bot').addStringOption(o=>o.setName('text').setDescription('Teks activity').setRequired(true).setMaxLength(100)))
+ .addSubcommand(s=>s.setName('rotation').setDescription('Atur rotasi Playing status').addStringOption(o=>o.setName('texts').setDescription('Teks dipisahkan koma atau |').setRequired(true).setMaxLength(1000)))
  .addSubcommand(s=>s.setName('reset').setDescription('Reset pengaturan global bot'));
 
 const blacklistserver=new SlashCommandBuilder().setName('blacklistserver').setDescription('Kelola blacklist server global (owner bot saja)')
@@ -238,7 +239,59 @@ const blacklistusers=new SlashCommandBuilder().setName('blacklistusers').setDesc
  .addSubcommand(s=>s.setName('add').setDescription('Blacklist user').addStringOption(o=>o.setName('user_id').setDescription('Discord user ID').setRequired(true)).addStringOption(o=>o.setName('reason').setDescription('Alasan blacklist').setMaxLength(250)))
  .addSubcommand(s=>s.setName('remove').setDescription('Hapus user dari blacklist').addStringOption(o=>o.setName('user_id').setDescription('Discord user ID').setRequired(true)))
  .addSubcommand(s=>s.setName('list').setDescription('Lihat blacklist user'));
-const commands=[jkt48,jkt48game,sim,utility,economy,moderation,support,feed,media,verify,bot,news,market,prices,ramadan,game,disaster,status,upcoming,help,setup,electronics,settingbot,blacklistserver,blacklistusers];
+
+const owner=new SlashCommandBuilder().setName('owner').setDescription('Kontrol owner bot').addSubcommand(s=>s.setName('dashboard').setDescription('Dashboard owner')).addSubcommand(s=>s.setName('broadcast').setDescription('Broadcast global').addStringOption(o=>o.setName('text').setDescription('Pesan').setRequired(true).setMaxLength(1500))).addSubcommand(s=>s.setName('rotation').setDescription('Atur rotasi Playing status').addStringOption(o=>o.setName('texts').setDescription('Teks dipisahkan koma atau |').setRequired(true).setMaxLength(1000))).addSubcommand(s=>s.setName('maintenance').setDescription('Maintenance global').addBooleanOption(o=>o.setName('enabled').setDescription('Status').setRequired(true))).addSubcommand(s=>s.setName('toggle').setDescription('Toggle command global').addStringOption(o=>o.setName('command').setDescription('Nama command').setRequired(true)).addBooleanOption(o=>o.setName('enabled').setDescription('Status').setRequired(true))).addSubcommand(s=>s.setName('schedule').setDescription('Jadwalkan announcement').addStringOption(o=>o.setName('text').setDescription('Pesan').setRequired(true)).addIntegerOption(o=>o.setName('delay_seconds').setDescription('Delay detik').setMinValue(5).setMaxValue(604800).setRequired(true)))
+const security=new SlashCommandBuilder().setName('security').setDescription('Security center server')
+ .addSubcommand(s=>s.setName('status').setDescription('Lihat status security'))
+ .addSubcommand(s=>s.setName('setup').setDescription('Atur security').addStringOption(o=>o.setName('key').setDescription('Fitur').setRequired(true).addChoices({name:'Raid',value:'raid'},{name:'Nuke',value:'nuke'},{name:'Mention',value:'mention'},{name:'Lock',value:'lock'})).addBooleanOption(o=>o.setName('enabled').setDescription('Status').setRequired(true)))
+ .addSubcommand(s=>s.setName('trust').setDescription('Lihat trust score').addUserOption(o=>o.setName('user').setDescription('Target').setRequired(true)))
+ .addSubcommand(s=>s.setName('incident').setDescription('Catat incident').addStringOption(o=>o.setName('type').setDescription('Jenis').setRequired(true)).addStringOption(o=>o.setName('detail').setDescription('Detail').setRequired(true)))
+ .addSubcommand(s=>s.setName('lockdown').setDescription('Server lockdown').addBooleanOption(o=>o.setName('enabled').setDescription('Status').setRequired(true)));
+const serverconfig=new SlashCommandBuilder().setName('serverconfig').setDescription('Konfigurasi server').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+ .addSubcommand(s=>s.setName('view').setDescription('Lihat konfigurasi'))
+ .addSubcommand(s=>s.setName('set').setDescription('Simpan konfigurasi').addStringOption(o=>o.setName('key').setDescription('Key').setRequired(true)).addStringOption(o=>o.setName('value').setDescription('Value').setRequired(true)))
+ .addSubcommand(s=>s.setName('rules').setDescription('Kirim rules embed').addStringOption(o=>o.setName('text').setDescription('Isi rules').setRequired(true).setMaxLength(3500)))
+ .addSubcommand(s=>s.setName('stats').setDescription('Dashboard server'))
+ .addSubcommand(s=>s.setName('autorole').setDescription('Atur auto role').addRoleOption(o=>o.setName('role').setDescription('Role').setRequired(true)))
+ .addSubcommand(s=>s.setName('autoroleremove').setDescription('Atur auto role remove').addBooleanOption(o=>o.setName('enabled').setDescription('Status').setRequired(true)))
+ .addSubcommand(s=>s.setName('automod').setDescription('Atur mention threshold').addIntegerOption(o=>o.setName('mention_threshold').setDescription('Jumlah mention').setMinValue(2).setMaxValue(20).setRequired(true)));
+const modcase=new SlashCommandBuilder().setName('modcase').setDescription('Riwayat dan case moderasi').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+ .addSubcommand(s=>s.setName('history').setDescription('Lihat riwayat warning').addUserOption(o=>o.setName('user').setDescription('Target').setRequired(true)))
+ .addSubcommand(s=>s.setName('reset').setDescription('Reset warning').addUserOption(o=>o.setName('user').setDescription('Target').setRequired(true)))
+ .addSubcommand(s=>s.setName('remove').setDescription('Hapus case').addUserOption(o=>o.setName('user').setDescription('Target').setRequired(true)).addIntegerOption(o=>o.setName('case_id').setDescription('Case ID').setMinValue(1).setRequired(true)));
+const indonesia=new SlashCommandBuilder().setName('indonesia').setDescription('Utility data Indonesia')
+ .addSubcommand(s=>s.setName('time').setDescription('Waktu WIB WITA WIT'))
+ .addSubcommand(s=>s.setName('weather').setDescription('Cuaca kota').addStringOption(o=>o.setName('city').setDescription('Kota').setRequired(true)))
+ .addSubcommand(s=>s.setName('currency').setDescription('Konversi mata uang').addStringOption(o=>o.setName('from').setDescription('Dari').setRequired(true)).addStringOption(o=>o.setName('to').setDescription('Ke').setRequired(true)).addNumberOption(o=>o.setName('amount').setDescription('Jumlah').setRequired(true).setMinValue(0)))
+ .addSubcommand(s=>s.setName('gold').setDescription('Harga emas publik'))
+ .addSubcommand(s=>s.setName('fuel').setDescription('Perbandingan BBM'))
+ .addSubcommand(s=>s.setName('electricity').setDescription('Kalkulator listrik').addNumberOption(o=>o.setName('kwh').setDescription('kWh').setMinValue(0).setRequired(true)).addNumberOption(o=>o.setName('tariff').setDescription('Tarif per kWh').setMinValue(0).setRequired(true)))
+ .addSubcommand(s=>s.setName('toll').setDescription('Informasi tarif tol'))
+ .addSubcommand(s=>s.setName('holiday').setDescription('Hari libur Indonesia').addIntegerOption(o=>o.setName('year').setDescription('Tahun').setMinValue(2000).setMaxValue(2100)));
+const financeExtra=new SlashCommandBuilder().setName('finance').setDescription('Fitur finance komunitas')
+ .addSubcommand(s=>s.setName('transfer').setDescription('Transfer saldo').addUserOption(o=>o.setName('user').setDescription('Penerima').setRequired(true)).addIntegerOption(o=>o.setName('amount').setDescription('Jumlah').setMinValue(1).setRequired(true)))
+ .addSubcommand(s=>s.setName('history').setDescription('Riwayat transaksi'))
+ .addSubcommand(s=>s.setName('leaderboard').setDescription('Leaderboard saldo'))
+ .addSubcommand(s=>s.setName('shop').setDescription('Lihat shop'))
+ .addSubcommand(s=>s.setName('inventory').setDescription('Lihat inventory'))
+ .addSubcommand(s=>s.setName('streak').setDescription('Daily streak'))
+ .addSubcommand(s=>s.setName('bank').setDescription('Tambah kas server').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild).addIntegerOption(o=>o.setName('amount').setDescription('Jumlah').setMinValue(1).setRequired(true)));
+const games=new SlashCommandBuilder().setName('games').setDescription('Game tambahan')
+ .addSubcommand(s=>s.setName('number').setDescription('Tebak angka 1-10').addIntegerOption(o=>o.setName('guess').setDescription('Tebakan').setMinValue(1).setMaxValue(10).setRequired(true)))
+ .addSubcommand(s=>s.setName('trivia').setDescription('Trivia').addStringOption(o=>o.setName('answer').setDescription('Jawaban').setRequired(true)))
+ .addSubcommand(s=>s.setName('wordchain').setDescription('Sambung kata').addStringOption(o=>o.setName('word').setDescription('Kata').setRequired(true)))
+ .addSubcommand(s=>s.setName('hangman').setDescription('Hangman').addStringOption(o=>o.setName('answer').setDescription('Jawaban').setRequired(true)))
+ .addSubcommand(s=>s.setName('rps').setDescription('Suit').addStringOption(o=>o.setName('choice').setDescription('Pilihan').setRequired(true).addChoices({name:'Batu',value:'batu'},{name:'Gunting',value:'gunting'},{name:'Kertas',value:'kertas'})))
+ .addSubcommand(s=>s.setName('dice').setDescription('Tebak dadu').addIntegerOption(o=>o.setName('guess').setDescription('Tebakan').setMinValue(1).setMaxValue(6).setRequired(true)))
+ .addSubcommand(s=>s.setName('daily').setDescription('Daily challenge'))
+ .addSubcommand(s=>s.setName('leaderboard').setDescription('Leaderboard game'));
+const community=new SlashCommandBuilder().setName('community').setDescription('Fitur komunitas')
+ .addSubcommand(s=>s.setName('poll').setDescription('Buat polling').addStringOption(o=>o.setName('question').setDescription('Pertanyaan').setRequired(true)).addStringOption(o=>o.setName('options').setDescription('Pilihan dipisahkan |').setRequired(true)))
+ .addSubcommand(s=>s.setName('remind').setDescription('Buat reminder').addIntegerOption(o=>o.setName('delay_seconds').setDescription('Delay detik').setMinValue(10).setMaxValue(604800).setRequired(true)).addStringOption(o=>o.setName('text').setDescription('Isi reminder').setRequired(true)))
+ .addSubcommand(s=>s.setName('suggest').setDescription('Kirim suggestion').addStringOption(o=>o.setName('text').setDescription('Isi saran').setRequired(true).setMaxLength(1000)))
+ .addSubcommand(s=>s.setName('profile').setDescription('Lihat profile card'))
+ .addSubcommand(s=>s.setName('star').setDescription('Catat starboard').addStringOption(o=>o.setName('message_id').setDescription('Message ID').setRequired(true)).addIntegerOption(o=>o.setName('stars').setDescription('Jumlah star').setMinValue(1).setMaxValue(999).setRequired(true)));
+const commands=[jkt48,jkt48game,sim,utility,economy,financeExtra,moderation,support,feed,media,verify,bot,news,market,prices,ramadan,game,games,indonesia,community,security,serverconfig,modcase,disaster,status,upcoming,help,setup,electronics,settingbot,owner,blacklistserver,blacklistusers];
 
 const rest=new REST({version:'10'}).setToken(process.env.DISCORD_TOKEN);
 await rest.put(Routes.applicationCommands(process.env.CLIENT_ID),{body:commands.map(x=>x.toJSON())});
