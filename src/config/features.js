@@ -41,7 +41,14 @@ export const FEATURE_REGISTRY=[
  {id:'imsakiyah',name:'Imsakiyah Schedule',category:'Ramadan',description:'Jadwal imsak, subuh, maghrib, dan sholat berdasarkan kota.',status:'active'},
  {id:'sahur-notification',name:'Sahur Notification',category:'Ramadan',description:'Notifikasi sahur 30 menit sebelum imsak ke channel server.',status:'active'},
  {id:'iftar-notification',name:'Iftar Notification',category:'Ramadan',description:'Notifikasi berbuka saat waktu maghrib.',status:'active'},
- {id:'indonesia-data-refresh',name:'Indonesia Data Refresh',category:'Developer',description:'Refresh terjadwal untuk cache berita dan data publik Indonesia.',status:'active'}
+ {id:'indonesia-data-refresh',name:'Indonesia Data Refresh',category:'Developer',description:'Refresh terjadwal untuk cache berita dan data publik Indonesia.',status:'active'},
+ {id:'scraper-registry',name:'Scraper Registry',category:'Developer',description:'Registry sumber URL dan adapter untuk data eksternal non-JKT48.',status:'active'},
+ {id:'url-health-check',name:'URL Health Check',category:'Developer',description:'Pemeriksaan kesehatan URL scraper setiap 10 detik.',status:'active'},
+ {id:'database-audit',name:'Database Data Audit',category:'Developer',description:'Audit seluruh database bot, kolom URL, status sumber, dan error data.',status:'active'},
+ {id:'scraper-method-suggestion',name:'Scraper Method Suggestion',category:'Developer',description:'Menyarankan metode JSON, RSS/XML, media, API, atau HTML ketika URL belum punya adapter.',status:'active'},
+ {id:'disaster-monitor',name:'Disaster Monitor',category:'Security',description:'Monitoring gempa, tsunami, gunung api, dan kejadian bencana umum dari sumber resmi.',status:'active'},
+ {id:'disaster-notification',name:'Disaster Notification',category:'Security',description:'Notifikasi kejadian baru dengan lokasi dan sumber ke channel server.',status:'active'},
+ {id:'system-status',name:'System Status',category:'Developer',description:'Slash command untuk runtime, database, scraper, audit, source, dan disaster status.',status:'active'}
 ];
 
 export function getFeatures({category}={}){
