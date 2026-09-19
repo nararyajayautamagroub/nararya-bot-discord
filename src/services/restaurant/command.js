@@ -73,7 +73,7 @@ export async function handleRestaurantPricesCommand(interaction,{db,embed}={}){
 
  if(sub==='search'){
   const input=parseRestaurantOptions(asOptions(interaction));
-  const result=await findRestaurants(input);
+  const result=await findRestaurants({...input,db});
   const body=searchLines(result.items);
   if(!body.length){
    return interaction.reply({
@@ -108,7 +108,7 @@ export async function handleRestaurantPricesCommand(interaction,{db,embed}={}){
 
  if(sub==='city'){
   const input=parseRestaurantOptions(asOptions(interaction));
-  const result=await findRestaurants({city:input.city,page:input.page,limit:input.limit,maxPages:1});
+  const result=await findRestaurants({city:input.city,page:input.page,limit:input.limit,maxPages:1,db});
   return interaction.reply({
    embeds:[embed(
     '🏙️ Direktori Harga Restoran '+input.city,
@@ -156,7 +156,7 @@ export async function handleRestaurantPricesCommand(interaction,{db,embed}={}){
 
  if(sub==='prices'){
   const input=parseRestaurantOptions(asOptions(interaction));
-  const restaurants=await findRestaurants({...input,limit:Math.min(input.limit,8),maxPages:Math.min(input.maxPages,2)});
+  const restaurants=await findRestaurants({...input,db,limit:Math.min(input.limit,8),maxPages:Math.min(input.maxPages,2)});
   const sourceRows=restaurants.items.slice(0,8);
   const allItems=[];
   const failed=[];
