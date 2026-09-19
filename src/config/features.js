@@ -7,6 +7,9 @@ export const FEATURE_REGISTRY=[
  {id:'jkt48-quiz',name:'JKT48 Quiz',category:'Game',description:'Mode quiz suara, foto member, setlist, lagu, dan random member.',status:'active'},
  {id:'jkt48-gacha',name:'JKT48 Gacha',category:'Game',description:'Gacha kartu dengan rarity Common hingga Secret dan database terpisah.',status:'active'},
  {id:'jkt48-cards',name:'JKT48 Card Collection',category:'Game',description:'Inventory dan statistik koleksi kartu.',status:'active'},
+ {id:'streetview-quiz',name:'Google Street View Quiz',category:'Game',description:'Tebak lokasi dari foto Google Street View dengan rotasi heading dan FOV acak.',status:'active'},
+ {id:'game-cooldown',name:'Game Cooldown',category:'Game',description:'Cooldown pemakaian game/gacha 10 detik per user dan server.',status:'active'},
+ {id:'quiz-timeout',name:'Quiz Timeout',category:'Game',description:'Setiap tebak-tebakan memiliki batas jawaban 1 menit dan gagal otomatis bila timeout.',status:'active'},
  {id:'simulation',name:'Simulation Tycoon',category:'Game',description:'Profil kota, daily, bank, fishing, build, dan gacha.',status:'active'},
  {id:'economy',name:'Server Economy',category:'Community',description:'Saldo, daily reward, dan penyimpanan ekonomi per server/user.',status:'active'},
  {id:'leveling',name:'Leveling',category:'Community',description:'XP dan level berdasarkan aktivitas pesan.',status:'active'},
@@ -28,7 +31,17 @@ export const FEATURE_REGISTRY=[
  {id:'feature-registry',name:'Feature Registry',category:'Developer',description:'Registry terpusat agar command, dokumentasi, dan website membaca daftar fitur dari sumber yang sama.',status:'active'},
  {id:'bot-info',name:'Bot Info',category:'Developer',description:'Informasi runtime, versi, guild count, dan runtime environment.',status:'active'},
  {id:'bot-features',name:'Bot Feature Catalog',category:'Developer',description:'Menampilkan registry fitur aktif dari bot.',status:'active'},
- {id:'bot-health',name:'Bot Health',category:'Developer',description:'Status uptime, memory, database, dan verification web server.',status:'active'}
+ {id:'bot-health',name:'Bot Health',category:'Developer',description:'Status uptime, memory, database, dan verification web server.',status:'active'},
+ {id:'indonesia-news',name:'Indonesia News',category:'Indonesia',description:'Berita Indonesia dari RSS ANTARA dengan kategori nasional, ekonomi, bisnis, bursa, politik, dan hukum.',status:'active'},
+ {id:'indonesia-stocks',name:'Indonesia Stock Quotes',category:'Indonesia',description:'Quote saham IDX dan alias IHSG melalui ticker .JK dengan cache.',status:'active'},
+ {id:'fuel-prices',name:'Fuel Prices',category:'Indonesia',description:'Data acuan harga BBM Pertamina dengan cache 24 jam dan sumber resmi/terkait.',status:'active'},
+ {id:'electricity-prices',name:'Electricity Tariffs',category:'Indonesia',description:'Ringkasan tarif listrik menurut golongan pelanggan dengan cache 24 jam.',status:'active'},
+ {id:'food-prices',name:'Food Prices',category:'Indonesia',description:'Harga pangan strategis dan komoditas utama dengan cache 24 jam.',status:'active'},
+ {id:'ramadan-calendar',name:'Upcoming Ramadan',category:'Ramadan',description:'Informasi perkiraan Ramadan, Nuzulul Quran, akhir Ramadan dan status penetapan.',status:'active'},
+ {id:'imsakiyah',name:'Imsakiyah Schedule',category:'Ramadan',description:'Jadwal imsak, subuh, maghrib, dan sholat berdasarkan kota.',status:'active'},
+ {id:'sahur-notification',name:'Sahur Notification',category:'Ramadan',description:'Notifikasi sahur 30 menit sebelum imsak ke channel server.',status:'active'},
+ {id:'iftar-notification',name:'Iftar Notification',category:'Ramadan',description:'Notifikasi berbuka saat waktu maghrib.',status:'active'},
+ {id:'indonesia-data-refresh',name:'Indonesia Data Refresh',category:'Developer',description:'Refresh terjadwal untuk cache berita dan data publik Indonesia.',status:'active'}
 ];
 
 export function getFeatures({category}={}){
