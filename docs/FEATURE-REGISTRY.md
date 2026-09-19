@@ -1,8 +1,8 @@
 # Feature Registry
 
-Daftar fitur aktif bot berasal dari `src/config/features.js` dan digunakan oleh command developer serta endpoint `/api/features`.
+Daftar fitur aktif bot berasal dari `src/config/features.js`.
 
-## 30 fitur aktif
+## 43 fitur aktif
 
 ### Discord
 1. Slash Command Registry
@@ -19,59 +19,70 @@ Daftar fitur aktif bot berasal dari `src/config/features.js` dan digunakan oleh 
 6. JKT48 Quiz
 7. JKT48 Gacha
 8. JKT48 Card Collection
-9. Simulation Tycoon
+9. Google Street View Quiz
+10. Game Cooldown
+11. Quiz Timeout
+12. Simulation Tycoon
 
 ### Community
-10. Server Economy
-11. Leveling
-12. Welcome / Goodbye
+13. Server Economy
+14. Leveling
+15. Welcome / Goodbye
 
 ### Security
-13. Moderation
-14. Web Verification
-15. Server-bound Verification Code
-16. Verification Role
-17. Verification Rate Limit
+16. Moderation
+17. Web Verification
+18. Server-bound Verification Code
+19. Verification Role
+20. Verification Rate Limit
 
 ### Support
-18. Support Tickets
+21. Support Tickets
 
 ### Media
-19. Media Downloader
-20. Media Resolution
-21. Vocal Separation
-22. Background Removal
-23. Watermark Removal
-24. Media User Settings
+22. Media Downloader
+23. Media Resolution
+24. Vocal Separation
+25. Background Removal
+26. Watermark Removal
+27. Media User Settings
 
 ### Developer
-25. Security Policy
-26. Feature Registry
-27. Bot Info
-28. Bot Feature Catalog
-29. Bot Health
-30. Verification Developer API
+28. Security Policy
+29. Feature Registry
+30. Bot Info
+31. Bot Feature Catalog
+32. Bot Health
+33. Verification Developer API
+34. Indonesia Data Refresh
 
-## Verifikasi
+### Indonesia
+35. Indonesia News
+36. Indonesia Stock Quotes
+37. Fuel Prices
+38. Electricity Tariffs
+39. Food Prices
 
-Flow:
-1. User menjalankan `/verify start`.
-2. Bot memberikan URL dengan session ticket.
-3. User membuka website.
-4. User mencentang “I’m not a robot”.
-5. Server memvalidasi session, challenge, honeypot, dan waktu interaksi.
-6. Website menampilkan kode verifikasi 4 karakter.
-7. User menjalankan `/verify code code:<kode>`.
-8. Bot memvalidasi kode terhadap server Discord, session, expiry, dan attempt limit.
-9. Jika role verifikasi dikonfigurasi, bot memberikan role tersebut.
+### Ramadan
+40. Upcoming Ramadan
+41. Imsakiyah Schedule
+42. Sahur Notification
+43. Iftar Notification
 
-Kode diturunkan dari secret unik server Discord + ticket sesi. Karena itu, kode tidak dirancang untuk dipakai lintas server.
+## Game policy
 
-## Developer endpoints
+All quiz and gacha actions share a 10-second per-user/server cooldown.
 
-- `GET /health`
-- `GET /api/verify/session?ticket=...`
-- `POST /api/verify/complete`
-- `GET /api/features`
+Every active guessing session has a 1-minute answer window. Timeout is recorded as a failed attempt and does not grant quiz points.
 
-Endpoint hanya mengekspos data yang diperlukan untuk fungsi developer dan verification flow. Secret server serta hash kode tidak dikirim ke browser.
+Google Street View mode requires `GOOGLE_MAPS_API_KEY`.
+
+## Indonesia data
+
+- News uses public ANTARA RSS feeds.
+- Stock quotes use IDX `.JK` symbols through Yahoo Finance data endpoints.
+- Fuel, electricity, and food sources are cached and refreshed on source-specific intervals.
+- Ramadan prayer schedules use city-based prayer schedule data.
+- Ramadan dates include environment overrides because official Indonesian dates are established through the relevant government process.
+
+See [INDONESIA-DATA.md](./INDONESIA-DATA.md) for data-source details.
