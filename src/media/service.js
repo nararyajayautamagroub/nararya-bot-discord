@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import {request} from 'undici';
 import {createJob,updateJob} from './database.js';
 import {newJobDir,fileSize} from './utils.js';
 import {downloadWithYtdlp,downloadImage,validateUrl} from './download.js';
