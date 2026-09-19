@@ -1,0 +1,1 @@
+export const pick=(items=[])=>items.length?items[Math.floor(Math.random()*items.length)]:null; export const shuffle=(items=[])=>[...items].sort(()=>Math.random()-.5);
