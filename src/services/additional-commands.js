@@ -28,6 +28,7 @@ export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,game
    const sub=i.options.getSubcommand(true);
    if(n==='setup'){
     if(sub==='overview'){
+     if(!i.guild)return i.reply({embeds:[embed('❌ Guild Only','/setup membutuhkan server Discord.',{color:0xEF4444})],ephemeral:true});
      const cfg=db.prepare('SELECT * FROM guild_config WHERE guild_id=?').get(i.guild.id)||{};
      const ramadan=db.prepare('SELECT * FROM ramadan_configs WHERE guild_id=?').get(i.guild.id);
      const disaster=db.prepare('SELECT * FROM disaster_configs WHERE guild_id=?').get(i.guild.id);
@@ -123,7 +124,7 @@ export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,game
    const pageSize=8,totalPages=Math.max(1,Math.ceil(rows.length/pageSize)),safePage=Math.min(Math.max(1,page),totalPages);
    const slice=rows.slice((safePage-1)*pageSize,safePage*pageSize);
    const body=slice.length?slice.map((x,n)=>'**'+(((safePage-1)*pageSize)+n+1)+'. '+x.name+'**\n'+x.description).join('\n\n'):'Tidak ada fitur untuk kategori tersebut.';
-   return i.reply({embeds:[embed('📚 BOT NARARYA GROUB • Help',body+'\n\n**Kategori:** '+category+'\n**Halaman:** '+safePage+'/'+totalPages+'\n\nGunakan /help category:<kategori> untuk memfilter.',{color:0xFF6200,fields:[{name:'Kategori tersedia',value:categories.join(' • ')||'General'},{name:'Command utama',value:'/bot • /status • /setup • /news • /market • /prices • /electronics • /ramadan • /disaster • /game • /jkt48 • /jkt48game • /media • /feed'}]})]});
+   return i.reply({embeds:[embed('📚 BOT NARARYA GROUB • Help',body+'\n\n**Kategori:** '+category+'\n**Halaman:** '+safePage+'/'+totalPages+'\n\nGunakan /help category:<kategori> untuk memfilter.',{color:0xFF6200,fields:[{name:'Kategori tersedia',value:categories.join(' • ')||'General'},{name:'Command utama',value:'/bot • /status • /help • /setup • /news • /market • /prices • /electronics • /ramadan • /disaster • /game • /jkt48 • /jkt48game • /media • /feed'},{name:'Owner Only',value:'/settingbot • /blacklistserver • /blacklistusers'}]})]});
   }
 
   if(n==='electronics'){
