@@ -3,16 +3,14 @@ import Database from 'better-sqlite3';
 import {Client,GatewayIntentBits,Partials,EmbedBuilder,ActionRowBuilder,ButtonBuilder,ButtonStyle,ChannelType,PermissionFlagsBits,SlashCommandBuilder} from 'discord.js';
 import {createFeedService} from './jkt48/feed-service.js';
 import {DEFAULT_SOURCES} from './jkt48/sources.js';
-import {ensureTables,MODES,matches,rollGacha,rollRarity,rarityInfo} from './services/games/jkt48/index.js';
-import {addAsset,getAssets} from './services/games/jkt48/assets.js';
-import {addScore} from './services/games/jkt48/scoring.js';
+import {ensureTables,MODES,matches,rollGacha,rollRarity,rarityInfo,validMedia} from './services/games/jkt48/index.js';
 import {syncMemberDatabase} from './jkt48/member-database.js';
 import {configured as jkt48ConnectConfigured} from './jkt48/connect.js';
 import {getUpcoming,getLatest,getLatestPlatform,renderList,TYPE_LABELS} from './jkt48/command-service.js';
 import {createJkt48Monitor} from './jkt48/live-monitor.js';
 import {createJkt48FeatureDatabases} from './services/games/jkt48/databases.js';
 import {awardCard,getInventory as getCardInventory,getCollectionStats} from './services/games/jkt48/card-system.js';
-import {getQuizAssets,migrateLegacyAssets,startSession,getActiveSession,finishSession,calculatePoints,recordResult,getLeaderboard} from './services/games/jkt48/quiz-system.js';
+import {addQuizAsset,getQuizAssets,migrateLegacyAssets,startSession,getActiveSession,finishSession,calculatePoints,recordAttempt,recordResult,getLeaderboard} from './services/games/jkt48/quiz-system.js';
 import {saveGacha} from './services/games/jkt48/gacha.js';
 import {revealAnimation,revealChannel} from './services/games/jkt48/reveal-animation.js';
 
@@ -97,6 +95,7 @@ client.on('messageCreate',async m=>{
     finalImage:card.image_url||null
    }).catch(console.error);
   }else{
+   recordAttempt(jkt48Dbs.quiz,{guildId:m.guild.id,userId:m.author.id,mode:session.mode,rarity:session.rarity,answer:session.answer,input:m.content,correct:false,points:0,durationMs:Date.now()-session.started_at});
    await m.channel.send({embeds:[embed('❌ Belum Tepat','Jawabanmu belum cocok. Tantangan masih aktif.\\n'+(rarityInfo[session.rarity]?.emoji||'🎴')+' Rarity: **'+(rarityInfo[session.rarity]?.label||session.rarity)+'**',{color:EMBED_COLORS.warning})]}).catch(()=>{});
   }
  }
@@ -134,6 +133,18 @@ client.on('interactionCreate',async i=>{
   }
   if(n==='jkt48game'){
    const sub=i.options.getSubcommand(true);
+   if(sub==='asset_add'){
+    const mode=i.options.getString('mode',true),answer=i.options.getString('answer',true).trim(),mediaUrl=i.options.getString('media_url',true).trim(),rarity=i.options.getString('rarity',true);
+    if(!validMedia(mediaUrl))return i.reply({embeds:[embed('❌ URL Media Tidak Valid','Gunakan URL **http/https** yang dapat diakses publik.',{color:EMBED_COLORS.error})],ephemeral:true});
+    addQuizAsset(jkt48Dbs.quiz,mode,answer,mediaUrl,rarity);
+    return i.reply({embeds:[embed('✅ Asset Quiz Ditambahkan','Mode: **'+MODES[mode]+'**\\nJawaban: **'+answer+'**\\nRarity: '+rarityInfo[rarity].emoji+' **'+rarityInfo[rarity].label+'**\\n\\nAsset tersimpan di **database quiz terpisah**.',{color:EMBED_COLORS.success})]});
+   }
+   if(sub==='asset_list'){
+    const mode=i.options.getString('mode');
+    const rows=mode?jkt48Dbs.quiz.prepare('SELECT rarity,COUNT(*) count FROM quiz_assets WHERE active=1 AND kind=? GROUP BY rarity ORDER BY count DESC').all(mode):jkt48Dbs.quiz.prepare('SELECT kind,COUNT(*) count FROM quiz_assets WHERE active=1 GROUP BY kind ORDER BY kind').all();
+    const body=rows.length?(mode?rows.map(x=>(rarityInfo[x.rarity]?.emoji||'🎴')+' '+(rarityInfo[x.rarity]?.label||x.rarity)+' • '+x.count).join('\\n'):rows.map(x=>'**'+(MODES[x.kind]||x.kind)+'** • '+x.count).join('\\n')):'Belum ada asset.';
+    return i.reply({embeds:[embed('🗂️ Quiz Asset Database',body,{color:EMBED_COLORS.game})]});
+   }
    if(sub==='gacha'){
     const members=db.prepare("SELECT id as key,name,image_url,generation,status FROM jkt48_members WHERE generation BETWEEN 1 AND 14 ORDER BY name").all();
     if(!members.length)return i.reply({embeds:[embed('🎴 Gacha Belum Siap','Database member generasi **1–14** belum tersedia. Sinkronisasi member perlu berhasil terlebih dahulu.',{color:EMBED_COLORS.warning})],ephemeral:true});
