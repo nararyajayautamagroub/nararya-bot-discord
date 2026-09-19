@@ -164,3 +164,35 @@ After changing command definitions, register them with:
 ```bash
 npm run deploy
 ```
+
+
+## General Game
+
+- `/game streetview`
+- `/game status`
+
+## Disaster
+
+- `/disaster status`
+- `/disaster latest [type]`
+- `/disaster earthquake`
+- `/disaster tsunami`
+- `/disaster volcano`
+- `/disaster general`
+- `/disaster setup channel:<channel> [min_magnitude]`
+- `/disaster disable`
+
+## System Status
+
+- `/status system`
+- `/status scrapers`
+- `/status data`
+- `/status disasters`
+- `/status sources`
+
+## Upcoming
+
+- `/upcoming ramadan`
+- `/upcoming disasters`
+
+The data audit checks all configured bot databases and stored URLs every 10 seconds. JKT48 repository/source URLs are exempt from generic scraper validation.
