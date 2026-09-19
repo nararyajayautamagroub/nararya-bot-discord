@@ -23,6 +23,7 @@ export const FEATURE_REGISTRY=[
  {id:'verification-server-code',name:'Server-bound Verification Code',category:'Security',description:'Kode 4 karakter yang diturunkan dari secret unik setiap server Discord dan nonce sesi.',status:'active'},
  {id:'verification-role',name:'Verification Role',category:'Security',description:'Role Discord opsional yang diberikan setelah kode valid ditukarkan.',status:'active'},
  {id:'verification-rate-limit',name:'Verification Rate Limit',category:'Security',description:'Batas percobaan kode dan expiry untuk mengurangi brute force.',status:'active'},
+ {id:'verification-api',name:'Verification Developer API',category:'Developer',description:'Endpoint health dan feature discovery untuk monitoring/developer tooling.',status:'active'},
  {id:'security-docs',name:'Security Policy',category:'Developer',description:'SECURITY.md berisi pelaporan vulnerability dan praktik pengamanan secret.',status:'active'},
  {id:'feature-registry',name:'Feature Registry',category:'Developer',description:'Registry terpusat agar command, dokumentasi, dan website membaca daftar fitur dari sumber yang sama.',status:'active'},
  {id:'bot-info',name:'Bot Info',category:'Developer',description:'Informasi runtime, versi, guild count, dan runtime environment.',status:'active'},
