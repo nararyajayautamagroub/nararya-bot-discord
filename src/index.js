@@ -124,6 +124,7 @@ client.once('ready',async()=>{
  console.log('[jkt48-members] synced '+synced+' members from AllMember/ActiveMember');
  setInterval(()=>syncMemberDatabase(db).catch(error=>console.warn('[jkt48-members] '+error.message)),Math.max(3600,Number(process.env.JKT48_MEMBER_SYNC_INTERVAL_SECONDS||21600))*1000);
  await feedService.poll();
- setInterval(()=>feedService.poll().catch(console.error),Math.max(30,Number(process.env.SCRAPER_INTERVAL_SECONDS||120))*1000;
+ setInterval(()=>feedService.poll().catch(console.error),Math.max(30,Number(process.env.SCRAPER_INTERVAL_SECONDS||120))*1000);
+ if(jkt48ConnectConfigured())jkt48Monitor.start();
 });
 client.login(process.env.DISCORD_TOKEN);
