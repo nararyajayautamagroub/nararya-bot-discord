@@ -8,6 +8,8 @@ import {
  priceStats,
  resolveRestaurantCity,
  resolveRestaurantCategory,
+ RESTAURANT_CITY_SOURCE_MAP,
+ filterRestaurants,
  restaurantMenuJson
 } from '../src/services/restaurant/prices.js';
 
@@ -77,4 +79,12 @@ test('restaurant menu JSON output remains source-attributed',()=>{
  const result=restaurantMenuJson(data);
  assert.equal(result.source.name,'MenuKuliner.net');
  assert.equal(result.items.length>=3,true);
+});
+
+
+test('restaurant city aliases route to the correct source dataset',()=>{
+ assert.equal(RESTAURANT_CITY_SOURCE_MAP.depok,'jakarta');
+ const rows=[{name:'Kedai Depok',city:'Jakarta',address:'Jl. Raya Depok, Beji, Depok',categories:['Aneka Nasi'],minPrice:10000,maxPrice:25000}];
+ assert.equal(filterRestaurants(rows,{city:'depok'}).length,1);
+ assert.equal(filterRestaurants(rows,{city:'bekasi'}).length,0);
 });
