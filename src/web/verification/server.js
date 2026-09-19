@@ -47,7 +47,7 @@ export function createVerificationWebServer({service,featureRegistry}){
 
  const server=http.createServer(async(req,res)=>{
    try{
-     const ip=String(req.headers['x-forwarded-for']||req.socket.remoteAddress||'unknown').split(',')[0].trim();
+     const ip=process.env.VERIFY_TRUST_PROXY==='true'?String(req.headers['x-forwarded-for']||req.socket.remoteAddress||'unknown').split(',')[0].trim():String(req.socket.remoteAddress||'unknown');
      if(!allowRequest(ip))return json(res,429,{ok:false,error:'Terlalu banyak request. Coba lagi nanti.'});
      const url=new URL(req.url||'/',`http://${req.headers.host||'localhost'}`);
      if(req.method==='GET'&&url.pathname==='/health'){
