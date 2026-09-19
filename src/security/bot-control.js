@@ -1,5 +1,3 @@
-import {PermissionFlagsBits} from 'discord.js';
-
 export function parseOwnerIds(value=''){
  return new Set(String(value||'').split(',').map(x=>x.trim()).filter(Boolean));
 }
@@ -109,12 +107,9 @@ export function createBotControl({db,client}={}){
 
  return {
   isOwner,requireOwner,isServerBlacklisted,isUserBlacklisted,denyReason,
-  setSetting,getSetting,settings,applyPresence,
+  isMaintenance,setSetting,getSetting,settings,applyPresence,
   blacklistServer,unblacklistServer,blacklistUser,unblacklistUser,listServers,listUsers,
   leaveIfBlacklisted
  };
 }
 
-export function ownerPermissionText(){
- return PermissionFlagsBits.Administrator.toString();
-}
