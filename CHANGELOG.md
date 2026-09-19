@@ -1,3 +1,15 @@
+## [2.1.0] - 2026-09-20
+
+### Restaurant Price Aggregation and Tooling
+- Added `/restaurantprices search` for restaurant discovery by Indonesian city, query, category, and price range.
+- Added `/restaurantprices menu` to inspect a restaurant menu with pagination and price filters.
+- Added `/restaurantprices prices` to aggregate menu prices from multiple restaurants in a selected city.
+- Added `/restaurantprices city`, `/restaurantprices refresh`, and `/restaurantprices status`.
+- Added MenuKuliner public source health monitoring to the scraper registry.
+- Added a centralized `src/tools/toolbox.js` utility layer and resilient `src/tools/http-client.js`.
+- Added a dedicated 1,300+ line restaurant parser/cache module to isolate external menu parsing from existing bot command logic.
+- Registry now contains 151 active features.
+
 ## [2.0.0] - 2026-09-20
 
 ### Stability and 150-Feature Expansion
