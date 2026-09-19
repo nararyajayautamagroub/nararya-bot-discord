@@ -38,7 +38,7 @@ export async function getIndonesiaNews(category='latest',limit=8){
 }
 export async function getStockQuote(symbol){
  const ticker=String(symbol||'').trim().toUpperCase().replace(/[^A-Z0-9.]/g,'');if(!ticker)throw new Error('Kode saham belum diisi.');
- const resolved=ticker.includes('.')?ticker+'.replace'.replace('.replace',''):ticker+'.JK',key='stock:'+resolved,cached=getCached(key,TTL.stock);if(cached)return cached;
+ const resolved=ticker==='IHSG'?'^JKSE':(ticker.includes('.')?ticker:ticker+'.JK'),key='stock:'+resolved,cached=getCached(key,TTL.stock);if(cached)return cached;
  const url='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(resolved)+'?range=1d&interval=5m&includePrePost=false',data=await json(url),result=data.chart?.result?.[0];if(!result?.meta)throw new Error('Data saham tidak ditemukan untuk '+resolved+'.');
  const meta=result.meta,price=Number(meta.regularMarketPrice??meta.postMarketPrice??meta.previousClose),previous=Number(meta.previousClose??meta.chartPreviousClose??price);
  return setCached(key,{symbol:resolved,price,previous,change:price-previous,changePercent:previous?((price-previous)/previous)*100:0,currency:meta.currency||'IDR',exchange:meta.exchangeName||'IDX',marketState:meta.marketState||'UNKNOWN',fetchedAt:Date.now(),source:'Yahoo Finance'});
