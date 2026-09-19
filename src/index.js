@@ -108,7 +108,7 @@ const auditDatabases=[
  {name:'jkt48-cards',db:jkt48Dbs.cards}
 ];
 async function notifyDataAuditFindings(report){
- if(!report?.missing?.length)return;
+ if(!report?.missing?.length){lastAuditAlertSignature='';return;}
  const signature=JSON.stringify(report.missing.map(x=>[x.url,x.status,x.method,x.suggestion,x.error]));
  if(signature===lastAuditAlertSignature)return;
  lastAuditAlertSignature=signature;
