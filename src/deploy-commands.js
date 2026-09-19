@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import {REST,Routes,SlashCommandBuilder,ChannelType} from 'discord.js';
+import {REST,Routes,SlashCommandBuilder,ChannelType,PermissionFlagsBits} from 'discord.js';
 
 const feed=new SlashCommandBuilder().setName('feed').setDescription('Kelola notifikasi JKT48')
  .addSubcommand(s=>s.setName('list').setDescription('Lihat semua feed'))
@@ -20,7 +20,13 @@ const jkt48game=new SlashCommandBuilder().setName('jkt48game').setDescription('G
   {name:'Tebak suara lagu',value:'song'},{name:'Tebak suara member JKT48',value:'memberVoice'},{name:'Tebak member foto active',value:'activePhoto'},{name:'Tebak member foto graduation',value:'graduationPhoto'},{name:'Tebak member random',value:'randomMember'},{name:'Tebak foto setlist',value:'setlistPhoto'},{name:'Tebak lagu dari foto',value:'songPhoto'})))
  .addSubcommand(s=>s.setName('gacha').setDescription('Gacha member JKT48'))
  .addSubcommand(s=>s.setName('inventory').setDescription('Lihat koleksi gacha'))
- .addSubcommand(s=>s.setName('leaderboard').setDescription('Lihat leaderboard game'));
+ .addSubcommand(s=>s.setName('leaderboard').setDescription('Lihat leaderboard game'))
+ .addSubcommand(s=>s.setName('asset_add').setDescription('Tambah asset quiz ke database').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild.toString())
+  .addStringOption(o=>o.setName('mode').setDescription('Mode quiz').setRequired(true).addChoices({name:'Tebak suara lagu',value:'song'},{name:'Tebak suara member',value:'memberVoice'},{name:'Member foto active',value:'activePhoto'},{name:'Member foto graduation',value:'graduationPhoto'},{name:'Member random',value:'randomMember'},{name:'Foto setlist',value:'setlistPhoto'},{name:'Lagu dari foto',value:'songPhoto'}))
+  .addStringOption(o=>o.setName('answer').setDescription('Jawaban, gunakan | untuk alias').setRequired(true))
+  .addStringOption(o=>o.setName('media_url').setDescription('URL media publik').setRequired(true))
+  .addStringOption(o=>o.setName('rarity').setDescription('Rarity kartu/challenge').setRequired(true).addChoices({name:'Common',value:'common'},{name:'Uncommon',value:'uncommon'},{name:'Rare',value:'rare'},{name:'Epic',value:'epic'},{name:'Legendary',value:'legendary'},{name:'Mythic',value:'mythic'},{name:'Secret',value:'secret'})))
+ .addSubcommand(s=>s.setName('asset_list').setDescription('Lihat jumlah asset per mode').addStringOption(o=>o.setName('mode').setDescription('Mode quiz').addChoices({name:'Tebak suara lagu',value:'song'},{name:'Tebak suara member',value:'memberVoice'},{name:'Member foto active',value:'activePhoto'},{name:'Member foto graduation',value:'graduationPhoto'},{name:'Member random',value:'randomMember'},{name:'Foto setlist',value:'setlistPhoto'},{name:'Lagu dari foto',value:'songPhoto'})));
 
 const sim=new SlashCommandBuilder().setName('sim').setDescription('Tycoon & simulasi ekonomi').addSubcommand(s=>s.setName('profile').setDescription('Profil kota')).addSubcommand(s=>s.setName('daily').setDescription('Daily reward')).addSubcommand(s=>s.setName('bank').setDescription('Deposit ke bank').addIntegerOption(o=>o.setName('amount').setDescription('Jumlah').setRequired(true))).addSubcommand(s=>s.setName('fish').setDescription('Memancing')).addSubcommand(s=>s.setName('build').setDescription('Bangun kota')).addSubcommand(s=>s.setName('gacha').setDescription('Gacha member JKT48'));
 const jkt48=new SlashCommandBuilder().setName('jkt48').setDescription('Jadwal, event, theater, birthday dan live JKT48')
