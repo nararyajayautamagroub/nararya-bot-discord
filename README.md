@@ -82,7 +82,7 @@ Project/legal documentation:
 
 ## Current version
 
-**v1.8.0** — 2026-09-19
+**v1.9.0** — 2026-09-19
 
 ### Modern command layout
 
@@ -186,3 +186,16 @@ Pengiriman dicatat pada `guild_config.welcome_sent_at`, sehingga pesan onboardin
 - `/electronics` scrapes Indonesian public electronics catalog prices with category and keyword filters.
 - Supported electronics categories include smartphone, laptop, tablet, TV, monitor, audio, camera, printer, router, storage, gaming, keyboard, mouse, smartwatch, and other electronics.
 - Electronics source refresh is registered at 30 minutes, while URL health remains part of the 10-second data integrity checks.
+
+
+## Owner Controls
+
+`/setup` is now **owner-only**. Configure `BOT_OWNER_IDS` with comma-separated Discord user IDs, while the Discord application owner is also recognized at runtime.
+
+Owner-only commands:
+- `/setup`
+- `/settingbot`
+- `/blacklistserver`
+- `/blacklistusers`
+
+`/settingbot` controls global maintenance mode and bot activity. Blacklists persist in the main database, block normal bot activity, and allow bot owners to bypass restrictions for recovery.
