@@ -1,18 +1,41 @@
-# JKT48 Integration
+# JKT48 Sources
 
-Nararya Bot Discord menggunakan adapter internal yang mengambil pola integrasi dari beberapa proyek publik yang ditinjau, bukan menyalin source code mereka.
+## Member database
 
-Referensi teknis:
-- sendyarf/jkt48-archiver
-- ayouree/live-notification-bot
-- ojixzzz/twitterbot48
-- pranendraa/piobot-live
-- FrenzY8/JKT48Guessr
-- crstlnz/jkt48showroom-api
-- FrenzY8/JKT48Member
-- Synxx12/idn-api-live-jkt48
-- faruuhan/scraping-jkt48-website
+The member database synchronizes from the configured public JKT48 member source.
 
-Bot memprioritaskan feed/API publik dan metadata HTML. Tidak ada bypass login, CAPTCHA, paywall, rate limit, atau anti-bot. Platform dinamis dapat membutuhkan URL/API credential yang sesuai.
+The local database stores active and historical member records for command and game features.
 
-Polling default: 120 detik. Sesuaikan rate dengan kebijakan masing-masing layanan.
+## Public integrations
+
+- JKT48 Website
+- Events
+- News
+- Theater
+- SHOWROOM
+- IDN
+- YouTube
+- Instagram
+- TikTok
+- X/Twitter
+- Threads
+- Tokopedia
+- Shopee
+- Costume channels
+
+## Handling
+
+JKT48 source integrations use dedicated adapters and are intentionally outside the generic non-JKT48 scraper contract.
+
+Adapters handle:
+
+- parsing
+- normalization
+- deduplication
+- polling
+- error handling
+- health reporting
+
+## Configuration policy
+
+Do not create guessed or placeholder social URLs for member or costume feeds. Only explicit public URLs should be registered.
