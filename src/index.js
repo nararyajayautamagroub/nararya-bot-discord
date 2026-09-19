@@ -13,6 +13,9 @@ import {awardCard,getInventory as getCardInventory,getCollectionStats} from './s
 import {addQuizAsset,getQuizAssets,migrateLegacyAssets,startSession,getActiveSession,finishSession,calculatePoints,recordAttempt,recordResult,getLeaderboard} from './services/games/jkt48/quiz-system.js';
 import {saveGacha,consumeDailyPull} from './services/games/jkt48/gacha.js';
 import {revealAnimation,revealChannel} from './services/games/jkt48/reveal-animation.js';
+import {createMediaDatabase} from './media/database.js';
+import {createMediaService} from './media/service.js';
+import {handleMediaCommand} from './media/command.js';
 
 const db=new Database(process.env.DATABASE_PATH||'./data/nararya.db');
 db.pragma('journal_mode=WAL');
@@ -32,6 +35,8 @@ CREATE TABLE IF NOT EXISTS owned_items(guild_id TEXT,user_id TEXT,item_id TEXT,q
 `);
 ensureTables(db);
 const jkt48Dbs=createJkt48FeatureDatabases();
+const mediaDbState=createMediaDatabase();
+const mediaService=createMediaService({db:mediaDbState.db,dir:mediaDbState.dir});
 migrateLegacyAssets(db,jkt48Dbs.quiz);
 try{db.prepare('ALTER TABLE feed_sources ADD COLUMN kind TEXT DEFAULT "public"').run()}catch{}
 const EMBED_COLORS=Object.freeze({default:0xFF6200,success:0x22C55E,error:0xEF4444,warning:0xF59E0B,info:0x3B82F6,jkt48:0xE91E63,gacha:0x8B5CF6,game:0x06B6D4,bank:0x16A34A,shop:0xF97316,city:0x64748B,fishing:0x0891B2});
@@ -109,6 +114,8 @@ client.on('interactionCreate',async i=>{
   if(i.isButton()&&i.customId==='ticket-close'){db.prepare("UPDATE tickets SET status='closed',closed_at=? WHERE channel_id=? AND status='open'").run(Date.now(),i.channel.id);await i.reply({embeds:[embed('🔒 Ticket Ditutup','Ticket ditandai closed.')]});return i.channel.permissionOverwrites.edit(i.user.id,{SendMessages:false}).catch(()=>{})}
   if(!i.isChatInputCommand())return;
   const n=i.commandName;
+
+  if(n==='media')return handleMediaCommand(i,{mediaService,embed,colors:EMBED_COLORS});
 
   if(n==='utility'){
    const sub=i.options.getSubcommand(true);
