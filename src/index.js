@@ -17,8 +17,10 @@ CREATE TABLE IF NOT EXISTS levels(guild_id TEXT,user_id TEXT,xp INTEGER DEFAULT 
 CREATE TABLE IF NOT EXISTS economy(guild_id TEXT,user_id TEXT,balance INTEGER DEFAULT 0,daily_at INTEGER DEFAULT 0,PRIMARY KEY(guild_id,user_id));
 CREATE TABLE IF NOT EXISTS warnings(id INTEGER PRIMARY KEY AUTOINCREMENT,guild_id TEXT,user_id TEXT,reason TEXT,moderator_id TEXT,created_at INTEGER);
 CREATE TABLE IF NOT EXISTS tickets(id INTEGER PRIMARY KEY AUTOINCREMENT,guild_id TEXT,channel_id TEXT,user_id TEXT,status TEXT DEFAULT 'open',claimed_by TEXT,created_at INTEGER,closed_at INTEGER);
-CREATE TABLE IF NOT EXISTS tycoon(guild_id TEXT,user_id TEXT,money INTEGER DEFAULT 10000,bank INTEGER DEFAULT 0,energy INTEGER DEFAULT 100,city_level INTEGER DEFAULT 1,fish_level INTEGER DEFAULT 1,daily_at INTEGER DEFAULT 0,gacha_count INTEGER DEFAULT 0,PRIMARY KEY(guild_id,user_id));
-CREATE TABLE IF NOT EXISTS shop_items(id TEXT PRIMARY KEY,name TEXT NOT NULL,price INTEGER NOT NULL,category TEXT NOT NULL,stock INTEGER DEFAULT -1);
+CREATE TABLE IF NOT EXISTS tycoon(guild_id TEXT,user_id TEXT,money INTEGER DEFAULT 10000,bank INTEGER DEFAULT 0,energy INTEGER DEFAULT 100,city_level INTEGER DEFAULT 1,fish_level INTEGER DEFAULT 1,daily_at INTEGER DEFAULT 0,gacha_count INTEGER DEFAULT 0,
+        gacha_day TEXT DEFAULT '',PRIMARY KEY(guild_id,user_id));
+db.exec(`ALTER TABLE tycoon ADD COLUMN gacha_day TEXT DEFAULT ''`);
+      CREATE TABLE IF NOT EXISTS shop_items(id TEXT PRIMARY KEY,name TEXT NOT NULL,price INTEGER NOT NULL,category TEXT NOT NULL,stock INTEGER DEFAULT -1);
 CREATE TABLE IF NOT EXISTS owned_items(guild_id TEXT,user_id TEXT,item_id TEXT,qty INTEGER DEFAULT 1,PRIMARY KEY(guild_id,user_id,item_id));
 
 `);
