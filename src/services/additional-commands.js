@@ -7,7 +7,7 @@ import {FEATURE_REGISTRY} from '../config/features.js';
 import {AttachmentBuilder} from 'discord.js';
 import {DISASTER_URLS,recentDisasters,disasterStatus,configureDisaster} from './disasters/index.js';
 
-export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,gameCooldowns,gameCooldownMs,quizTimeoutMs,scraperOrchestrator,getAuditStatus,onQuizStarted}){
+export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,gameCooldowns,gameCooldownMs,quizTimeoutMs,scraperOrchestrator,getAuditStatus,onQuizStarted,botControl}){
  const cooldown=(guildId,userId)=>{
   const key=guildId+':'+userId;
   const last=gameCooldowns.get(key)||0;
@@ -23,6 +23,94 @@ export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,game
  };
  return async function handle(i){
   const n=i.commandName;
+  if(['setup','settingbot','blacklistserver','blacklistusers'].includes(n)){
+   if(!botControl.isOwner(i.user.id))return i.reply({embeds:[embed('🔒 Owner Only','Command ini hanya dapat digunakan oleh **owner bot**.',{color:0xEF4444})],ephemeral:true});
+   const sub=i.options.getSubcommand(true);
+   if(n==='setup'){
+    if(sub==='overview'){
+     const cfg=db.prepare('SELECT * FROM guild_config WHERE guild_id=?').get(i.guild.id)||{};
+     const ramadan=db.prepare('SELECT * FROM ramadan_configs WHERE guild_id=?').get(i.guild.id);
+     const disaster=db.prepare('SELECT * FROM disaster_configs WHERE guild_id=?').get(i.guild.id);
+     const body='**Welcome:** '+(cfg.welcome_channel?'<#'+cfg.welcome_channel+'>':'Otomatis / belum diatur')+'\n**Log:** '+(cfg.log_channel?'<#'+cfg.log_channel+'>':'Belum diatur')+'\n**Feed:** '+(cfg.feed_channel?'<#'+cfg.feed_channel+'>':'Belum diatur')+'\n**Ramadan:** '+(ramadan?.enabled?'✅ Aktif • '+ramadan.city_name:'❌ Nonaktif / belum diatur')+'\n**Disaster:** '+(disaster?.enabled?'✅ Aktif • <#'+disaster.channel_id+'>':'❌ Nonaktif / belum diatur')+'\n\n**Total fitur:** '+FEATURE_REGISTRY.length+'\n**Maintenance:** '+(botControl.getSetting('maintenance','false')==='true'?'🔴 ON':'🟢 OFF')+'\n**Blacklist server:** '+botControl.listServers().length+'\n**Blacklist user:** '+botControl.listUsers().length;
+     return i.reply({embeds:[embed('⚙️ Owner Setup • '+i.guild.name,body,{color:0xFF6200})]});
+    }
+    if(sub==='welcome'){
+     const channel=i.options.getChannel('channel',true);
+     db.prepare('UPDATE guild_config SET welcome_channel=? WHERE guild_id=?').run(channel.id,i.guild.id);
+     return i.reply({embeds:[embed('✅ Welcome Channel Disimpan','Channel: <#'+channel.id+'>',{color:0x22C55E})]});
+    }
+    if(sub==='log'){
+     const channel=i.options.getChannel('channel',true);
+     db.prepare('UPDATE guild_config SET log_channel=? WHERE guild_id=?').run(channel.id,i.guild.id);
+     return i.reply({embeds:[embed('✅ Log Channel Disimpan','Channel: <#'+channel.id+'>',{color:0x22C55E})]});
+    }
+   }
+   if(n==='settingbot'){
+    if(sub==='status'){
+     const rows=botControl.settings();
+     const body=rows.length?rows.map(x=>'• **'+x.key+'** = `'+x.value+'`').join('\n'):'Belum ada setting tersimpan.';
+     return i.reply({embeds:[embed('🛠️ Global Bot Settings',body,{color:0x3B82F6})],ephemeral:true});
+    }
+    if(sub==='maintenance'){
+     const enabled=i.options.getBoolean('enabled',true);
+     botControl.setSetting('maintenance',enabled?'true':'false');
+     await botControl.applyPresence();
+     return i.reply({embeds:[embed('✅ Maintenance '+(enabled?'Aktif':'Nonaktif'),'Status global: **'+(enabled?'MAINTENANCE':'ONLINE')+'**',{color:enabled?0xF59E0B:0x22C55E})]});
+    }
+    if(sub==='activity'){
+     const text=i.options.getString('text',true);
+     botControl.setSetting('activity',text);
+     await botControl.applyPresence();
+     return i.reply({embeds:[embed('✅ Activity Bot Diperbarui','Activity: **'+text+'**',{color:0x22C55E})]});
+    }
+    if(sub==='reset'){
+     db.prepare('DELETE FROM bot_settings').run();
+     await botControl.applyPresence();
+     return i.reply({embeds:[embed('♻️ Bot Settings Direset','Pengaturan global kembali ke default.',{color:0x22C55E})]});
+    }
+   }
+   if(n==='blacklistserver'){
+    if(sub==='list'){
+     const rows=botControl.listServers().slice(0,25);
+     const body=rows.length?rows.map((x,n)=>'**'+(n+1)+'. `'+x.guild_id+'`**\n'+(x.reason||'No reason')).join('\n\n'):'Blacklist server kosong.';
+     return i.reply({embeds:[embed('⛔ Blacklist Server',body,{color:0xEF4444})],ephemeral:true});
+    }
+    const guildId=i.options.getString('server_id',true).trim();
+    if(!/^\d{17,20}$/.test(guildId))return i.reply({embeds:[embed('❌ Server ID Tidak Valid','Gunakan Discord server ID numerik.',{color:0xEF4444})],ephemeral:true});
+    if(sub==='add'){
+     const reason=i.options.getString('reason')||'Owner bot blacklist';
+     botControl.blacklistServer(guildId,reason,i.user.id);
+     if(i.guild?.id===guildId){
+      await i.reply({embeds:[embed('⛔ Server Di-blacklist','Server ini masuk blacklist global dan bot akan keluar.',{color:0xEF4444})]});
+      setTimeout(()=>botControl.leaveIfBlacklisted(i.guild).catch(()=>{}),1000);
+      return;
+     }
+     return i.reply({embeds:[embed('✅ Server Di-blacklist','Server ID: `'+guildId+'`\nAlasan: '+reason,{color:0x22C55E})]});
+    }
+    if(sub==='remove'){
+     const removed=botControl.unblacklistServer(guildId);
+     return i.reply({embeds:[embed(removed?'✅ Server Dikeluarkan':'ℹ️ Tidak Ditemukan',removed?'Server `'+guildId+'` sudah dikeluarkan dari blacklist.':'Server tersebut tidak ada di blacklist.',{color:removed?0x22C55E:0xF59E0B})]});
+    }
+   }
+   if(n==='blacklistusers'){
+    if(sub==='list'){
+     const rows=botControl.listUsers().slice(0,25);
+     const body=rows.length?rows.map((x,n)=>'**'+(n+1)+'. `'+x.user_id+'`**\n'+(x.reason||'No reason')).join('\n\n'):'Blacklist user kosong.';
+     return i.reply({embeds:[embed('⛔ Blacklist User',body,{color:0xEF4444})],ephemeral:true});
+    }
+    const userId=i.options.getString('user_id',true).trim();
+    if(!/^\d{17,20}$/.test(userId))return i.reply({embeds:[embed('❌ User ID Tidak Valid','Gunakan Discord user ID numerik.',{color:0xEF4444})],ephemeral:true});
+    if(sub==='add'){
+     const reason=i.options.getString('reason')||'Owner bot blacklist';
+     botControl.blacklistUser(userId,reason,i.user.id);
+     return i.reply({embeds:[embed('✅ User Di-blacklist','User ID: `'+userId+'`\nAlasan: '+reason,{color:0x22C55E})]});
+    }
+    if(sub==='remove'){
+     const removed=botControl.unblacklistUser(userId);
+     return i.reply({embeds:[embed(removed?'✅ User Dikeluarkan':'ℹ️ Tidak Ditemukan',removed?'User `'+userId+'` sudah dikeluarkan dari blacklist.':'User tersebut tidak ada di blacklist.',{color:removed?0x22C55E:0xF59E0B})]});
+    }
+   }
+  }
   if(n==='help'){
    const category=i.options.getString('category')||'all';
    const page=i.options.getInteger('page')||1;
