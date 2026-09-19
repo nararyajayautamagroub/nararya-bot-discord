@@ -1,12 +1,12 @@
 # Version
 
-Current version: 2.1.2
+Current version: 2.2.0
 
 Release date: 2026-09-20
 
 ## Release scope
 
-This version standardizes the shared tool layer, adds restaurant menu price aggregation, strengthens verification rate limiting, documents the media system, and synchronizes the active feature registry to 150 features.
+This version adds date-keyed daily game limits, generation 14 member seed data, scraper-backed live detection, and database fallbacks for JKT48 schedule commands while retaining the separate Ticket Bot runtime.
 
 ## Runtime requirements
 
