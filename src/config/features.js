@@ -56,7 +56,7 @@ export const FEATURE_REGISTRY=[
  {id:'scraper-method-suggestion',name:'Scraper Method Suggestion',category:'Developer',description:'Menyarankan metode JSON, RSS/XML, media, API, atau HTML ketika URL belum punya adapter.',status:'active'},
  {id:'disaster-monitor',name:'Disaster Monitor',category:'Security',description:'Monitoring gempa, tsunami, gunung api, dan kejadian bencana umum dari sumber resmi.',status:'active'},
  {id:'disaster-notification',name:'Disaster Notification',category:'Security',description:'Notifikasi kejadian baru dengan lokasi dan sumber ke channel server.',status:'active'},
- {id:'system-status',name:'System Status',category:'Developer',description:'Slash command untuk runtime, database, scraper, audit, source, dan disaster status.',status:'active'}
+ {id:'system-status',name:'System Status',category:'Developer',description:'Slash command untuk runtime, database, scraper, audit, source, dan disaster status.',status:'active'},
  {id:'restaurant-prices',name:'Restaurant Menu Prices',category:'Indonesia',description:'Agregasi menu dan harga restoran publik Indonesia melalui direktori MenuKuliner.net, dengan pencarian kota, kategori, filter harga, pagination, cache, dan refresh.',status:'active'},
 ].concat(EXTENDED_FEATURES);
 
