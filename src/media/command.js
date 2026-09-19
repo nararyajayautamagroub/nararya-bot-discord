@@ -68,13 +68,13 @@ export async function handleMediaCommand(i,{mediaService,embed,colors}){
 
   const source=sourceFrom(i);
 
-  if(sub==='vocals'){
+  if(sub==='vocals'||sub==='instrumental'){
    const settings=mediaService.getSettings(guildId,userId);
    const format=i.options.getString('format')||settings.audio_format;
    if(!AUDIO_FORMATS.includes(format))throw new Error('Unsupported audio format: '+format);
    const result=await mediaService.removeVocals({...source,format,kind:'video'},{...ctx});
    await i.editReply({embeds:[resultEmbed(embed,result,'Vocal Removal')],files:[new AttachmentBuilder(result.path)]});
-   await cleanup(result.path);
+   await cleanup(path.dirname(result.path));
    return;
   }
 
@@ -82,7 +82,7 @@ export async function handleMediaCommand(i,{mediaService,embed,colors}){
    const mediaType=i.options.getString('type',true);
    const result=await mediaService.removeBackground({...source,mediaType,kind:mediaType},{...ctx});
    await i.editReply({embeds:[resultEmbed(embed,result,'Background Removal')],files:[new AttachmentBuilder(result.path)]});
-   await cleanup(result.path);
+   await cleanup(path.dirname(result.path));
    return;
   }
 
@@ -97,7 +97,7 @@ export async function handleMediaCommand(i,{mediaService,embed,colors}){
    if(rect.x<0||rect.y<0||rect.width<=0||rect.height<=0)throw new Error('Watermark coordinates must be non-negative and width/height must be greater than zero.');
    const result=await mediaService.removeWatermark({...source,mediaType,kind:mediaType,...rect},{...ctx});
    await i.editReply({embeds:[resultEmbed(embed,result,'Watermark Removal')],files:[new AttachmentBuilder(result.path)]});
-   await cleanup(result.path);
+   await cleanup(path.dirname(result.path));
    return;
   }
 
