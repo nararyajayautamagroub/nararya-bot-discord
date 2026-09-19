@@ -24,9 +24,14 @@ const feed=new SlashCommandBuilder().setName('feed').setDescription('Kelola sumb
   .addChannelOption(o=>o.setName('channel').setDescription('Channel Discord tujuan').addChannelTypes(ChannelType.GuildText).setRequired(true))
   .addStringOption(o=>o.setName('kind').setDescription('Jenis adapter').setRequired(true).addChoices(
    {name:'JKT48 Website',value:'jkt48-web'},{name:'IDN',value:'idn'},{name:'SHOWROOM',value:'showroom'},{name:'YouTube',value:'youtube'},
-   {name:'Instagram',value:'instagram'},{name:'TikTok',value:'tiktok'},{name:'X/Twitter',value:'x'},{name:'Threads',value:'threads'},
-   {name:'Tokopedia',value:'tokopedia'},{name:'Shopee',value:'shopee'},{name:'Costume YouTube',value:'costume-youtube'},
+   {name:'Instagram',value:'instagram'},{name:'Instagram Member',value:'instagram-member'},
+   {name:'TikTok',value:'tiktok'},{name:'TikTok Member',value:'tiktok-member'},
+   {name:'X/Twitter',value:'x'},{name:'X/Twitter Member',value:'x-member'},
+   {name:'Threads',value:'threads'},{name:'Threads Member',value:'threads-member'},
+   {name:'Tokopedia',value:'tokopedia'},{name:'Shopee',value:'shopee'},
+   {name:'JKT48 TV',value:'jkt48-tv'},{name:'Costume YouTube',value:'costume-youtube'},
    {name:'Costume Instagram',value:'costume-instagram'},{name:'Costume TikTok',value:'costume-tiktok'})))
+ .addSubcommand(s=>s.setName('defaults').setDescription('Pasang semua sumber JKT48 dari registry ke channel'))
  .addSubcommand(s=>s.setName('remove').setDescription('Hapus feed').addIntegerOption(o=>o.setName('id').setDescription('ID feed').setRequired(true)))
  .addSubcommand(s=>s.setName('test').setDescription('Tes scraper feed').addIntegerOption(o=>o.setName('id').setDescription('ID feed').setRequired(true)));
 
