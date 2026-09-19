@@ -68,7 +68,7 @@ export function createAbortController(timeoutMs){
  return {controller,cancel:()=>clearTimeout(timer)};
 }
 
-function combineSignals(primary,timeoutSignalValue){
+export function combineSignals(primary,timeoutSignalValue){
  if(!primary)return timeoutSignalValue;
  if(!timeoutSignalValue)return primary;
  if(typeof AbortSignal.any==='function')return AbortSignal.any([primary,timeoutSignalValue]);
