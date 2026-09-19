@@ -61,8 +61,8 @@ export async function getFoodPrices(){
 }
 export async function findCity(query){const data=await json('https://api.myquran.com/v2/sholat/kota/cari/'+encodeURIComponent(String(query||'').trim()));return(data.data||[]).map(x=>({id:String(x.id),lokasi:x.lokasi,daerah:x.daerah})).slice(0,10)}
 export async function getPrayerSchedule(cityId,date=new Date()){
- const d=new Date(date),key='prayer:'+cityId+':'+d.toISOString().slice(0,10),cached=getCached(key,TTL.prayer);if(cached)return cached;
- const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0'),data=await json('https://api.myquran.com/v2/sholat/jadwal/'+encodeURIComponent(cityId)+'/'+y+'-'+m+'-'+day);
+ const d=new Date(date),key='prayer:'+cityId+':'+dateKey(d),cached=getCached(key,TTL.prayer);if(cached)return cached;
+ const [y,m,day]=dateKey(d).split('-'),data=await json('https://api.myquran.com/v2/sholat/jadwal/'+encodeURIComponent(cityId)+'/'+y+'-'+m+'-'+day);
  if(!data.data?.jadwal)throw new Error('Jadwal sholat tidak tersedia.');
  return setCached(key,{location:data.data.lokasi,region:data.data.daerah,jadwal:data.data.jadwal,updatedAt:Date.now(),source:'MyQuran API'});
 }
