@@ -134,7 +134,7 @@ const QUIZ_TIMEOUT_MS=60000;
 function gameCooldownLeft(guildId,userId){const key=guildId+':'+userId,last=gameCooldowns.get(key)||0,remaining=GAME_COOLDOWN_MS-(Date.now()-last);if(remaining>0)return remaining;gameCooldowns.set(key,Date.now());return 0;}
 function scheduleQuizExpiry(session){setTimeout(async()=>{const current=jkt48Dbs.quiz.prepare('SELECT * FROM quiz_sessions WHERE id=?').get(session.id);if(!current||current.status!=='active')return;if(current.expires_at>Date.now())return scheduleQuizExpiry({...current});finishSession(jkt48Dbs.quiz,current.id,'expired');recordResult(jkt48Dbs.quiz,{guildId:current.guild_id,userId:current.user_id,mode:current.mode,rarity:current.rarity,answer:current.answer,input:'[timeout]',correct:false,points:0,durationMs:QUIZ_TIMEOUT_MS});const ch=await client.channels.fetch(current.channel_id).catch(()=>null);if(ch?.isTextBased())await ch.send({embeds:[embed('⏰ Waktu Habis','Tantangan **'+current.mode+'** gagal karena tidak dijawab dalam **1 menit**. Coba lagi setelah cooldown.',{color:EMBED_COLORS.error})]}).catch(()=>{});},Math.max(100,current.expires_at-Date.now()+100));}
 function money(v){return Number.isFinite(Number(v))?'Rp'+Number(v).toLocaleString('id-ID'):'-';}
-const additionalCommandHandler=createAdditionalCommandHandler({db,jkt48QuizDb:jkt48Dbs.quiz,client,embed,gameCooldowns,gameCooldownMs:GAME_COOLDOWN_MS,quizTimeoutMs:QUIZ_TIMEOUT_MS,scraperOrchestrator,getAuditStatus,onQuizStarted:scheduleQuizExpiry});
+const additionalCommandHandler=createAdditionalCommandHandler({db,jkt48QuizDb:jkt48Dbs.quiz,client,embed,gameCooldowns,gameCooldownMs:GAME_COOLDOWN_MS,quizTimeoutMs:QUIZ_TIMEOUT_MS,scraperOrchestrator,getAuditStatus,onQuizStarted:scheduleQuizExpiry,botControl});
 let dataPipelineRunning=false;
 let lastAuditAlertSignature='';
 const auditDatabases=[
@@ -203,6 +203,8 @@ async function checkRamadanNotifications(){
 }
 client.on('messageCreate',async m=>{
  if(m.author.bot||!m.guild)return;
+ if(botControl.isMaintenance()&&!botControl.isOwner(m.author.id))return;
+ if(botControl.denyReason({guildId:m.guild.id,userId:m.author.id}))return;
  const session=getActiveSession(jkt48Dbs.quiz,m.guild.id,m.author.id,m.channel.id);
  if(session?.timed_out){
   recordResult(jkt48Dbs.quiz,{guildId:session.guild_id,userId:session.user_id,mode:session.mode,rarity:session.rarity,answer:session.answer,input:'[timeout]',correct:false,points:0,durationMs:QUIZ_TIMEOUT_MS});
@@ -266,6 +268,8 @@ client.on('interactionCreate',async i=>{
   if(i.isButton()&&i.customId==='ticket-close'){db.prepare("UPDATE tickets SET status='closed',closed_at=? WHERE channel_id=? AND status='open'").run(Date.now(),i.channel.id);await i.reply({embeds:[embed('🔒 Ticket Ditutup','Ticket ditandai closed.')]});return i.channel.permissionOverwrites.edit(i.user.id,{SendMessages:false}).catch(()=>{})}
   if(!i.isChatInputCommand())return;
   const n=i.commandName;
+  const ownerControlCommand=['setup','settingbot','blacklistserver','blacklistusers'].includes(n);
+  if(!ownerControlCommand&&botControl.isMaintenance()&&!botControl.isOwner(i.user.id))return i.reply({embeds:[embed('🛠️ Bot Maintenance','Bot sedang dalam maintenance. Command publik sementara dinonaktifkan.',{color:EMBED_COLORS.warning})],ephemeral:true});
   const deny=botControl.denyReason({guildId:i.guild?.id,userId:i.user.id});
   if(deny){
    return i.reply({embeds:[embed('🚫 Akses Ditolak',deny==='USER_BLACKLIST'?'Akun ini masuk blacklist bot.':'Server ini masuk blacklist bot. Gunakan support resmi bot jika merasa terjadi kesalahan.',{color:EMBED_COLORS.error})],ephemeral:true});
