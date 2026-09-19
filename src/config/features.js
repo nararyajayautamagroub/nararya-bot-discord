@@ -1,5 +1,8 @@
 import {EXTENDED_FEATURES} from "./extended-features.js";
 export const FEATURE_REGISTRY=[
+ {id:'jkt48-public-scraper-matrix',name:'JKT48 Public Scraper Matrix',category:'Notification',description:'Scraper publik dengan timeout, retry, dedup, health state, dan adapter JKT48 Website, YouTube, Instagram, TikTok, X/Twitter, Threads, Tokopedia, Shopee, serta channel costume/member yang dikonfigurasi.',status:'active'},
+ {id:'jkt48-feed-health',name:'JKT48 Feed Health',category:'Notification',description:'Status per feed, jumlah item, last success, dan error terakhir melalui /feed health.',status:'active'},
+ {id:'separate-ticket-bot',name:'Separate Ticket Bot',category:'Support',description:'Runtime bot ticket terpisah dengan database, panel, setup, claim, add/remove user, close, dan log.',status:'active'},
  {id:'discord-commands',name:'Slash Command Registry',category:'Discord',description:'Namespace slash command terdaftar untuk JKT48, game, simulasi, utility, economy, moderation, support, feed, media, verification, dan developer tools.',status:'active'},
  {id:'jkt48-members',name:'JKT48 Member Database',category:'JKT48',description:'Sinkronisasi member generasi 1-14 dari sumber JSON publik.',status:'active'},
  {id:'jkt48-upcoming',name:'JKT48 Upcoming',category:'JKT48',description:'Event, theater, setlist, songs, live, birthday, dan graduation.',status:'active'},
