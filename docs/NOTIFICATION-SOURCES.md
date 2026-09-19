@@ -1,5 +1,53 @@
 # Notification Sources
 
-Default sources: JKT48 News, JKT48 Schedule/Event, JKT48 Theater, YouTube JKT48, YouTube JKT48 TV, Instagram JKT48, TikTok JKT48, X JKT48, Threads JKT48, SHOWROOM, IDN, Tokopedia, dan Shopee.
+The bot uses an adapter-based public notification feed service.
 
-Member dan channel costume memakai URL publik yang dikonfigurasi admin supaya satu bot tidak mengarang akun. Untuk sumber dinamis, scraper adalah fallback dan dapat gagal ketika halaman berubah. Gunakan API/RSS resmi bila tersedia.
+## Supported feed groups
+
+- JKT48 Website
+- IDN
+- SHOWROOM
+- YouTube
+- Instagram
+- Instagram member feeds when explicitly configured
+- TikTok
+- TikTok member feeds when explicitly configured
+- X/Twitter
+- X/Twitter member feeds when explicitly configured
+- Threads
+- Tokopedia
+- Shopee
+- JKT48 TV
+- Costume YouTube
+- Costume Instagram
+- Costume TikTok
+
+## Feed lifecycle
+
+1. Register the source.
+2. Select an adapter.
+3. Poll the source.
+4. Normalize the result.
+5. Remove duplicates.
+6. Persist feed items.
+7. Send a Discord notification.
+8. Update source health.
+
+## Commands
+
+- /feed list
+- /feed add
+- /feed defaults
+- /feed health
+- /feed remove
+- /feed test
+
+## Restrictions
+
+Only public sources should be configured.
+
+Do not configure private account endpoints, credential pages, or protected source URLs.
+
+## JKT48 rule
+
+JKT48 integrations use their dedicated source logic and are exempt from the generic scraper requirement.
