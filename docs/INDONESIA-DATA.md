@@ -36,6 +36,8 @@ Tariffs depend on customer class, subsidy status, and official tariff changes.
 
 Cache: 24 hours.
 
+The bot checks the configured PLN source during refresh. Because public page layouts can change, the displayed tariff table uses the configured application baseline rather than assuming that arbitrary page text is machine-readable.
+
 ## Food
 
 `/prices food` returns strategic food commodities where source parsing is available.
