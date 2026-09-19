@@ -11,6 +11,7 @@ const choiceModes=[
  {name:'Tebak lagu dari foto',value:'songPhoto'},
  {name:'Tebak lokasi Google Street View',value:'streetView'}
 ];
+const assetModes=choiceModes.filter(x=>x.value!=='streetView');
 const rarityChoices=[
  {name:'Common',value:'common'},{name:'Uncommon',value:'uncommon'},{name:'Rare',value:'rare'},
  {name:'Epic',value:'epic'},{name:'Legendary',value:'legendary'},{name:'Mythic',value:'mythic'},{name:'Secret',value:'secret'}
@@ -61,7 +62,7 @@ const jkt48game=new SlashCommandBuilder().setName('jkt48game').setDescription('G
   .addStringOption(o=>o.setName('answer').setDescription('Jawaban, gunakan | untuk alias').setRequired(true))
   .addStringOption(o=>o.setName('media_url').setDescription('URL media publik').setRequired(true))
   .addStringOption(o=>o.setName('rarity').setDescription('Rarity challenge').setRequired(true).addChoices(...rarityChoices)))
- .addSubcommand(s=>s.setName('asset_list').setDescription('Lihat jumlah asset per mode').addStringOption(o=>o.setName('mode').setDescription('Mode quiz').addChoices(...choiceModes)));
+ .addSubcommand(s=>s.setName('asset_list').setDescription('Lihat jumlah asset per mode').addStringOption(o=>o.setName('mode').setDescription('Mode quiz').addChoices(...assetModes)));
 
 const sim=new SlashCommandBuilder().setName('sim').setDescription('Tycoon dan simulasi ekonomi')
  .addSubcommand(s=>s.setName('profile').setDescription('Profil kota'))
