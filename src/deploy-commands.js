@@ -94,16 +94,19 @@ const jkt48=new SlashCommandBuilder().setName('jkt48').setDescription('Pusat dat
 
 
 const media=new SlashCommandBuilder().setName('media').setDescription('Download dan transformasi media')
- .addSubcommand(s=>s.setName('download').setDescription('Download video, audio, atau gambar dari URL publik')
-  .addStringOption(o=>o.setName('type').setDescription('Jenis media').setRequired(true).addChoices(
-   {name:'Video',value:'video'},{name:'Audio',value:'audio'},{name:'Image',value:'image'}))
+ .addSubcommand(s=>s.setName('video').setDescription('Download video dari URL publik')
   .addStringOption(o=>o.setName('url').setDescription('URL publik').setRequired(true))
-  .addStringOption(o=>o.setName('resolution').setDescription('Resolusi video').addChoices(
+  .addStringOption(o=>o.setName('resolution').setDescription('Resolusi maksimum').addChoices(
    {name:'Best available',value:'best'},{name:'2160p',value:'2160p'},{name:'1440p',value:'1440p'},{name:'1080p',value:'1080p'},
    {name:'720p',value:'720p'},{name:'480p',value:'480p'},{name:'360p',value:'360p'}))
-  .addStringOption(o=>o.setName('format').setDescription('Format output').addChoices(
-   {name:'MP4',value:'mp4'},{name:'WebM',value:'webm'},{name:'MKV',value:'mkv'},
-   {name:'MP3',value:'mp3'},{name:'M4A',value:'m4a'},{name:'WAV',value:'wav'},{name:'FLAC',value:'flac'},{name:'Auto',value:'auto'})))
+  .addStringOption(o=>o.setName('format').setDescription('Format video').addChoices(
+   {name:'MP4',value:'mp4'},{name:'WebM',value:'webm'},{name:'MKV',value:'mkv'})))
+ .addSubcommand(s=>s.setName('audio').setDescription('Download lagu atau audio dari URL publik')
+  .addStringOption(o=>o.setName('url').setDescription('URL publik').setRequired(true))
+  .addStringOption(o=>o.setName('format').setDescription('Format audio').addChoices(
+   {name:'MP3',value:'mp3'},{name:'M4A',value:'m4a'},{name:'WAV',value:'wav'},{name:'FLAC',value:'flac'})))
+ .addSubcommand(s=>s.setName('image').setDescription('Download foto dari URL publik')
+  .addStringOption(o=>o.setName('url').setDescription('URL publik').setRequired(true)))
  .addSubcommand(s=>s.setName('vocals').setDescription('Pisahkan vokal dan hasilkan instrumental')
   .addStringOption(o=>o.setName('url').setDescription('URL publik sumber audio/video'))
   .addAttachmentOption(o=>o.setName('file').setDescription('Upload audio/video'))
@@ -130,7 +133,7 @@ const media=new SlashCommandBuilder().setName('media').setDescription('Download 
   .addStringOption(o=>o.setName('video_format').setDescription('Default video format').addChoices(
    {name:'MP4',value:'mp4'},{name:'WebM',value:'webm'},{name:'MKV',value:'mkv'}))
   .addStringOption(o=>o.setName('audio_format').setDescription('Default audio format').addChoices(
-   {name:'MP3',value:'mp3'},{name:'M4A',value:'m4a'},{name:'WAV',value:'wav'},{name:'FLAC',value:'flac'})));
+   {name:'MP3',value:'mp3'},{name:'M4A',value:'m4a'},{name:'WAV',value:'wav'},{name:'FLAC',value:'flac'})))
 
 const commands=[jkt48,jkt48game,sim,utility,economy,moderation,support,feed,media];
 
