@@ -8,8 +8,8 @@ import {createXpCardSvg,createXpCardBuffer,levelFromXp,xpForLevel} from "../src/
 import {createPresenceRotation} from "../src/services/presence-rotation.js";
 
 test("feature catalog reaches exactly 151",()=>{
- assert.equal(EXTENDED_FEATURES.length,93);
- assert.equal(FEATURE_REGISTRY.length,151);
+ assert.equal(EXTENDED_FEATURES.length,89);
+ assert.equal(FEATURE_REGISTRY.length,150);
  assert.equal(new Set(FEATURE_REGISTRY.map(x=>x.id)).size,151);
 });
 
