@@ -2,6 +2,7 @@ import {probeUrl} from '../scrapers/http.js';
 import {SCRAPER_REGISTRY} from '../scrapers/registry.js';
 
 const URL_COLUMNS=/^(url|uri|link|.*_url|source_url|media_url)$/i;
+const MAX_ROWS_PER_TABLE=Math.max(1000,Number(process.env.DATA_AUDIT_MAX_ROWS_PER_TABLE||10000));
 const JKT48_HOSTS=new Set([
  'raw.githubusercontent.com',
  'jkt48.com'
@@ -58,7 +59,7 @@ function auditDbUrls(db,dbName){
   const urlCols=columns.filter(c=>URL_COLUMNS.test(c.name));
   if(!urlCols.length)continue;
   const selectCols=columns.map(c=>'"'+String(c.name).replaceAll('"','""')+'"').join(',');
-  const items=db.prepare('SELECT rowid AS __rowid__,'+selectCols+' FROM "'+String(table).replaceAll('"','""')+'" LIMIT 5000').all();
+  const items=db.prepare('SELECT rowid AS __rowid__,'+selectCols+' FROM "'+String(table).replaceAll('"','""')+'" LIMIT '+MAX_ROWS_PER_TABLE).all();
   for(const item of items){
    for(const column of urlCols){
     const url=item[column.name];
@@ -70,7 +71,10 @@ function auditDbUrls(db,dbName){
  return rows;
 }
 
+let auditRunning=false;
 export async function runDataAudit({databases}){
+ if(auditRunning)return {skipped:true,reason:'previous audit still running'};
+ auditRunning=true;
  const started=Date.now(),runIdHolder={id:null};
  const primary=databases[0]?.db;
  if(!primary)throw new Error('No audit database configured.');
