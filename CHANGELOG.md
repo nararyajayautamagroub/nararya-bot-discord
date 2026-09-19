@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.9.0] - 2026-09-19
+
+### Owner Controls
+- `/setup` is now restricted to the bot owner at runtime.
+- Added `/settingbot status`, `/settingbot maintenance`, `/settingbot activity`, and `/settingbot reset`.
+- Added persistent bot settings and presence application.
+
+### Blacklists
+- Added `/blacklistserver add`, `/blacklistserver remove`, and `/blacklistserver list`.
+- Added `/blacklistusers add`, `/blacklistusers remove`, and `/blacklistusers list`.
+- Blacklisted servers are left automatically when the bot is already present.
+- Blacklisted users are denied bot commands and message-driven bot activity.
+- Bot owners bypass blacklist and maintenance restrictions so recovery commands remain available.
+
+
 ## [1.8.0] - 2026-09-19
 
 ### Help and Setup
