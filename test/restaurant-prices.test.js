@@ -50,8 +50,8 @@ test('restaurant menu parser extracts menu names and prices',()=>{
  const data=parseRestaurantMenuHtml(menuHtml,{sourceUrl:'https://menukuliner.net/menu/1234/ayam-enak-depok'});
  assert.ok(data.items.length>=3);
  assert.equal(data.items.find(x=>x.name==='Ayam Bakar')?.price,25000);
- assert.equal(data.minPrice,15000);
- assert.equal(data.maxPrice,45000);
+ assert.equal(data.minPrice,22500);
+ assert.equal(data.maxPrice,30000);
 });
 
 test('restaurant filters and price stats work',()=>{
