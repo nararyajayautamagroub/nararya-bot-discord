@@ -5,12 +5,10 @@ This document describes the active slash-command structure deployed by the proje
 ## JKT48
 
 ### Member
-
 - `/jkt48 member query:<name>`
 - `/jkt48 members [generation:<1-14>]`
 
 ### Upcoming
-
 - `/jkt48 upcoming event`
 - `/jkt48 upcoming theater`
 - `/jkt48 upcoming setlist`
@@ -20,7 +18,6 @@ This document describes the active slash-command structure deployed by the proje
 - `/jkt48 upcoming graduation`
 
 ### Latest
-
 - `/jkt48 latest event`
 - `/jkt48 latest theater`
 - `/jkt48 latest setlist`
@@ -49,6 +46,9 @@ This document describes the active slash-command structure deployed by the proje
 - `randomMember`
 - `setlistPhoto`
 - `songPhoto`
+- `streetView`
+
+All quiz and gacha actions use a **10-second cooldown** per user/server. An unanswered active quiz fails automatically after **1 minute**.
 
 ## Simulation
 
@@ -58,6 +58,8 @@ This document describes the active slash-command structure deployed by the proje
 - `/sim fish`
 - `/sim build`
 - `/sim gacha`
+
+The simulation gacha also uses the shared 10-second game cooldown.
 
 ## Utility
 
@@ -87,27 +89,53 @@ This document describes the active slash-command structure deployed by the proje
 - `/feed remove id:<integer>`
 - `/feed test id:<integer>`
 
-## Permissions
+## Indonesia News
 
-Moderation commands use the corresponding Discord moderation permissions. Quiz asset management requires Manage Server permissions.
+- `/news latest [category]`
+- `/news sources`
 
-## Deployment
+Categories:
+- latest
+- top
+- economy
+- finance
+- business
+- market
+- politics
+- law
 
-After changing command definitions, register them with:
+## Indonesia Market
 
-```bash
-npm run deploy
-```
+- `/market stock symbol:<ticker>`
+- `/market ihsg`
 
-Command registration is separate from starting the bot process.
+Indonesian stock tickers are resolved to the IDX `.JK` suffix. Quote data can be delayed.
 
+## Indonesia Prices
+
+- `/prices fuel`
+- `/prices electricity`
+- `/prices food`
+- `/prices all`
+
+Price source caches are refreshed according to source-specific TTLs. Fuel and electricity can vary by region, customer class, and official pricing changes.
+
+## Ramadan
+
+- `/ramadan upcoming`
+- `/ramadan today city:<city>`
+- `/ramadan setup city:<city> channel:<channel>`
+- `/ramadan disable`
+- `/ramadan test`
+
+`/ramadan setup` enables automated sahur and iftar notifications for the configured city.
 
 ## Verification
 
 - `/verify start`
 - `/verify code code:<4-character-code>`
 - `/verify status`
-- `/verify role role:<role>` — Manage Server
+- `/verify role role:<role>`
 
 ## Developer
 
@@ -125,4 +153,14 @@ Command registration is separate from starting the bot process.
 - `/media watermark type:<image|video> [url|file] x:<integer> y:<integer> width:<integer> height:<integer>`
 - `/media settings [resolution] [video_format] [audio_format]`
 
-Media operations are processed asynchronously from the Discord interaction perspective and return the generated file when it is within the configured upload limit.
+## Permissions
+
+Moderation commands use Discord moderation permissions. Quiz asset administration requires Manage Server. Ramadan setup and verification role configuration require Manage Server.
+
+## Deployment
+
+After changing command definitions, register them with:
+
+```bash
+npm run deploy
+```
