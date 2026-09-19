@@ -119,6 +119,7 @@ const media=new SlashCommandBuilder().setName('media').setDescription('Download 
   .addAttachmentOption(o=>o.setName('file').setDescription('Upload audio/video'))
   .addStringOption(o=>o.setName('format').setDescription('Format instrumental').addChoices(
    {name:'MP3',value:'mp3'},{name:'M4A',value:'m4a'},{name:'WAV',value:'wav'},{name:'FLAC',value:'flac'})))
+ .addSubcommand(s=>s.setName('instrumental').setDescription('Hasilkan instrumental dari lagu atau audio').addStringOption(o=>o.setName('url').setDescription('URL publik sumber')).addAttachmentOption(o=>o.setName('file').setDescription('Upload audio/video')).addStringOption(o=>o.setName('format').setDescription('Format instrumental').addChoices({name:'MP3',value:'mp3'},{name:'M4A',value:'m4a'},{name:'WAV',value:'wav'},{name:'FLAC',value:'flac'})))
  .addSubcommand(s=>s.setName('background').setDescription('Hapus background foto atau video')
   .addStringOption(o=>o.setName('type').setDescription('Jenis media').setRequired(true).addChoices(
    {name:'Photo',value:'image'},{name:'Video',value:'video'}))
