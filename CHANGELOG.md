@@ -1,171 +1,64 @@
-## [2.1.2] - 2026-09-20
-
-### JKT48 Center Website
-- Added `website/jkt48/` responsive frontend dedicated to JKT48 bot features.
-- Added red buttons, white background, red embedded-card styling, and mobile hamburger `=` navigation.
-- Added live public member loading for all/active member JSON sources with search and generation/status filters.
-- Added frontend safety tests and CI JavaScript syntax coverage.
-- Added GitHub Pages deployment workflow for the JKT48 website.
-
-## [2.1.2] - 2026-09-20
-
-### Reliability Cleanup
-- Removed unused native media/voice dependencies that caused deprecated transitive-package warnings.
-- Migrated media HTTP downloads from `undici` package imports to the Node fetch API.
-- Added an `encoding-sniffer` override to remove the deprecated `whatwg-encoding` dependency path.
-- Hardened media fetch timeout cleanup.
-- CI now runs inside a pinned Node 22 container instead of `setup-node`, avoiding the setup action's own `punycode` deprecation warning.
-- Syntax validation and the full Node test suite remain required CI gates.
-
-## [2.1.0] - 2026-09-20
-
-### Restaurant Price Aggregation and Tooling
-- Added `/restaurantprices search` for restaurant discovery by Indonesian city, query, category, and price range.
-- Added `/restaurantprices menu` to inspect a restaurant menu with pagination and price filters.
-- Added `/restaurantprices prices` to aggregate menu prices from multiple restaurants in a selected city.
-- Added `/restaurantprices city`, `/restaurantprices refresh`, and `/restaurantprices status`.
-- Added MenuKuliner public source health monitoring to the scraper registry.
-- Added a centralized `src/tools/toolbox.js` utility layer and resilient `src/tools/http-client.js`.
-- Added a dedicated 1,300+ line restaurant parser/cache module to isolate external menu parsing from existing bot command logic.
-- Registry now contains 151 active features.
-
-## [2.0.0] - 2026-09-20
-
-### Stability and 150-Feature Expansion
-- Added 93 extended features, bringing the registry to 150.
-- Added EXP Profile Card rendering to `/utility level`.
-- Added JKT48 card rarity display to EXP cards.
-- Added Discord Playing status rotation with persistent owner configuration.
-- Added extended owner, security, server configuration, finance, games, and community command namespaces.
-- Added syntax validation to CI before the test suite.
-- Added extended security persistence, owner action audit storage, reminders, economy transaction history, game score storage, and runtime diagnostics.
-
 # Changelog
 
-## [1.9.0] - 2026-09-19
+## 2.1.0 - 2026-09-20
 
-### Owner Controls
-- `/setup` is now restricted to the bot owner at runtime.
-- Added `/settingbot status`, `/settingbot maintenance`, `/settingbot activity`, and `/settingbot reset`.
-- Added persistent bot settings and presence application.
+### Tooling
 
-### Blacklists
-- Added `/blacklistserver add`, `/blacklistserver remove`, and `/blacklistserver list`.
-- Added `/blacklistusers add`, `/blacklistusers remove`, and `/blacklistusers list`.
-- Blacklisted servers are left automatically when the bot is already present.
-- Blacklisted users are denied bot commands and message-driven bot activity.
-- Bot owners bypass blacklist and maintenance restrictions so recovery commands remain available.
+- Added centralized shared tooling in src/tools/toolbox.js.
+- Added resilient HTTP tooling in src/tools/http-client.js.
+- Added source-health helpers and retry handling.
+- Added repository structure and security documentation updates.
 
+### Restaurant price system
 
-## [1.8.0] - 2026-09-19
+- Added /restaurantprices.
+- Added city restaurant discovery.
+- Added menu parsing.
+- Added category and price filtering.
+- Added pagination and cache handling.
+- Added restaurant source health.
+- Registered MenuKuliner.net in the scraper registry.
+- Added parser tests.
 
-### Help and Setup
-- Added `/help` with embedded feature catalog, category filters, and pagination.
-- Added `/setup overview`, `/setup welcome`, and `/setup log`.
+### Media
 
-### Electronics Prices
-- Added `/electronics` with product category, keyword, and result-limit filters.
-- Added public electronics and audio scraper sources with 30-minute source refresh.
-- Supported categories include smartphone, laptop, tablet, TV, monitor, audio, camera, printer, router, storage, gaming, keyboard, mouse, smartwatch, and other electronics.
-- Source results include price, platform, product link, scan count, and update time.
+- Standardized video, audio, and image download handling.
+- Documented broad public URL support through yt-dlp.
+- Documented vocal separation, background removal, watermark removal, and resolution selection.
+- Added isolated job storage and size limits.
 
+### Verification
 
-## [1.7.1] - 2026-09-19
+- Added verification web rate limiting.
+- Maintained server-bound HMAC code generation.
+- Documented the verification website and API lifecycle.
 
-### Guild Welcome
-- Added automatic welcome message when the bot is invited to a new Discord server.
-- Uses the server system channel when writable, otherwise falls back to the first writable text channel.
-- Stores a `welcome_sent_at` timestamp so the invite message is sent only once per guild configuration.
-- Existing databases receive a safe migration for the new column.
+### Registry
 
+- Synchronized the canonical active feature count to 150.
 
-All notable changes to this project are documented here.
+## 2.0.0 - 2026-09-20
 
-## [1.7.0] - 2026-09-19
+- Added owner controls.
+- Added server and user blacklists.
+- Added maintenance mode and emergency lockdown.
+- Added security incident tracking.
+- Added EXP profile cards.
+- Added Discord Playing status rotation.
+- Added extended community and game features.
 
-### Scraper and Data Integrity
-- Added a centralized scraper registry for external data sources.
-- Added a database audit pipeline that runs every 10 seconds.
-- Database audit scans the main DB, media DB, and separate JKT48 quiz/gacha/cards DBs.
-- Stored URLs are revalidated and matched against the scraper registry.
-- Unknown external URLs are marked `missing_scraper`.
-- Invalid URLs and failed URL checks are recorded with error details.
-- Unknown sources receive a suggested adapter method.
-- JKT48 repository/source URLs remain exempt from the generic scraper requirement.
-- Registered news feeds perform a full background refresh every 24 hours while command requests can refresh their own short-lived cache.
+## 1.9.0 - 2026-09-19
 
-### General Game
-- Moved Google Street View game into the generic game namespace.
-- Street View is no longer a JKT48-specific mode.
-- Street View questions are delivered as direct attachments so API keys are not exposed in Discord messages.
-- Game status now reads the dedicated quiz database correctly.
+- Added persistent bot settings.
+- Added owner-only setup.
+- Added server and user blacklist enforcement.
 
-### Disaster Monitoring
-- Added BMKG earthquake and tsunami monitoring.
-- Added BNPB GIS disaster-event monitoring.
-- Added MAGMA/ESDM volcano-source monitoring.
-- Added location-aware disaster records.
-- Added optional per-server disaster notifications with a minimum earthquake magnitude filter.
+## 1.8.0 - 2026-09-19
 
-### Developer and Status Commands
-- Added `/game status`.
-- Added `/status system`.
-- Added `/status scrapers`.
-- Added `/status data`.
-- Added `/status disasters`.
-- Added `/status sources`.
-- Added `/disaster status`.
-- Added `/disaster latest`.
-- Added `/disaster earthquake`.
-- Added `/disaster tsunami`.
-- Added `/disaster volcano`.
-- Added `/disaster general`.
-- Added `/disaster setup` and `/disaster disable`.
-- Added `/upcoming ramadan` and `/upcoming disasters`.
+- Added help, setup, and electronics price features.
 
-## [1.6.0] - 2026-09-19
+## 1.7.0 - 2026-09-19
 
-### Game
-- Added Google Street View photo guessing mode.
-- Added a 10-second per-user/server cooldown shared by guessing games and gacha.
-- Added automatic one-minute timeout for unanswered guesses.
-- Timed-out guesses are recorded as failed attempts and reset the quiz streak.
-
-### Indonesia
-- Added `/news` for Indonesian news categories.
-- Added `/market stock` and `/market ihsg`.
-- Added `/prices fuel`, `/prices electricity`, `/prices food`, and `/prices all`.
-- Added city-based imsakiyah retrieval for Ramadan.
-
-### Ramadan
-- Added `/ramadan upcoming`.
-- Added `/ramadan today city:<city>`.
-- Added `/ramadan setup`, `/ramadan disable`, and `/ramadan test`.
-- Added scheduled sahur and iftar notifications.
-
-## [1.5.0] - 2026-09-19
-
-### Added
-- Web verification flow.
-- 4-character server-bound verification codes.
-- Verification role and attempt limits.
-- Feature registry and developer diagnostics.
-
-## [1.4.0] - 2026-09-19
-
-### Added
-- Dedicated media subsystem.
-
-## [1.3.0] - 2026-09-19
-
-### Added
-- Modern command namespaces and separated JKT48 game databases.
-
-## [1.2.0]
-- Previous JKT48 feed/live integration baseline.
-
-## [1.0.0]
-- Initial modular Discord bot foundation.
-
-[1.7.1]: https://github.com/nararyajayautamagroub/nararya-bot-discord/releases/tag/v1.7.1
-[1.7.0]: https://github.com/nararyajayautamagroub/nararya-bot-discord/releases/tag/v1.7.0
+- Added scraper registry and database audit.
+- Added disaster monitoring.
+- Added disaster notifications.
