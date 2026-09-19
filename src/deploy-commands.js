@@ -8,7 +8,8 @@ const choiceModes=[
  {name:'Tebak member foto graduation',value:'graduationPhoto'},
  {name:'Tebak member random',value:'randomMember'},
  {name:'Tebak foto setlist',value:'setlistPhoto'},
- {name:'Tebak lagu dari foto',value:'songPhoto'}
+ {name:'Tebak lagu dari foto',value:'songPhoto'},
+ {name:'Tebak lokasi Google Street View',value:'streetView'}
 ];
 const rarityChoices=[
  {name:'Common',value:'common'},{name:'Uncommon',value:'uncommon'},{name:'Rare',value:'rare'},
@@ -147,7 +148,33 @@ const bot=new SlashCommandBuilder().setName('bot').setDescription('Informasi dan
  .addSubcommand(s=>s.setName('features').setDescription('Lihat registry fitur aktif'))
  .addSubcommand(s=>s.setName('health').setDescription('Lihat status kesehatan sistem'));
 
-const commands=[jkt48,jkt48game,sim,utility,economy,moderation,support,feed,media,verify,bot];
+
+const news=new SlashCommandBuilder().setName('news').setDescription('Berita Indonesia terbaru dari RSS publik')
+ .addSubcommand(s=>s.setName('latest').setDescription('Berita terbaru Indonesia').addStringOption(o=>o.setName('category').setDescription('Kategori berita').addChoices(
+  {name:'Terkini',value:'latest'},{name:'Top News',value:'top'},{name:'Ekonomi',value:'economy'},{name:'Finansial',value:'finance'},
+  {name:'Bisnis',value:'business'},{name:'Bursa',value:'market'},{name:'Politik',value:'politics'},{name:'Hukum',value:'law'})))
+ .addSubcommand(s=>s.setName('sources').setDescription('Lihat sumber RSS berita yang digunakan'));
+
+const market=new SlashCommandBuilder().setName('market').setDescription('Data pasar saham Indonesia')
+ .addSubcommand(s=>s.setName('stock').setDescription('Lihat harga saham Indonesia').addStringOption(o=>o.setName('symbol').setDescription('Ticker, misalnya BBCA atau TLKM').setRequired(true)))
+ .addSubcommand(s=>s.setName('ihsg').setDescription('Lihat data IHSG'));
+
+const prices=new SlashCommandBuilder().setName('prices').setDescription('Harga energi dan pangan Indonesia')
+ .addSubcommand(s=>s.setName('fuel').setDescription('Harga BBM Pertamina'))
+ .addSubcommand(s=>s.setName('electricity').setDescription('Tarif listrik PLN'))
+ .addSubcommand(s=>s.setName('food').setDescription('Harga pangan strategis'))
+ .addSubcommand(s=>s.setName('all').setDescription('Ringkasan semua harga'));
+
+const ramadan=new SlashCommandBuilder().setName('ramadan').setDescription('Ramadan, jadwal imsakiyah dan notifikasi sahur/buka')
+ .addSubcommand(s=>s.setName('upcoming').setDescription('Lihat perkiraan Ramadan dan tanggal penting'))
+ .addSubcommand(s=>s.setName('today').setDescription('Lihat jadwal imsakiyah hari ini').addStringOption(o=>o.setName('city').setDescription('Nama kota/kabupaten').setRequired(true)))
+ .addSubcommand(s=>s.setName('setup').setDescription('Aktifkan notifikasi sahur dan buka puasa').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+  .addStringOption(o=>o.setName('city').setDescription('Nama kota/kabupaten').setRequired(true))
+  .addChannelOption(o=>o.setName('channel').setDescription('Channel notifikasi').addChannelTypes(ChannelType.GuildText).setRequired(true)))
+ .addSubcommand(s=>s.setName('disable').setDescription('Matikan notifikasi Ramadan').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild))
+ .addSubcommand(s=>s.setName('test').setDescription('Tes notifikasi Ramadan').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild));
+
+const commands=[jkt48,jkt48game,sim,utility,economy,moderation,support,feed,media,verify,bot,news,market,prices,ramadan];
 
 const rest=new REST({version:'10'}).setToken(process.env.DISCORD_TOKEN);
 await rest.put(Routes.applicationCommands(process.env.CLIENT_ID),{body:commands.map(x=>x.toJSON())});
