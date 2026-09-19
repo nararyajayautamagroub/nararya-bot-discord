@@ -53,6 +53,7 @@ export function createBotControl({db,client}={}){
  }
 
  function denyReason({guildId,userId}={}){
+  if(userId&&isOwner(userId))return null;
   if(userId&&isUserBlacklisted(userId))return'USER_BLACKLIST';
   if(guildId&&isServerBlacklisted(guildId))return'SERVER_BLACKLIST';
   return null;
