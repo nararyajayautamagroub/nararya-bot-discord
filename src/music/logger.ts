@@ -1,0 +1,1 @@
+export const musicLog={info:(m:string,...a:unknown[])=>console.info('[music]',m,...a),warn:(m:string,...a:unknown[])=>console.warn('[music]',m,...a),error:(m:string,...a:unknown[])=>console.error('[music]',m,...a)};
