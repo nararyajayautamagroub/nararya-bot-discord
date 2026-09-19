@@ -1,0 +1,9 @@
+import {rarityInfo} from "../games/jkt48/index.js";
+export function xpForLevel(level){return Math.max(0,Number(level)||0)**2*100;}
+export function levelFromXp(xp){return Math.max(0,Math.floor(Math.sqrt(Math.max(0,Number(xp)||0)/100)));}
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+export function createXpCardSvg({username="User",xp=0,level=0,streak=0,rarity="common",wins=0}={}){
+ const lv=levelFromXp(xp),base=xpForLevel(lv),next=xpForLevel(lv+1),progress=next>base?Math.min(1,Math.max(0,(xp-base)/(next-base))):1,ri=rarityInfo[rarity]||rarityInfo.common,bar=Math.max(8,760*progress);
+ return '<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="420"><rect width="100%" height="100%" rx="36" fill="#101319"/><rect x="24" y="24" width="952" height="372" rx="30" fill="#171c26" stroke="#303747" stroke-width="2"/><text x="55" y="78" fill="#fff" font-family="Arial" font-size="34" font-weight="700">NARARYA PROFILE CARD</text><text x="55" y="125" fill="#cbd5e1" font-family="Arial" font-size="28">'+esc(username)+'</text><text x="55" y="183" fill="#fff" font-family="Arial" font-size="58" font-weight="700">LEVEL '+lv+'</text><text x="55" y="225" fill="#94a3b8" font-family="Arial" font-size="25">EXP '+Math.round(xp).toLocaleString("id-ID")+' / '+next.toLocaleString("id-ID")+'</text><rect x="55" y="245" width="760" height="34" rx="17" fill="#252b37"/><rect x="55" y="245" width="'+bar+'" height="34" rx="17" fill="#ff6200"/><text x="55" y="325" fill="#f8fafc" font-family="Arial" font-size="24">Streak '+streak+' • '+esc(ri.label)+' • '+wins+' wins</text><text x="55" y="365" fill="#64748b" font-family="Arial" font-size="20">Progress '+Math.round(progress*100)+'%</text></svg>';
+}
+export function createXpCardBuffer(options){return Buffer.from(createXpCardSvg(options),"utf8");}
