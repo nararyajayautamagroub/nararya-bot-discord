@@ -68,13 +68,17 @@ Daftar fitur aktif bot berasal dari `src/config/features.js`.
 41. Imsakiyah Schedule
 42. Sahur Notification
 43. Iftar Notification
+
+### Developer
 44. Scraper Registry
 45. URL Health Check
 46. Database Data Audit
 47. Scraper Method Suggestion
-48. Disaster Monitor
-49. Disaster Notification
-50. System Status
+48. System Status
+
+### Security
+49. Disaster Monitor
+50. Disaster Notification
 
 ## Game policy
 
