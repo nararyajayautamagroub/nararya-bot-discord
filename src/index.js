@@ -124,12 +124,12 @@ client.on('interactionCreate',async i=>{
  if(!daily.allowed)return i.reply({embeds:[embed('🎴 Gacha Harian','Batas **10 kali per hari** sudah tercapai.',{color:EMBED_COLORS.warning})],ephemeral:true});
  if(p.money<10000){jkt48Dbs.gacha.prepare('UPDATE gacha_daily SET pulls=MAX(0,pulls-1) WHERE guild_id=? AND user_id=? AND day=?').run(gid,uid,daily.day);return i.reply({embeds:[embed('💸 Saldo Tidak Cukup','Gacha membutuhkan **Rp10.000**.',{color:EMBED_COLORS.warning})],ephemeral:true});}
  const members=db.prepare("SELECT id as key,name,image_url,generation,status FROM jkt48_members WHERE generation BETWEEN 1 AND 14 ORDER BY name").all();
- if(!members.length)return i.reply({embeds:[embed('🎴 Gacha Belum Siap','Database member generasi **1–14** belum tersedia.',{color:EMBED_COLORS.warning})],ephemeral:true});
+ if(!members.length){jkt48Dbs.gacha.prepare('UPDATE gacha_daily SET pulls=MAX(0,pulls-1) WHERE guild_id=? AND user_id=? AND day=?').run(gid,uid,daily.day);return i.reply({embeds:[embed('🎴 Gacha Belum Siap','Database member generasi **1–14** belum tersedia.',{color:EMBED_COLORS.warning})],ephemeral:true});}
  const r=rollGacha(members);
  db.prepare('UPDATE tycoon SET money=money-10000 WHERE guild_id=? AND user_id=?').run(gid,uid);
  const card=awardCard(jkt48Dbs.cards,{guildId:gid,userId:uid,type:'member',key:r.member.key||r.member.name,name:r.member.name||r.member.key,rarity:r.rarity,generation:r.member.generation||null,imageUrl:r.member.image_url||null,source:'sim-gacha'});
  saveGacha(jkt48Dbs.gacha,gid,uid,r,'sim-gacha',r.member.generation||null);
- return revealAnimation(i,{title:'🎴 JKT48 Gacha',prefix:'💰 Biaya: **Rp10.000**\\n\\n',rarity:r.rarity,finalDescription:'🎴 **'+card.subject_name+'**\\nGenerasi '+(card.generation||'?')+'\\n📦 Kartu diperoleh: **×'+card.quantity+'**\\n💰 Sisa cash: **Rp'+(p.money-10000).toLocaleString('id-ID')+'**\\n🎟️ Sisa pull hari ini: **'+(10-daily.count)+'**,finalImage:card.image_url||null});
+ return revealAnimation(i,{title:'🎴 JKT48 Gacha',prefix:'💰 Biaya: **Rp10.000**\\n\\n',rarity:r.rarity,finalDescription:'🎴 **'+card.subject_name+'**\\nGenerasi '+(card.generation||'?')+'\\n📦 Kartu diperoleh: **×'+card.quantity+'**\\n💰 Sisa cash: **Rp'+(p.money-10000).toLocaleString('id-ID')+'**\\n🎟️ Sisa pull hari ini: **'+(10-daily.count)+'**',finalImage:card.image_url||null});
 }
   }
   if(n==='jkt48game'){
