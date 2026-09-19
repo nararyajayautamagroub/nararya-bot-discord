@@ -196,3 +196,25 @@ npm run deploy
 - `/upcoming disasters`
 
 The data audit checks all configured bot databases and stored URLs every 10 seconds. JKT48 repository/source URLs are exempt from generic scraper validation.
+
+
+## Help
+
+- `/help`
+- `/help category:<category>`
+- `/help page:<number>`
+
+## Setup
+
+- `/setup overview`
+- `/setup welcome channel:<channel>`
+- `/setup log channel:<channel>`
+
+## Electronics
+
+- `/electronics`
+- `/electronics category:<category>`
+- `/electronics query:<product-or-brand>`
+- `/electronics category:<category> query:<product-or-brand> limit:<1-25>`
+
+Harga berasal dari katalog publik yang discrape. Harga final dapat berubah pada marketplace.
