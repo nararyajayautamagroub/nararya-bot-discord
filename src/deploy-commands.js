@@ -152,7 +152,7 @@ const verify=new SlashCommandBuilder().setName('verify').setDescription('Sistem 
 
 const bot=new SlashCommandBuilder().setName('bot').setDescription('Informasi dan developer tools bot')
  .addSubcommand(s=>s.setName('info').setDescription('Lihat runtime dan informasi bot'))
- .addSubcommand(s=>s.setName('features').setDescription('Lihat registry fitur aktif'))
+ .addSubcommand(s=>s.setName('features').setDescription('Lihat registry fitur aktif').addIntegerOption(o=>o.setName('page').setDescription('Halaman fitur').setMinValue(1)))
  .addSubcommand(s=>s.setName('health').setDescription('Lihat status kesehatan sistem'));
 
 
