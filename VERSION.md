@@ -1,8 +1,9 @@
 # Version
 
-Current project version: **2.1.0**
+Current project version: **2.1.2**
 
 Release date: **2026-09-20**
+
 
 This release adds:
 - owner-only /setup command enforcement
@@ -28,6 +29,8 @@ This release adds:
 - centralized shared toolbox and resilient HTTP client modules
 - parser/cache/refresh support for MenuKuliner public restaurant data
 - 151-feature registry with restaurant pricing
+- core dependency cleanup and deprecated-package override
+- CI migrated to pinned Node 22 container for cleaner toolchain diagnostics
 
 JKT48 remains on its existing repository/source URL integration and is exempt from the generic scraper requirement.
 
