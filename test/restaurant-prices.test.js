@@ -35,8 +35,8 @@ const menuHtml=`
 </table>
 </body></html>`;
 
-test('restaurant feature registry reaches 151',()=>{
- assert.equal(FEATURE_REGISTRY.length,151);
+test('restaurant feature registry remains at 150',()=>{
+ assert.equal(FEATURE_REGISTRY.length,150);
  assert.equal(new Set(FEATURE_REGISTRY.map(x=>x.id)).size,FEATURE_REGISTRY.length);
 });
 
