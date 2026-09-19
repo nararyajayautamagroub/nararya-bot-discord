@@ -82,7 +82,7 @@ Project/legal documentation:
 
 ## Current version
 
-**v2.0.0** — 2026-09-19
+**v2.1.0** — 2026-09-20
 
 ### Modern command layout
 
@@ -188,7 +188,7 @@ Pengiriman dicatat pada `guild_config.welcome_sent_at`, sehingga pesan onboardin
 - Electronics source refresh is registered at 30 minutes, while URL health remains part of the 10-second data integrity checks.
 
 
-## Owner Controls
+## Restaurant Menu & Price Search\n\n- `/restaurantprices search` mencari restoran berdasarkan kota, kata kunci, kategori, dan rentang harga.\n- `/restaurantprices menu url:<url>` membaca menu dan harga dari halaman restoran publik.\n- `/restaurantprices prices` menggabungkan harga menu dari beberapa restoran dalam satu kota.\n- `/restaurantprices city` menelusuri direktori kota.\n- `/restaurantprices refresh` memperbarui cache direktori/menu.\n- `/restaurantprices status` memeriksa kesehatan sumber.\n\nSumber harga restoran: MenuKuliner.net. Harga bersifat informasional dan dapat berbeda menurut cabang, lokasi, platform delivery, pajak, promo, atau perubahan menu.\n\n## Shared Tools\n\n`src/tools/toolbox.js` menjadi utilitas bersama untuk parsing, pagination, cache, validation, date/time, formatting, redaction, dan helper harga. `src/tools/http-client.js` menangani timeout, retry, rate-aware fetching, JSON/text/buffer requests, dan probe URL.\n\n## Owner Controls
 
 `/setup` is now **owner-only**. Configure `BOT_OWNER_IDS` with comma-separated Discord user IDs, while the Discord application owner is also recognized at runtime.
 
