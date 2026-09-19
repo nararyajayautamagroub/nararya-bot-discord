@@ -92,7 +92,47 @@ const jkt48=new SlashCommandBuilder().setName('jkt48').setDescription('Pusat dat
   .addSubcommand(s=>s.setName('live_showroom').setDescription('Latest live SHOWROOM'))
   .addSubcommand(s=>s.setName('live_idn').setDescription('Latest live IDN')));
 
-const commands=[jkt48,jkt48game,sim,utility,economy,moderation,support,feed];
+
+const media=new SlashCommandBuilder().setName('media').setDescription('Download dan transformasi media')
+ .addSubcommand(s=>s.setName('download').setDescription('Download video, audio, atau gambar dari URL publik')
+  .addStringOption(o=>o.setName('type').setDescription('Jenis media').setRequired(true).addChoices(
+   {name:'Video',value:'video'},{name:'Audio',value:'audio'},{name:'Image',value:'image'}))
+  .addStringOption(o=>o.setName('url').setDescription('URL publik').setRequired(true))
+  .addStringOption(o=>o.setName('resolution').setDescription('Resolusi video').addChoices(
+   {name:'Best available',value:'best'},{name:'2160p',value:'2160p'},{name:'1440p',value:'1440p'},{name:'1080p',value:'1080p'},
+   {name:'720p',value:'720p'},{name:'480p',value:'480p'},{name:'360p',value:'360p'}))
+  .addStringOption(o=>o.setName('format').setDescription('Format output').addChoices(
+   {name:'MP4',value:'mp4'},{name:'WebM',value:'webm'},{name:'MKV',value:'mkv'},
+   {name:'MP3',value:'mp3'},{name:'M4A',value:'m4a'},{name:'WAV',value:'wav'},{name:'FLAC',value:'flac'},{name:'Auto',value:'auto'})))
+ .addSubcommand(s=>s.setName('vocals').setDescription('Pisahkan vokal dan hasilkan instrumental')
+  .addStringOption(o=>o.setName('url').setDescription('URL publik sumber audio/video'))
+  .addAttachmentOption(o=>o.setName('file').setDescription('Upload audio/video'))
+  .addStringOption(o=>o.setName('format').setDescription('Format instrumental').addChoices(
+   {name:'MP3',value:'mp3'},{name:'M4A',value:'m4a'},{name:'WAV',value:'wav'},{name:'FLAC',value:'flac'})))
+ .addSubcommand(s=>s.setName('background').setDescription('Hapus background foto atau video')
+  .addStringOption(o=>o.setName('type').setDescription('Jenis media').setRequired(true).addChoices(
+   {name:'Photo',value:'image'},{name:'Video',value:'video'}))
+  .addStringOption(o=>o.setName('url').setDescription('URL publik sumber'))
+  .addAttachmentOption(o=>o.setName('file').setDescription('Upload foto/video')))
+ .addSubcommand(s=>s.setName('watermark').setDescription('Hapus watermark pada area yang ditentukan')
+  .addStringOption(o=>o.setName('type').setDescription('Jenis media').setRequired(true).addChoices(
+   {name:'Photo',value:'image'},{name:'Video',value:'video'}))
+  .addStringOption(o=>o.setName('url').setDescription('URL publik sumber'))
+  .addAttachmentOption(o=>o.setName('file').setDescription('Upload foto/video'))
+  .addIntegerOption(o=>o.setName('x').setDescription('Koordinat X').setRequired(true).setMinValue(0))
+  .addIntegerOption(o=>o.setName('y').setDescription('Koordinat Y').setRequired(true).setMinValue(0))
+  .addIntegerOption(o=>o.setName('width').setDescription('Lebar watermark').setRequired(true).setMinValue(1))
+  .addIntegerOption(o=>o.setName('height').setDescription('Tinggi watermark').setRequired(true).setMinValue(1)))
+ .addSubcommand(s=>s.setName('settings').setDescription('Atur default resolusi dan format')
+  .addStringOption(o=>o.setName('resolution').setDescription('Default resolusi video').addChoices(
+   {name:'Best available',value:'best'},{name:'2160p',value:'2160p'},{name:'1440p',value:'1440p'},{name:'1080p',value:'1080p'},
+   {name:'720p',value:'720p'},{name:'480p',value:'480p'},{name:'360p',value:'360p'}))
+  .addStringOption(o=>o.setName('video_format').setDescription('Default video format').addChoices(
+   {name:'MP4',value:'mp4'},{name:'WebM',value:'webm'},{name:'MKV',value:'mkv'}))
+  .addStringOption(o=>o.setName('audio_format').setDescription('Default audio format').addChoices(
+   {name:'MP3',value:'mp3'},{name:'M4A',value:'m4a'},{name:'WAV',value:'wav'},{name:'FLAC',value:'flac'})));
+
+const commands=[jkt48,jkt48game,sim,utility,economy,moderation,support,feed,media];
 
 const rest=new REST({version:'10'}).setToken(process.env.DISCORD_TOKEN);
 await rest.put(Routes.applicationCommands(process.env.CLIENT_ID),{body:commands.map(x=>x.toJSON())});
