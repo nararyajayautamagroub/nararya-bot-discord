@@ -1,10 +1,14 @@
 # Version
 
-Current project version: **1.8.0**
+Current project version: **1.9.0**
 
 Release date: **2026-09-19**
 
 This release adds:
+- owner-only /setup command enforcement
+- owner-only /settingbot global bot controls
+- owner-only /blacklistserver and /blacklistusers commands
+- global maintenance mode and blacklist enforcement across commands and messages
 - /help feature catalog with category filters and pagination
 - /setup server configuration overview and channel setup
 - /electronics public marketplace price scraper for Indonesia
