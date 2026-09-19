@@ -51,13 +51,14 @@ async function animate(send,edit,{title='🎴 Card Reveal',prefix='',rarity,fina
  });
  for(let index=1;index<frames.length;index++){
   const [headline,body]=frames[index];
+  const rarityHeadline=index===frames.length-1?headline+' • **'+info.chance+'%**':headline;
   const delay=index===1?profile.intro:(index===frames.length-1?profile.final:profile.reveal);
   await wait(delay);
-  await edit(message,{embeds:[frame(title+' • '+(index+1),prefix+headline+'\\n\\n'+body,index===frames.length-1?info.color:0x64748B)]});
+  await edit(message,{embeds:[frame(title+' • '+(index+1),prefix+rarityHeadline+'\\n\\n'+body,index===frames.length-1?info.color:0x64748B)]});
  }
  const final=frame(
   title+' • '+info.emoji+' '+info.label,
-  finalDescription||'🎴 Kartu berhasil dibuka.',
+  (finalDescription||'🎴 Kartu berhasil dibuka.')+'\\n\\n📊 Drop chance: **'+info.chance+'%**',
   info.color
  );
  if(finalImage)final.image={url:finalImage};
