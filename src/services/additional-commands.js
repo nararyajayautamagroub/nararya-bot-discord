@@ -80,10 +80,14 @@ export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,game
     if(sub==='add'){
      const reason=i.options.getString('reason')||'Owner bot blacklist';
      botControl.blacklistServer(guildId,reason,i.user.id);
-     if(i.guild?.id===guildId){
+     const targetGuild=client.guilds.cache.get(guildId);
+     if(targetGuild){
+      if(i.guild?.id===guildId){
       await i.reply({embeds:[embed('⛔ Server Di-blacklist','Server ini masuk blacklist global dan bot akan keluar.',{color:0xEF4444})]});
-      setTimeout(()=>botControl.leaveIfBlacklisted(i.guild).catch(()=>{}),1000);
-      return;
+       setTimeout(()=>botControl.leaveIfBlacklisted(i.guild).catch(()=>{}),1000);
+       return;
+      }
+      await botControl.leaveIfBlacklisted(targetGuild);
      }
      return i.reply({embeds:[embed('✅ Server Di-blacklist','Server ID: `'+guildId+'`\nAlasan: '+reason,{color:0x22C55E})]});
     }
@@ -120,33 +124,6 @@ export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,game
    const slice=rows.slice((safePage-1)*pageSize,safePage*pageSize);
    const body=slice.length?slice.map((x,n)=>'**'+(((safePage-1)*pageSize)+n+1)+'. '+x.name+'**\n'+x.description).join('\n\n'):'Tidak ada fitur untuk kategori tersebut.';
    return i.reply({embeds:[embed('📚 BOT NARARYA GROUB • Help',body+'\n\n**Kategori:** '+category+'\n**Halaman:** '+safePage+'/'+totalPages+'\n\nGunakan /help category:<kategori> untuk memfilter.',{color:0xFF6200,fields:[{name:'Kategori tersedia',value:categories.join(' • ')||'General'},{name:'Command utama',value:'/bot • /status • /setup • /news • /market • /prices • /electronics • /ramadan • /disaster • /game • /jkt48 • /jkt48game • /media • /feed'}]})]});
-  }
-
-  if(n==='setup'){
-   const sub=i.options.getSubcommand(true);
-   if(sub==='overview'){
-    const cfg=db.prepare('SELECT * FROM guild_config WHERE guild_id=?').get(i.guild.id)||{};
-    const ramadan=db.prepare('SELECT * FROM ramadan_configs WHERE guild_id=?').get(i.guild.id);
-    const disaster=db.prepare('SELECT * FROM disaster_configs WHERE guild_id=?').get(i.guild.id);
-    return i.reply({embeds:[embed('⚙️ Setup • Server Configuration',
-     '**Welcome:** '+(cfg.welcome_channel?'<#'+cfg.welcome_channel+'>':'Otomatis / belum diatur')+
-     '\n**Log:** '+(cfg.log_channel?'<#'+cfg.log_channel+'>':'Belum diatur')+
-     '\n**Feed:** '+(cfg.feed_channel?'<#'+cfg.feed_channel+'>':'Belum diatur')+
-     '\n**Ramadan:** '+(ramadan?.enabled?'✅ Aktif • '+ramadan.city_name:'❌ Nonaktif / belum diatur')+
-     '\n**Disaster:** '+(disaster?.enabled?'✅ Aktif • <#'+disaster.channel_id+'>':'❌ Nonaktif / belum diatur')+
-     '\n\n**Total fitur:** '+FEATURE_REGISTRY.length,
-     {color:0x3B82F6,fields:[{name:'Data scraper',value:'✅ Pemeriksaan URL 10 detik'},{name:'Berita',value:'✅ Background refresh 24 jam'},{name:'Harga elektronik',value:'✅ Scraper 30 menit'},{name:'JKT48',value:'✅ Menggunakan sumber repository/sumber JKT48 yang dikonfigurasi'}]})]});
-   }
-   if(sub==='welcome'){
-    const channel=i.options.getChannel('channel',true);
-    db.prepare('UPDATE guild_config SET welcome_channel=? WHERE guild_id=?').run(channel.id,i.guild.id);
-    return i.reply({embeds:[embed('✅ Welcome Channel Disimpan','Pesan member masuk dan onboarding guild akan menggunakan <#'+channel.id+'>.',{color:0x22C55E})]});
-   }
-   if(sub==='log'){
-    const channel=i.options.getChannel('channel',true);
-    db.prepare('UPDATE guild_config SET log_channel=? WHERE guild_id=?').run(channel.id,i.guild.id);
-    return i.reply({embeds:[embed('✅ Log Channel Disimpan','Laporan audit scraper dan error data akan dikirim ke <#'+channel.id+'> bila ada temuan baru.',{color:0x22C55E})]});
-   }
   }
 
   if(n==='electronics'){
