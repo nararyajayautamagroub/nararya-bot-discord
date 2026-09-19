@@ -1,70 +1,92 @@
 # Security Policy
 
-## Supported Versions
+## Scope
 
-Security fixes are applied to the current default branch. Deployment environments should use the latest tagged or documented project version.
+Security-sensitive areas include Discord permissions, owner controls, blacklist enforcement, verification sessions, external URL fetching, scraper execution, media processing, SQLite state, environment variables, and the verification website.
 
-## Reporting a Vulnerability
+## Reporting a vulnerability
 
-Jangan mempublikasikan kredensial, token Discord, session ticket, kode verifikasi, database, atau proof-of-concept yang berisi rahasia di issue publik.
+Do not publish exploit details in a public issue.
 
-Laporkan kerentanan secara privat melalui repository owner atau kanal keamanan internal yang digunakan maintainer.
+Provide:
 
-Sertakan:
-- deskripsi masalah
-- langkah reproduksi
-- dampak yang dapat diverifikasi
-- versi/commit yang terdampak
-- bukti minimal yang tidak membocorkan secret
+1. A concise description.
+2. Reproduction steps.
+3. Affected file or component.
+4. Impact assessment.
+5. Minimal proof of concept when safe.
+6. Suggested mitigation when known.
+
+Never include tokens, passwords, identity documents, or other secrets in the report.
 
 ## Secrets
 
-Jangan commit:
-- `.env`
-- `DISCORD_TOKEN`
-- API key
-- session secret
-- database produksi
-- verification ticket
-- verification code
+Keep these outside Git:
 
-Gunakan environment variable dan secret manager pada deployment.
+- DISCORD_TOKEN
+- BOT_OWNER_IDS
+- CLIENT_ID
+- GOOGLE_MAPS_API_KEY
+- JKT48CONNECT_API_KEY
+- Verification and infrastructure credentials
+- External API credentials
 
-## Verification Security
+Use .env.example only as a template.
 
-Sistem verifikasi menggunakan:
-- session ticket acak
-- secret unik per server Discord
-- kode 4 karakter yang diturunkan dari HMAC secret server + nonce sesi
-- penyimpanan hash kode, bukan kode plaintext
-- expiry sesi
-- batas percobaan kode
-- one-time redemption
-- role assignment hanya setelah kode valid
-- honeypot dan minimum interaction delay pada website
+## Owner controls
 
-Checkbox “I’m not a robot” pada website adalah lapisan verifikasi aplikasi, bukan pengganti layanan CAPTCHA pihak ketiga. Untuk deployment publik berisiko tinggi, gunakan Cloudflare Turnstile atau hCaptcha dan simpan secret validasi hanya di server.
+/setup, /settingbot, /blacklistserver, /blacklistusers, and /owner are owner-only at runtime.
 
-## Reporting Abuse
+Owners may be identified through BOT_OWNER_IDS or the Discord application owner returned by Discord.
 
-Untuk spam, scraping agresif, token leakage, impersonation, atau penggunaan bot yang melanggar aturan platform, kirimkan bukti dan timestamp kepada maintainer tanpa menyertakan secret.
+Maintenance and emergency lockdown do not block owner recovery commands.
 
-## Data Retention
+## Verification security model
 
-Session verifikasi sebaiknya dibersihkan secara berkala. Database produksi harus memiliki backup, permission file yang ketat, dan akses minimum.
+Verification sessions contain a server identifier, user identifier, random session identifier, challenge hash, code hash, timestamps, attempt counter, and status.
 
-## Dependency Security
+The code is derived through HMAC-SHA-256 and is never stored in plaintext.
 
-Jalankan audit dependency dan pertahankan yt-dlp, FFmpeg, Python packages, Node.js, dan dependency aplikasi pada versi yang masih didukung.
+Verification codes expire and have an attempt limit. The website uses a honeypot field, request limits, no-store headers, and ticket-bound sessions.
 
+The web human-interaction control is an in-house check and is not a third-party CAPTCHA provider.
 
-## API Keys
+## External URL security
 
-Treat `GOOGLE_MAPS_API_KEY` and any future market/data provider API keys as secrets. Restrict Google Maps keys to the APIs and applications required by the deployment, and never expose them in frontend source, Discord messages, logs, or public repository files.
+Only HTTP and HTTPS URLs are accepted by media and scraper subsystems.
 
+External requests use explicit timeouts, bounded retries, response validation, and size limits.
 
-## Bot Control Secrets
+Do not add support for bypassing login walls, CAPTCHA challenges, paywalls, or anti-bot systems.
 
-`BOT_OWNER_IDS` contains privileged Discord user IDs and must be treated as sensitive configuration. Do not commit the real value into the repository or expose it in logs, embeds, API responses, screenshots, or client-side code.
+## Media execution
 
-Owner-only controls include global bot settings, maintenance mode, server blacklist, and user blacklist.
+Media features can invoke yt-dlp, FFmpeg, Python, Demucs, rembg, Pillow, and OpenCV.
+
+Command arguments must remain arrays. Do not build shell fragments from untrusted input.
+
+## Database security
+
+Use parameterized SQL for user input.
+
+Do not commit production SQLite files containing user data.
+
+## Audit and monitoring
+
+The data audit pipeline checks configured databases every 10 seconds.
+
+When a database field contains a URL, the system checks URL health, matches the URL against the scraper registry, records status, and suggests an adapter method when no scraper is configured.
+
+## Incident response
+
+1. Enable bot maintenance mode.
+2. Enable emergency lockdown when public commands must stop.
+3. Review owner audit logs and security incidents.
+4. Disable or blacklist affected users or servers.
+5. Rotate exposed secrets.
+6. Re-run tests and scraper audits.
+7. Record the incident and mitigation.
+
+## Non-goals
+
+The bot is not designed to bypass authentication, CAPTCHA, paywalls, platform anti-bot controls, or credential protections.
