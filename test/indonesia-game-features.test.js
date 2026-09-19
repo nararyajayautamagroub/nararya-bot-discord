@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {matches,normalize,MODES} from '../src/services/games/jkt48/index.js';
 import {FEATURE_REGISTRY} from '../src/config/features.js';
+import {getElectronicsPrices,ELECTRONICS_SOURCES} from '../src/services/indonesia/electronics.js';
 import {createStreetViewQuestion} from '../src/services/games/streetview.js';
 import {upcomingRamadan} from '../src/services/indonesia/data.js';
 
