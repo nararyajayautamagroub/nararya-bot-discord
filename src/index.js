@@ -3,13 +3,18 @@ import Database from 'better-sqlite3';
 import {Client,GatewayIntentBits,Partials,EmbedBuilder,ActionRowBuilder,ButtonBuilder,ButtonStyle,ChannelType,PermissionFlagsBits,SlashCommandBuilder} from 'discord.js';
 import {createFeedService} from './jkt48/feed-service.js';
 import {DEFAULT_SOURCES} from './jkt48/sources.js';
-import {ensureTables,MODES,matches,rollGacha} from './services/games/jkt48/index.js';
+import {ensureTables,MODES,matches,rollGacha,rollRarity,rarityInfo} from './services/games/jkt48/index.js';
 import {addAsset,getAssets} from './services/games/jkt48/assets.js';
 import {addScore} from './services/games/jkt48/scoring.js';
 import {syncMemberDatabase} from './jkt48/member-database.js';
 import {configured as jkt48ConnectConfigured} from './jkt48/connect.js';
 import {getUpcoming,getLatest,getLatestPlatform,renderList,TYPE_LABELS} from './jkt48/command-service.js';
 import {createJkt48Monitor} from './jkt48/live-monitor.js';
+import {createJkt48FeatureDatabases} from './services/games/jkt48/databases.js';
+import {awardCard,getInventory as getCardInventory,getCollectionStats} from './services/games/jkt48/card-system.js';
+import {getQuizAssets,migrateLegacyAssets,startSession,getActiveSession,finishSession,calculatePoints,recordResult,getLeaderboard} from './services/games/jkt48/quiz-system.js';
+import {saveGacha} from './services/games/jkt48/gacha.js';
+import {revealAnimation,revealChannel} from './services/games/jkt48/reveal-animation.js';
 
 const db=new Database(process.env.DATABASE_PATH||'./data/nararya.db');
 db.pragma('journal_mode=WAL');
@@ -28,6 +33,8 @@ CREATE TABLE IF NOT EXISTS owned_items(guild_id TEXT,user_id TEXT,item_id TEXT,q
 
 `);
 ensureTables(db);
+const jkt48Dbs=createJkt48FeatureDatabases();
+migrateLegacyAssets(db,jkt48Dbs.quiz);
 try{db.prepare('ALTER TABLE feed_sources ADD COLUMN kind TEXT DEFAULT "public"').run()}catch{}
 const EMBED_COLORS=Object.freeze({default:0xFF6200,success:0x22C55E,error:0xEF4444,warning:0xF59E0B,info:0x3B82F6,jkt48:0xE91E63,gacha:0x8B5CF6,game:0x06B6D4,bank:0x16A34A,shop:0xF97316,city:0x64748B,fishing:0x0891B2});
 const embed=(title,description='',opts={})=>{const e=new EmbedBuilder().setTitle(title).setDescription(description).setColor(opts.color??EMBED_COLORS.default).setTimestamp().setAuthor({name:'BOT NARARYA GROUB'}).setFooter({text:'PT NARARYA JAYA UTAMA GROUB - All Right Reserved'});if(opts.url)e.setURL(opts.url);if(opts.image)e.setImage(opts.image);if(opts.thumbnail)e.setThumbnail(opts.thumbnail);if(opts.fields)e.addFields(opts.fields);return e};
@@ -59,7 +66,42 @@ async function openTicket(i){
 }
 const feedService=createFeedService({db,client,buildEmbed:feedEmbed});
 const jkt48Monitor=createJkt48Monitor({db,client,embed,interval:Number(process.env.JKT48_MONITOR_INTERVAL_MS||30000)});
-client.on('messageCreate',async m=>{if(m.author.bot||!m.guild)return;const a=moderate(m);if(a?.delete)await m.delete().catch(()=>{});if(a?.timeout)await m.member.timeout(a.timeout,'Auto moderation').catch(()=>{});addXp(m)});
+client.on('messageCreate',async m=>{
+ if(m.author.bot||!m.guild)return;
+ const session=getActiveSession(jkt48Dbs.quiz,m.guild.id,m.author.id,m.channel.id);
+ if(session){
+  const answers=session.answer.split(/\\s*[|;]\\s*/).map(x=>x.trim()).filter(Boolean);
+  const correct=matches(m.content,answers);
+  if(correct){
+   const seconds=(Date.now()-session.started_at)/1000;
+   const points=calculatePoints(seconds,session.rarity);
+   finishSession(jkt48Dbs.quiz,session.id,'finished');
+   const score=recordResult(jkt48Dbs.quiz,{guildId:m.guild.id,userId:m.author.id,mode:session.mode,rarity:session.rarity,answer:session.answer,input:m.content,correct:true,points,durationMs:Date.now()-session.started_at});
+   const member=db.prepare('SELECT * FROM jkt48_members WHERE name LIKE ? OR nickname LIKE ? ORDER BY status DESC,generation DESC LIMIT 1').get('%'+session.answer+'%','%'+session.answer+'%');
+   const card=awardCard(jkt48Dbs.cards,{
+    guildId:m.guild.id,userId:m.author.id,
+    type:member?'member':'quiz',
+    key:member?.id||session.mode+':'+session.answer,
+    name:member?.name||session.answer,
+    rarity:session.rarity,
+    generation:member?.generation||null,
+    imageUrl:member?.image_url||session.media_url||null,
+    mode:session.mode,
+    source:'quiz'
+   });
+   await revealChannel(m.channel,{
+    title:'🎯 Jawaban Benar',
+    prefix:'✅ **'+m.author.username+'** berhasil menjawab!\\n\\n',
+    rarity:session.rarity,
+    finalDescription:'🎴 **Kartu diperoleh**\\n'+card.subject_name+'\\n\\n'+(member?.generation?'Generasi '+member.generation+'\\n':'')+'⭐ **+'+points+' poin**\\n🏆 Total: **'+score.points+' poin**\\n🔥 Streak: **'+score.streak+'**',
+    finalImage:card.image_url||null
+   }).catch(console.error);
+  }else{
+   await m.channel.send({embeds:[embed('❌ Belum Tepat','Jawabanmu belum cocok. Tantangan masih aktif.\\n'+(rarityInfo[session.rarity]?.emoji||'🎴')+' Rarity: **'+(rarityInfo[session.rarity]?.label||session.rarity)+'**',{color:EMBED_COLORS.warning})]}).catch(()=>{});
+  }
+ }
+ const a=moderate(m);if(a?.delete)await m.delete().catch(()=>{});if(a?.timeout)await m.member.timeout(a.timeout,'Auto moderation').catch(()=>{});addXp(m)
+});
 client.on('guildMemberAdd',async m=>{const c=db.prepare('SELECT welcome_channel FROM guild_config WHERE guild_id=?').get(m.guild.id),ch=c?.welcome_channel?m.guild.channels.cache.get(c.welcome_channel):null;if(ch?.isTextBased())await ch.send({embeds:[embed('👋 Selamat datang','Selamat datang '+m.user.tag+'!')]})});
 client.on('guildMemberRemove',async m=>{const c=db.prepare('SELECT goodbye_channel FROM guild_config WHERE guild_id=?').get(m.guild.id),ch=c?.goodbye_channel?m.guild.channels.cache.get(c.goodbye_channel):null;if(ch?.isTextBased())await ch.send({embeds:[embed('👋 Sampai jumpa','Sampai jumpa '+m.user.tag+'.')]})});
 client.on('interactionCreate',async i=>{
@@ -78,7 +120,17 @@ client.on('interactionCreate',async i=>{
    if(sub==='bank'){const amount=i.options.getInteger('amount',true);if(amount<=0||amount>p.money)return i.reply({content:'Jumlah tidak valid.',ephemeral:true});db.prepare('UPDATE tycoon SET money=money-?,bank=bank+? WHERE guild_id=? AND user_id=?').run(amount,amount,gid,uid);return i.reply({content:'🏦 Deposit berhasil: Rp'+amount.toLocaleString('id-ID')})}
    if(sub==='fish'){const gain=5000+p.fish_level*1000;db.prepare('UPDATE tycoon SET money=money+?,energy=MAX(0,energy-10) WHERE guild_id=? AND user_id=?').run(gain,gid,uid);return i.reply({content:'🎣 Kamu memancing dan mendapat Rp'+gain.toLocaleString('id-ID')+' dari hasil tangkapan.'})}
    if(sub==='build'){const cost=25000*p.city_level;if(p.money<cost)return i.reply({content:'💸 Uang tidak cukup. Kota memang mahal, manusia suka beton.',ephemeral:true});db.prepare('UPDATE tycoon SET money=money-?,city_level=city_level+1 WHERE guild_id=? AND user_id=?').run(cost,gid,uid);return i.reply({content:'🏗️ Kota naik ke Level '+(p.city_level+1)+'!'})}
-   if(sub==='gacha'){if(p.gacha_count>=10)return i.reply({content:'🎴 Batas gacha 10 kali per hari sudah tercapai.',ephemeral:true});const members=db.prepare("SELECT id as key,name,image_url,generation,status FROM jkt48_members WHERE generation BETWEEN 1 AND 14 ORDER BY name").all();if(!members.length)return i.reply({embeds:[embed('🎴 Gacha Belum Siap','Database member generasi **1–14** belum tersedia.',{color:EMBED_COLORS.warning})],ephemeral:true});const r=rollGacha(members);db.prepare('UPDATE tycoon SET gacha_count=gacha_count+1,money=MAX(0,money-10000) WHERE guild_id=? AND user_id=?').run(gid,uid);return i.reply({embeds:[embed('🎴 Gacha Member JKT48',r.emoji+' **'+r.rarity.toUpperCase()+'**\\n'+(r.member.name||r.member.key))]})}
+   if(sub==='gacha'){
+ if(p.gacha_count>=10)return i.reply({embeds:[embed('🎴 Gacha Harian','Batas **10 kali per hari** sudah tercapai.',{color:EMBED_COLORS.warning})],ephemeral:true});
+ if(p.money<10000)return i.reply({embeds:[embed('💸 Saldo Tidak Cukup','Gacha membutuhkan **Rp10.000**.',{color:EMBED_COLORS.warning})],ephemeral:true});
+ const members=db.prepare("SELECT id as key,name,image_url,generation,status FROM jkt48_members WHERE generation BETWEEN 1 AND 14 ORDER BY name").all();
+ if(!members.length)return i.reply({embeds:[embed('🎴 Gacha Belum Siap','Database member generasi **1–14** belum tersedia.',{color:EMBED_COLORS.warning})],ephemeral:true});
+ const r=rollGacha(members);
+ db.prepare('UPDATE tycoon SET gacha_count=gacha_count+1,money=money-10000 WHERE guild_id=? AND user_id=?').run(gid,uid);
+ const card=awardCard(jkt48Dbs.cards,{guildId:gid,userId:uid,type:'member',key:r.member.key||r.member.name,name:r.member.name||r.member.key,rarity:r.rarity,generation:r.member.generation||null,imageUrl:r.member.image_url||null,source:'sim-gacha'});
+ saveGacha(jkt48Dbs.gacha,gid,uid,r,'sim-gacha',r.member.generation||null);
+ return revealAnimation(i,{title:'🎴 JKT48 Gacha',prefix:'💰 Biaya: **Rp10.000**\\n\\n',rarity:r.rarity,finalDescription:'🎴 **'+card.subject_name+'**\\nGenerasi '+(card.generation||'?')+'\\n📦 Kartu diperoleh: **×'+card.quantity+'**\\n💰 Sisa cash: **Rp'+(p.money-10000).toLocaleString('id-ID')+'**',finalImage:card.image_url||null});
+}
   }
   if(n==='jkt48game'){
    const sub=i.options.getSubcommand(true);
@@ -86,13 +138,29 @@ client.on('interactionCreate',async i=>{
     const members=db.prepare("SELECT id as key,name,image_url,generation,status FROM jkt48_members WHERE generation BETWEEN 1 AND 14 ORDER BY name").all();
     if(!members.length)return i.reply({embeds:[embed('🎴 Gacha Belum Siap','Database member generasi **1–14** belum tersedia. Sinkronisasi member perlu berhasil terlebih dahulu.',{color:EMBED_COLORS.warning})],ephemeral:true});
     const r=rollGacha(members); const key=r.member.key||r.member.name;
-    db.prepare('INSERT INTO jkt48_gacha(guild_id,user_id,member_key,rarity,count) VALUES(?,?,?,?,1) ON CONFLICT(guild_id,user_id,member_key,rarity) DO UPDATE SET count=count+1').run(i.guild.id,i.user.id,key,r.rarity);
-    return i.reply({embeds:[embed('🎴 Gacha JKT48',r.emoji+' **'+r.rarity.toUpperCase()+'**\\n'+(r.member.name||key))]});
+    const card=awardCard(jkt48Dbs.cards,{guildId:i.guild.id,userId:i.user.id,type:'member',key,name:r.member.name||key,rarity:r.rarity,generation:r.member.generation||null,imageUrl:r.member.image_url||null,source:'jkt48game-gacha'});
+    saveGacha(jkt48Dbs.gacha,i.guild.id,i.user.id,r,'jkt48game-gacha',r.member.generation||null);
+    return revealAnimation(i,{title:'🎴 JKT48 Gacha',prefix:'🎁 **CARD PACK OPENING**\\n\\n',rarity:r.rarity,finalDescription:'👤 **'+card.subject_name+'**\\nGenerasi '+(card.generation||'?')+'\\n📦 Kartu: **×'+card.quantity+'**',finalImage:card.image_url||null});
    }
-   if(sub==='inventory'){const rows=db.prepare('SELECT member_key,rarity,count FROM jkt48_gacha WHERE guild_id=? AND user_id=? ORDER BY count DESC').all(i.guild.id,i.user.id);return i.reply({embeds:[embed('🎴 Koleksi Gacha',rows.length?rows.map(x=>x.rarity+' • '+x.member_key+' ×'+x.count).join('\\n'):'Belum punya kartu.') ]})}
-   if(sub==='leaderboard'){const rows=db.prepare('SELECT user_id,points,wins FROM jkt48_game_scores WHERE guild_id=? ORDER BY points DESC LIMIT 10').all(i.guild.id);return i.reply({embeds:[embed('🏆 JKT48 Game Leaderboard',rows.length?rows.map((x,n)=>'#'+(n+1)+' <@'+x.user_id+'> • '+x.points+' poin • '+x.wins+' menang').join('\\n'):'Belum ada skor.') ]})}
-   const mode=i.options.getString('mode',true),assets=getAssets(db,mode);if(!assets.length)return i.reply({content:'Asset game untuk mode **'+MODES[mode]+'** belum tersedia. Admin perlu menambah asset.',ephemeral:true});
-   const q=assets[0]; return i.reply({embeds:[embed('🎯 '+MODES[mode],'Tebak jawabannya!\\nBalas pesan ini dengan jawabanmu.').setImage(q.media_url)],ephemeral:false});
+   if(sub==='inventory'){
+    const rows=getCardInventory(jkt48Dbs.cards,i.guild.id,i.user.id,40);
+    const stats=getCollectionStats(jkt48Dbs.cards,i.guild.id,i.user.id);
+    const body=rows.length?rows.map(x=>{
+      const ri=rarityInfo[x.rarity]||rarityInfo.common;
+      return ri.emoji+' **'+x.subject_name+'** • '+ri.label+' • ×'+x.quantity+(x.generation?' • Gen '+x.generation:'');
+    }).join('\\n'):'Belum punya kartu.';
+    const summary=stats.length?'\\n\\n**Koleksi per rarity:**\\n'+stats.map(x=>(rarityInfo[x.rarity]?.emoji||'🎴')+' '+(rarityInfo[x.rarity]?.label||x.rarity)+' • '+x.unique_cards+' unik • ×'+x.quantity).join('\\n'):'';
+    return i.reply({embeds:[embed('🎴 Card Collection',body+summary,{color:EMBED_COLORS.gacha})]});
+   }
+   if(sub==='leaderboard'){
+    const rows=getLeaderboard(jkt48Dbs.quiz,i.guild.id);
+    return i.reply({embeds:[embed('🏆 JKT48 Game Leaderboard',rows.length?rows.map((x,n)=>'#'+(n+1)+' <@'+x.user_id+'> • '+x.points+' poin • '+x.wins+' menang • '+x.games+' game').join('\\n'):'Belum ada skor.') ]});
+   }
+   const mode=i.options.getString('mode',true),assets=getQuizAssets(jkt48Dbs.quiz,mode);
+   if(!assets.length)return i.reply({embeds:[embed('🎯 Asset Game Kosong','Asset untuk mode **'+MODES[mode]+'** belum tersedia. Admin perlu menambah asset ke database quiz.',{color:EMBED_COLORS.warning})],ephemeral:true});
+   const q=assets[0],rarity=q.rarity||rollRarity();
+   const active=startSession(jkt48Dbs.quiz,{guildId:i.guild.id,userId:i.user.id,channelId:i.channel.id,mode,answer:q.answer,mediaUrl:q.media_url,rarity,durationMs:Number(process.env.JKT48_QUIZ_TIMEOUT_MS||60000)});
+   return revealAnimation(i,{title:'🎯 '+MODES[mode],prefix:'🃏 **Challenge Card**\\n\\nBalas pesan ini dengan jawabanmu.\\n⏱️ Waktu: **'+Math.round((active.expires_at-active.started_at)/1000)+' detik**\\n\\n',rarity,finalDescription:'🃏 **Tantangan aktif**\\nMode: '+MODES[mode]+'\\nRarity: '+(rarityInfo[rarity]?.label||rarity)+'\\n⏱️ Jawab dalam **'+Math.round((active.expires_at-active.started_at)/1000)+' detik**.',finalImage:q.media_url||null});
   }
   if(n==='members'){const gen=i.options.getInteger('generation');const rows=gen?db.prepare('SELECT name,nickname,status,team FROM jkt48_members WHERE generation=? ORDER BY name').all(gen):db.prepare('SELECT generation,COUNT(*) count FROM jkt48_members GROUP BY generation ORDER BY generation').all();if(!rows.length)return i.reply({embeds:[embed('👥 Database Member JKT48','Belum ada data member. Pastikan **JKT48CONNECT_API_KEY** aktif agar database dapat disinkronkan.',{color:EMBED_COLORS.warning})],ephemeral:true});if(gen){const active=rows.filter(x=>x.status==='active').length;const text=rows.map(x=>'• **'+x.name+'**'+(x.nickname?' ('+x.nickname+')':'')+' • '+(x.status==='active'?'🟢 Aktif':'⚪ '+x.status)+(x.team?' • '+x.team:'')).join('\\n');return i.reply({embeds:[embed('👥 JKT48 Generasi '+gen,text+'\\n\\n**Total:** '+rows.length+' • **Aktif:** '+active,{color:EMBED_COLORS.jkt48})]})}return i.reply({embeds:[embed('👥 Database JKT48','Data tersimpan per generasi:\\n'+rows.map(x=>'**Gen '+x.generation+'** • '+x.count+' member').join('\\n'),{color:EMBED_COLORS.jkt48})]});}
   if(n==='member'){const q=i.options.getString('query',true).trim();const row=db.prepare('SELECT * FROM jkt48_members WHERE name LIKE ? OR nickname LIKE ? ORDER BY status DESC,generation DESC LIMIT 1').get('%'+q+'%','%'+q+'%');if(!row)return i.reply({embeds:[embed('🔎 Member Tidak Ditemukan','Tidak menemukan member dengan kata kunci **'+q+'**.',{color:EMBED_COLORS.warning})],ephemeral:true});return i.reply({embeds:[memberEmbed(row)]});}
