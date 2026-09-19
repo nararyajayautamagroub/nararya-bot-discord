@@ -66,3 +66,22 @@ Quiz asset management:
 - `/jkt48game asset_add`: add an asset, answer aliases, public media URL, and rarity.
 - `/jkt48game asset_list`: inspect asset counts by mode or rarity.
 - `/jkt48game inventory`: view the combined card collection.
+
+
+## Modern Discord command layout
+
+General bot commands are grouped into namespaces:
+- `/utility ping|server|user|level`
+- `/economy balance|daily`
+- `/moderation warn|ban`
+- `/support ticket`
+- `/feed list|add|remove|test`
+- `/sim profile|daily|bank|fish|build|gacha`
+- `/jkt48 member|members`
+- `/jkt48 upcoming ...`
+- `/jkt48 latest ...`
+- `/jkt48game play|gacha|inventory|leaderboard|asset_add|asset_list`
+
+The main application database remains responsible for general bot data: tickets, economy, moderation warnings, levels, guild configuration, and tycoon/simulation state. The separate JKT48 game databases are dedicated to quiz sessions/assets, gacha history, and card collections.
+
+After changing `src/deploy-commands.js`, run `npm run deploy` so Discord receives the current command tree.
