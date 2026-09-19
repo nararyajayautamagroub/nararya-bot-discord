@@ -1,47 +1,67 @@
 # Repository Structure
 
-## Runtime
+## Source tree
 
-- `src/index.js` — entrypoint bot Discord.
-- `src/deploy-commands.js` — registrasi slash commands.
-- `src/config/` — configuration and feature registry.
-- `src/security/` — security services, verification sessions, server-bound code, and rate limits.
-- `src/web/verification/` — verification HTTP server and static website.
-- `src/media/` — media database, download, service, and transforms.
-- `src/jkt48/` — JKT48 source synchronization, feed, live monitoring, and command service.
-- `src/services/indonesia/` — Indonesia news, stock, fuel, electricity, food, prayer, and Ramadan data adapters.
-- `src/services/scrapers/` — scraper registry, HTTP probes, scheduled source refresh.
-- `src/services/audit/` — all-database URL/source integrity audit.
-- `src/services/disasters/` — BMKG, BNPB, and MAGMA disaster adapters.
-- `src/services/games/streetview.js` — general Google Street View guessing game.
-- `src/services/games/jkt48/` — quiz, gacha, cards, rarity, and reveal subsystems.
-- `tools/media/` — Python helpers for media transforms.
+~~~
+src/
+  config/
+  commands/
+  jkt48/
+  media/
+  music/
+  security/
+  services/
+  tools/
+  web/
+  index.js
+  deploy-commands.js
 
-## Data
+tools/
+  media/
 
-- `data/nararya.db` — main guild, moderation, economy, levels, ticket, and tycoon database.
-- `data/jkt48/` — separate JKT48 game databases.
-- `data/media/` — separate media job database and temporary files.
-- `data/**/*.db*` and media job output are ignored by Git.
+test/
+docs/
+website/
+~~~
 
-## Documentation
+## Responsibilities
 
-- `README.md` — project overview.
-- `SECURITY.md` — security policy and vulnerability reporting.
-- `docs/COMMANDS.md` — command reference.
-- `docs/FEATURES-100.md` — implemented feature catalog entrypoint.
-- `docs/FEATURE-REGISTRY.md` — detailed feature registry.
-- `docs/VERIFICATION.md` — verification deployment and flow.
-- `docs/MEDIA.md` — media subsystem requirements.
-- `docs/INDONESIA-DATA.md` — Indonesia data sources, cache policies, and Ramadan behavior.
-- `docs/SCRAPER-MATRIX.md` — external feature source contracts and audit pipeline.
-- `docs/JKT48-SOURCES.md` — JKT48 source mapping.
+### src/config
 
-## Quality
+Feature definitions and application configuration.
 
-- `test/` — automated Node test files.
-- `.github/workflows/ci.yml` — install and test workflow.
+### src/jkt48
 
-## Security rules
+JKT48 source connectors, member database, feed service, and JKT48 command services.
 
-Secrets belong in environment variables or a secret manager. Never commit `.env`, Discord tokens, API keys, verification tickets, production databases, or user-uploaded verification evidence.
+### src/media
+
+Media download, transformations, vocal separation, background removal, watermark removal, media database, and Discord command handling.
+
+### src/security
+
+Owner control, blacklists, security functions, and verification security.
+
+### src/services
+
+Domain services for Indonesia data, disasters, games, leveling, notification feeds, restaurant prices, scraper orchestration, and audit.
+
+### src/tools
+
+Shared utilities and HTTP handling.
+
+### src/web/verification
+
+Verification HTTP server and public verification page.
+
+### tools/media
+
+Python transformation scripts.
+
+### test
+
+Automated tests.
+
+## Runtime state
+
+Runtime SQLite files and generated media directories are deployment state and must remain outside version control.
