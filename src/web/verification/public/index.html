@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nararya Bot • Verifikasi</title>
+<link rel="stylesheet" href="/verify/style.css">
+</head>
+<body>
+<main class="card">
+  <div class="brand">NARARYA BOT DISCORD</div>
+  <h1>Verifikasi Server</h1>
+  <p class="muted">Selesaikan verifikasi untuk mendapatkan kode sekali pakai yang akan dimasukkan ke Discord.</p>
+  <section id="session" class="panel">
+    <div class="row"><span>Server</span><strong id="guild">Memuat...</strong></div>
+    <div class="row"><span>User</span><strong id="user">Memuat...</strong></div>
+    <div class="row"><span>Status</span><strong id="status">Memuat...</strong></div>
+  </section>
+  <section class="panel">
+    <label class="check">
+      <input id="robot" type="checkbox">
+      <span>I’m not a robot</span>
+    </label>
+    <input id="website" class="honeypot" tabindex="-1" autocomplete="off">
+    <button id="verify" disabled>Verifikasi</button>
+    <p id="message" class="message"></p>
+  </section>
+  <section id="codePanel" class="panel hidden">
+    <div class="label">Kode verifikasi</div>
+    <div id="code" class="code">----</div>
+    <p class="muted">Kode ini berlaku sementara dan hanya untuk server serta akun Discord pada sesi ini.</p>
+  </section>
+</main>
+<script src="/verify/app.js"></script>
+</body>
+</html>
