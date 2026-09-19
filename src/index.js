@@ -6,6 +6,9 @@ import {DEFAULT_SOURCES} from './jkt48/sources.js';
 import {ensureTables,MODES,matches,rollGacha} from './services/games/jkt48/index.js';
 import {addAsset,getAssets} from './services/games/jkt48/assets.js';
 import {addScore} from './services/games/jkt48/scoring.js';
+import {configured as jkt48ConnectConfigured} from './jkt48/connect.js';
+import {getUpcoming,getLatest,getLatestPlatform,renderList,TYPE_LABELS} from './jkt48/command-service.js';
+import {createJkt48Monitor} from './jkt48/live-monitor.js';
 
 const db=new Database(process.env.DATABASE_PATH||'./data/nararya.db');
 db.pragma('journal_mode=WAL');
@@ -53,6 +56,7 @@ async function openTicket(i){
  return ch;
 }
 const feedService=createFeedService({db,client,buildEmbed:feedEmbed});
+const jkt48Monitor=createJkt48Monitor({db,client,embed,interval:Number(process.env.JKT48_MONITOR_INTERVAL_MS||30000)});
 client.on('messageCreate',async m=>{if(m.author.bot||!m.guild)return;const a=moderate(m);if(a?.delete)await m.delete().catch(()=>{});if(a?.timeout)await m.member.timeout(a.timeout,'Auto moderation').catch(()=>{});addXp(m)});
 client.on('guildMemberAdd',async m=>{const c=db.prepare('SELECT welcome_channel FROM guild_config WHERE guild_id=?').get(m.guild.id),ch=c?.welcome_channel?m.guild.channels.cache.get(c.welcome_channel):null;if(ch?.isTextBased())await ch.send({embeds:[embed('👋 Selamat datang','Selamat datang '+m.user.tag+'!')]})});
 client.on('guildMemberRemove',async m=>{const c=db.prepare('SELECT goodbye_channel FROM guild_config WHERE guild_id=?').get(m.guild.id),ch=c?.goodbye_channel?m.guild.channels.cache.get(c.goodbye_channel):null;if(ch?.isTextBased())await ch.send({embeds:[embed('👋 Sampai jumpa','Sampai jumpa '+m.user.tag+'.')]})});
@@ -88,7 +92,7 @@ client.on('interactionCreate',async i=>{
    const mode=i.options.getString('mode',true),assets=getAssets(db,mode);if(!assets.length)return i.reply({content:'Asset game untuk mode **'+MODES[mode]+'** belum tersedia. Admin perlu menambah asset.',ephemeral:true});
    const q=assets[0]; return i.reply({embeds:[embed('🎯 '+MODES[mode],'Tebak jawabannya!\\nBalas pesan ini dengan jawabanmu.').setImage(q.media_url)],ephemeral:false});
   }
-  if(n==='ping')return i.reply({embeds:[embed('🏓 Pong',i.client.ws.ping+'ms')]});
+  if(n==='jkt48'){\n   const group=i.options.getSubcommandGroup(true),type=i.options.getSubcommand(true);\n   if(!jkt48ConnectConfigured())return i.reply({embeds:[embed('⚙️ JKT48Connect Belum Aktif','Fitur jadwal dan live membutuhkan **JKT48CONNECT_API_KEY** pada environment bot.',{color:EMBED_COLORS.warning})],ephemeral:true});\n   try{\n    if(group==='upcoming'){const rows=await getUpcoming(type);return i.reply({embeds:[embed('📅 Upcoming '+TYPE_LABELS[type],renderList(TYPE_LABELS[type],rows),{color:EMBED_COLORS.jkt48})]});}\n    if(group==='latest'){const rows=type==='live'?await getLatest('live'):await getLatest(type);return i.reply({embeds:[embed('🕘 Latest '+TYPE_LABELS[type],renderList(TYPE_LABELS[type],rows),{color:EMBED_COLORS.info})]});}\n   }catch(e){return i.reply({embeds:[embed('⚠️ Gagal Mengambil Data','Sumber JKT48 tidak dapat diakses saat ini.\n`'+e.message+'`',{color:EMBED_COLORS.error})],ephemeral:true});}\n  }\n  if(n==='ping')return i.reply({embeds:[embed('🏓 Pong',i.client.ws.ping+'ms')]});
   if(n==='ticket'){const row=new ActionRowBuilder().addComponents(new ButtonBuilder().setCustomId('ticket-create').setLabel('Buat Ticket').setEmoji('🎫').setStyle(ButtonStyle.Primary));return i.reply({embeds:[embed('🎫 Ticket Center','Gunakan tombol untuk membuka ticket.')],components:[row]})}
   if(n==='feed'){
    const sub=i.options.getSubcommand(false);
