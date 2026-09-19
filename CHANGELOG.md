@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.2.0 - 2026-09-20
+
+- Enforced a date-keyed limit of 10 JKT48 gacha pulls per user per day.
+- Added a date-keyed limit of 10 JKT48 and Street View quiz sessions per user per day.
+- Added generation 14 seed data and official SHOWROOM and IDN Live profile references.
+- Added scraper-backed live detection for configured IDN, SHOWROOM, YouTube, Instagram, and TikTok sources.
+- Added database fallbacks for JKT48 upcoming/latest commands when JKT48Connect is unavailable.
+- Kept the Ticket Bot as a separate runtime and database.
+
+
 ## 2.1.2 - 2026-09-20
 
 ### Tooling
