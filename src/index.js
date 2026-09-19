@@ -442,8 +442,8 @@ client.once('ready',async()=>{
  await feedService.poll();
  setInterval(()=>feedService.poll().catch(console.error),Math.max(30,Number(process.env.SCRAPER_INTERVAL_SECONDS||120))*1000);
  await sendIndonesiaDataRefresh();
- const dataRefreshMinutes=Math.max(15,Number(process.env.INDONESIA_DATA_REFRESH_MINUTES||15));
- setInterval(()=>sendIndonesiaDataRefresh().catch(console.error),dataRefreshMinutes*60*1000);
+ const dataRefreshHours=Math.max(24,Number(process.env.INDONESIA_DATA_REFRESH_HOURS||24));
+ setInterval(()=>sendIndonesiaDataRefresh().catch(console.error),dataRefreshHours*60*60*1000);
  setInterval(()=>checkRamadanNotifications().catch(console.error),30*1000);
  if(jkt48ConnectConfigured())jkt48Monitor.start();
 });
