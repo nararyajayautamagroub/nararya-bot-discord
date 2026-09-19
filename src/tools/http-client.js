@@ -1,4 +1,4 @@
-import {isHttpUrl,timeoutSignal,retry,retryDelay,asInteger,asString,serializeError,createLogger} from './toolbox.js';
+import {isHttpUrl,retry,retryDelay,asInteger,asString,serializeError,createLogger} from './toolbox.js';
 
 const logger=createLogger('http-tools');
 export const DEFAULT_TIMEOUT_MS=10000;
