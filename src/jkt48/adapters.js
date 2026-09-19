@@ -101,7 +101,7 @@ function parseAnchors($,base,filter,sourceType){
   const description=clean(card.text(),900);
   out.push(item({title,url,description,image,publishedAt:published,sourceType}));
  });
- return unique(out);
+ return uniqueByUrl(out,MAX_ITEMS);
 }
 
 export async function scrapeHtmlPage(url,{filter=()=>true,sourceType='public'}={}){
@@ -182,7 +182,7 @@ export async function scrapePublicProfile(url,platform='public'){
  const profile=item({title,url,description,image,sourceType:platform});
  const links=parseAnchors($,url,(href)=>socialFilter(platform)(href),platform);
  const json=parseJsonLd($,url,platform);
- return unique([...links,...json,profile]);
+ return uniqueByUrl([...links,...json,profile],MAX_ITEMS);
 }
 
 export async function scrapeInstagram(url){return scrapePublicProfile(url,'instagram')}
@@ -195,7 +195,7 @@ export async function scrapeMarketplace(url,platform){
  const $=cheerio.load(body);
  const json=parseJsonLd($,url,platform);
  const anchors=parseAnchors($,url,(href,title)=>/product|produk|item|catalog|shop|detail/i.test(href+' '+title),platform);
- return unique([...json,...anchors]);
+ return uniqueByUrl([...json,...anchors],MAX_ITEMS);
 }
 
 export async function scrapeSource(source){
