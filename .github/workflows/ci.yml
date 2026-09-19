@@ -7,6 +7,10 @@ env:
 on:
   push:
   pull_request:
+
+concurrency:
+  group: nararya-bot-ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   test:
     runs-on: ubuntu-latest
