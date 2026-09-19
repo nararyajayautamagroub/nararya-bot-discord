@@ -1,1 +1,0 @@
-import {SlashCommandBuilder} from "discord.js";export const data=new SlashCommandBuilder().setName("verify").setDescription("Verifikasi member");
