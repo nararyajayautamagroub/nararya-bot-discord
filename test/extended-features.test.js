@@ -7,10 +7,10 @@ import {createExtendedFeatures} from "../src/services/extended-features.js";
 import {createXpCardSvg,createXpCardBuffer,levelFromXp,xpForLevel} from "../src/services/leveling/xp-card.js";
 import {createPresenceRotation} from "../src/services/presence-rotation.js";
 
-test("feature catalog reaches exactly 150",()=>{
+test("feature catalog reaches exactly 151",()=>{
  assert.equal(EXTENDED_FEATURES.length,93);
- assert.equal(FEATURE_REGISTRY.length,150);
- assert.equal(new Set(FEATURE_REGISTRY.map(x=>x.id)).size,150);
+ assert.equal(FEATURE_REGISTRY.length,151);
+ assert.equal(new Set(FEATURE_REGISTRY.map(x=>x.id)).size,151);
 });
 
 test("extended feature manager initializes persistent tables",()=>{
@@ -18,11 +18,11 @@ test("extended feature manager initializes persistent tables",()=>{
  const client={guilds:{cache:new Map()},channels:{fetch:async()=>null}};
  const botControl={isOwner:()=>true,isMaintenance:()=>false,settings:()=>[],setSetting:()=>{},getSetting:()=> "true",applyPresence:async()=>{}};
  const manager=createExtendedFeatures({db,client,botControl,embed:()=>({})});
- assert.ok(db.prepare("SELECT 1 FROM feature_settings").get());
- assert.ok(db.prepare("SELECT 1 FROM security_incidents").get());
- assert.ok(db.prepare("SELECT 1 FROM owner_audit_log").get());
- assert.ok(db.prepare("SELECT 1 FROM polls").get());
- assert.ok(db.prepare("SELECT 1 FROM starboard").get());
+ assert.ok(db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='feature_settings'").get());
+ assert.ok(db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='security_incidents'").get());
+ assert.ok(db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='owner_audit_log'").get());
+ assert.ok(db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='polls'").get());
+ assert.ok(db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='starboard'").get());
  manager.ensureTables(db);
  db.close();
 });
