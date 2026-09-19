@@ -68,7 +68,7 @@ const client=new Client({intents:[GatewayIntentBits.Guilds,GatewayIntentBits.Gui
 client.once('ready',async()=>{console.log('Nararya Ticket Bot online as '+client.user.tag);await deploy().catch(e=>console.error('[ticket deploy]',e.message));});
 client.on('interactionCreate',async i=>{
  try{
-  if(i.isButton()&&i.customId==='ticketbot-close')return closeTicket(i);
+  if(i.isButton()&&i.customId==='ticketbot-close')return closeTicket(i);\n  if(i.isButton()&&i.customId==='ticketbot-open')return createTicket(i);
   if(!i.isChatInputCommand())return;
   if(i.commandName==='ticketbot')return i.reply({embeds:[embed('🎫 Ticket Bot Status','Bot ticket berjalan terpisah. Database: **OK**\\nGuild: **'+client.guilds.cache.size+'**')]});
   if(i.commandName!=='ticket')return;
