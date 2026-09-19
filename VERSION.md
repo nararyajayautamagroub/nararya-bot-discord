@@ -1,18 +1,20 @@
 # Version
 
-Current project version: **1.6.0**
+Current project version: **1.7.0**
 
 Release date: **2026-09-19**
 
 This release adds:
-- Google Street View photo guessing
-- unified 10-second game/gacha cooldown
-- one-minute quiz timeout
-- Indonesian news, stock, fuel, electricity, and food information commands
-- Ramadan upcoming and imsakiyah commands
-- automated sahur and iftar notifications
-- scheduled Indonesia data refresh
+- central scraper registry for external data
+- 10-second URL health and database audit pipeline
+- automatic detection of data URLs without a scraper adapter
+- scraper method suggestions for unknown sources
+- general Google Street View game
+- disaster monitoring for earthquakes, tsunami, volcanoes, and general disasters
+- disaster location reporting and optional server notifications
+- system/status/data audit slash commands
+- 24-hour background news source refresh
 
-Versioning follows Semantic Versioning where applicable.
+JKT48 remains on its existing repository/source URL integration and is exempt from the generic scraper requirement.
 
 For release details, see [CHANGELOG.md](./CHANGELOG.md).
