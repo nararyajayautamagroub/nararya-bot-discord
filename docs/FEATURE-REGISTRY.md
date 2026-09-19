@@ -2,7 +2,7 @@
 
 Daftar fitur aktif bot berasal dari `src/config/features.js`.
 
-## 43 fitur aktif
+## 50 fitur aktif
 
 ### Discord
 1. Slash Command Registry
@@ -68,6 +68,13 @@ Daftar fitur aktif bot berasal dari `src/config/features.js`.
 41. Imsakiyah Schedule
 42. Sahur Notification
 43. Iftar Notification
+44. Scraper Registry
+45. URL Health Check
+46. Database Data Audit
+47. Scraper Method Suggestion
+48. Disaster Monitor
+49. Disaster Notification
+50. System Status
 
 ## Game policy
 
