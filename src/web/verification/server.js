@@ -5,6 +5,9 @@ import {fileURLToPath} from 'node:url';
 
 const root=path.dirname(fileURLToPath(import.meta.url));
 const publicDir=path.join(root,'public');
+const ipHits=new Map();
+const WINDOW_MS=60_000;
+const MAX_REQUESTS_PER_WINDOW=60;
 
 const json=(res,status,payload)=>{
  res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});
@@ -64,7 +67,7 @@ export function createVerificationWebServer({service,featureRegistry}){
  function sendStatic(res,file,type){
    const full=path.join(publicDir,file);
    if(!fs.existsSync(full)){res.writeHead(404);return res.end('Not found');}
-   res.writeHead(200,{'Content-Type':type,'Cache-Control':'no-store'});
+   res.writeHead(200,{'Content-Type':type,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'no-referrer'});
    fs.createReadStream(full).pipe(res);
  }
 
