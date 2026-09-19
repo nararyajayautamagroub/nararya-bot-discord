@@ -3,7 +3,7 @@ import {rarityInfo} from './index.js';
 const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const frame=(title,description,color)=>({title,description,color,timestamp:new Date().toISOString(),footer:{text:'PT NARARYA JAYA UTAMA GROUB - All Right Reserved'}});
 
-async function animate(edit,send,title,prefix,rarity,finalDescription,finalImage=null){
+async function animate(send,edit,{title='🎴 Card Reveal',prefix='',rarity,finalDescription,finalImage=null}){
  const info=rarityInfo[rarity]||rarityInfo.common;
  const message=await send({embeds:[frame(title+' • Ⅰ',prefix+'🔒 **CARD SEALED**\n\nRarity sedang dihitung...',0x475569)]});
  await wait(600);
@@ -16,18 +16,18 @@ async function animate(edit,send,title,prefix,rarity,finalDescription,finalImage
  return edit(message,{embeds:[final]});
 }
 
-export async function revealAnimation(interaction,opts){
+export async function revealAnimation(interaction,opts={}){
  return animate(
-  message=>interaction.editReply(message),
   payload=>interaction.reply({...payload,ephemeral:opts.ephemeral,fetchReply:true}),
-  opts.title||'🎴 Card Reveal',opts.prefix||'',opts.rarity,opts.finalDescription||'',opts.finalImage||null
+  (_message,payload)=>interaction.editReply(payload),
+  opts
  );
 }
 
-export async function revealChannel(channel,opts){
+export async function revealChannel(channel,opts={}){
  return animate(
-  message=>message.edit.bind(message),
   payload=>channel.send(payload),
-  opts.title||'🎴 Card Reveal',opts.prefix||'',opts.rarity,opts.finalDescription||'',opts.finalImage||null
+  (message,payload)=>message.edit(payload),
+  opts
  );
 }
