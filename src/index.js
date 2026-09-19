@@ -79,8 +79,8 @@ const recent=new Map();
 function moderate(m){
  const key=m.guild.id+':'+m.author.id,now=Date.now(),arr=(recent.get(key)||[]).filter(t=>now-t<8000);arr.push(now);recent.set(key,arr);
  if(arr.length>=6)return{delete:true,timeout:60000};
- if(/discord(?:app)?\\.com\\/invite\\//i.test(m.content))return{delete:true};
- if(/https?:\\/\\//i.test(m.content)&&!m.member.permissions.has(PermissionFlagsBits.ManageMessages))return{delete:true};
+ if(m.content.includes('discord.gg/')||m.content.includes('discord.com/invite/')||m.content.includes('discordapp.com/invite/'))return{delete:true};
+ if((m.content.includes('http://')||m.content.includes('https://'))&&!m.member.permissions.has(PermissionFlagsBits.ManageMessages))return{delete:true};
 }
 function addXp(m){
  const r=db.prepare('SELECT * FROM levels WHERE guild_id=? AND user_id=?').get(m.guild.id,m.author.id);
