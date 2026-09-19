@@ -197,6 +197,26 @@ export async function scrapeMarketplace(url,platform){
  return uniqueByUrl([...json,...anchors],MAX_ITEMS);
 }
 
+export async function scrapeLivePage(url,platform='public'){
+ const {body}=await request(url);
+ const $=cheerio.load(body);
+ const lower=body.toLowerCase();
+ const liveSignals=[
+  /"islivenow"\s*:\s*true/i,
+  /"islivecontent"\s*:\s*true/i,
+  /"is_live"\s*:\s*true/i,
+  /"live_status"\s*:\s*(?:1|true)/i,
+  /"isLive"\s*:\s*true/i
+ ];
+ const hasStructuredLive=liveSignals.some(re=>re.test(body));
+ const candidates=parseAnchors($,url,(href,title)=>/live|stream|on.?air|siaran/i.test(href+' '+title),platform);
+ const title=clean(meta($,'og:title')||$('title').first().text()||platform+' live',240);
+ const image=meta($,'og:image')||null;
+ if(!hasStructuredLive&&!candidates.length)return [];
+ if(candidates.length)return candidates.map(x=>({...x,live:true})).slice(0,MAX_ITEMS);
+ return [item({title,url,description:meta($,'og:description')||'Live terdeteksi dari halaman publik.',image,publishedAt:Date.now(),sourceType:platform})].map(x=>({...x,live:true}));
+}
+
 export async function scrapeSource(source){
  const kind=String(source.kind||'public').toLowerCase();
  const url=source.url;
