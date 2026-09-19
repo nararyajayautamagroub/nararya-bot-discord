@@ -1,5 +1,37 @@
-# JKT48 Guess & Gacha
+# JKT48 Game Service
 
-Game modes include song audio, member voice, active member photo, graduation photo, random member, setlist photo, and song photo. Media is configured as public HTTP/HTTPS assets. The bot does not bypass CAPTCHA, login, DRM, private content, or anti-bot controls.
+This directory contains the JKT48 quiz, gacha, card, rarity, reveal, and game-session services.
 
-Asset kinds: song-audio, member-voice, active-photo, graduation-photo, random-member, setlist-photo, song-photo.
+## Database isolation
+
+The JKT48 game system uses separate SQLite databases:
+
+- quiz.db
+- gacha.db
+- cards.db
+
+## Game rules
+
+Quiz and gacha actions use a shared 10-second cooldown per guild and user.
+
+Each active quiz session expires after 1 minute.
+
+A timeout is recorded as a failed attempt and does not grant points.
+
+## Card system
+
+Cards support rarity levels from Common through Secret.
+
+Card data is stored separately from the quiz and gacha state.
+
+## General Street View
+
+Google Street View is implemented as a general location game under the generic game service. It is not part of the JKT48 mode registry.
+
+## Asset policy
+
+Quiz media must use public HTTP or HTTPS URLs that the bot can access without authentication bypass.
+
+## Error handling
+
+Game sessions are persistent enough to recover from process restarts. Active sessions are re-scheduled when the bot starts.
