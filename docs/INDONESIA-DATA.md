@@ -71,10 +71,11 @@ Use these overrides when the official Indonesian date is published and differs f
 
 ## Data Refresh
 
-Background refresh runs every 15 minutes by default.
+Background full refresh runs every 24 hours by default. Slash-command requests may refresh a source earlier when its short cache expires. URL health is checked separately every 10 seconds.
 
 Source cache policies:
-- News: 15 minutes
+- News command cache: 15 minutes
+- News background full refresh: 24 hours
 - Stock quotes: 10 minutes per symbol
 - Fuel: 24 hours
 - Electricity: 24 hours
