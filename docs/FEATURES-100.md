@@ -2,9 +2,9 @@
 
 Dokumen ini menjadi pintu masuk katalog fitur aktif. Registry sumber berada di `src/config/features.js`.
 
-Total fitur yang saat ini didaftarkan: **30**.
+Total fitur yang saat ini didaftarkan: **43**.
 
-Kategori yang dicakup:
+Kategori:
 - Discord
 - JKT48
 - Notification
@@ -14,7 +14,9 @@ Kategori yang dicakup:
 - Support
 - Media
 - Developer
+- Indonesia
+- Ramadan
 
-Lihat [FEATURE-REGISTRY.md](./FEATURE-REGISTRY.md) untuk arsitektur registry dan [COMMANDS.md](./COMMANDS.md) untuk daftar command.
+Lihat [FEATURE-REGISTRY.md](./FEATURE-REGISTRY.md) untuk daftar rinci dan [COMMANDS.md](./COMMANDS.md) untuk command yang terdaftar.
 
-Bot tidak mengklaim kompatibilitas dengan seluruh fitur internal Discord. Registry hanya mendokumentasikan fitur yang benar-benar diimplementasikan repository ini.
+Bot hanya mendokumentasikan fitur yang benar-benar diimplementasikan repository ini.
