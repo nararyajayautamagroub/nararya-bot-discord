@@ -21,6 +21,7 @@ export function createJkt48FeatureDatabases(root=process.env.JKT48_GAME_DATA_DIR
   'CREATE UNIQUE INDEX IF NOT EXISTS uq_quiz_active_user ON quiz_sessions(guild_id,user_id) WHERE status=\'active\';'+
   'CREATE TABLE IF NOT EXISTS quiz_scores(guild_id TEXT NOT NULL,user_id TEXT NOT NULL,points INTEGER NOT NULL DEFAULT 0,games INTEGER NOT NULL DEFAULT 0,wins INTEGER NOT NULL DEFAULT 0,streak INTEGER NOT NULL DEFAULT 0,max_streak INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(guild_id,user_id));'+
   'CREATE TABLE IF NOT EXISTS quiz_attempts(id INTEGER PRIMARY KEY AUTOINCREMENT,guild_id TEXT NOT NULL,user_id TEXT NOT NULL,mode TEXT NOT NULL,rarity TEXT NOT NULL,answer TEXT NOT NULL,input TEXT NOT NULL,correct INTEGER NOT NULL,points INTEGER NOT NULL DEFAULT 0,duration_ms INTEGER NOT NULL DEFAULT 0,created_at INTEGER NOT NULL);'
+  +'CREATE TABLE IF NOT EXISTS quiz_daily(guild_id TEXT NOT NULL,user_id TEXT NOT NULL,day TEXT NOT NULL,plays INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(guild_id,user_id,day));'
  );
  gacha.exec(
   'CREATE TABLE IF NOT EXISTS gacha_pulls(id INTEGER PRIMARY KEY AUTOINCREMENT,guild_id TEXT NOT NULL,user_id TEXT NOT NULL,source TEXT NOT NULL,member_key TEXT NOT NULL,member_name TEXT NOT NULL,generation INTEGER,rarity TEXT NOT NULL,created_at INTEGER NOT NULL);'+
