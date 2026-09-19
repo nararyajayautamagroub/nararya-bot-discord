@@ -11,7 +11,7 @@ import {createJkt48Monitor} from './jkt48/live-monitor.js';
 import {createJkt48FeatureDatabases} from './services/games/jkt48/databases.js';
 import {awardCard,getInventory as getCardInventory,getCollectionStats} from './services/games/jkt48/card-system.js';
 import {addQuizAsset,getQuizAssets,migrateLegacyAssets,startSession,getActiveSession,finishSession,calculatePoints,recordAttempt,recordResult,getLeaderboard} from './services/games/jkt48/quiz-system.js';
-import {saveGacha} from './services/games/jkt48/gacha.js';
+import {saveGacha,consumeDailyPull} from './services/games/jkt48/gacha.js';
 import {revealAnimation,revealChannel} from './services/games/jkt48/reveal-animation.js';
 
 const db=new Database(process.env.DATABASE_PATH||'./data/nararya.db');
@@ -120,15 +120,16 @@ client.on('interactionCreate',async i=>{
    if(sub==='fish'){const gain=5000+p.fish_level*1000;db.prepare('UPDATE tycoon SET money=money+?,energy=MAX(0,energy-10) WHERE guild_id=? AND user_id=?').run(gain,gid,uid);return i.reply({content:'🎣 Kamu memancing dan mendapat Rp'+gain.toLocaleString('id-ID')+' dari hasil tangkapan.'})}
    if(sub==='build'){const cost=25000*p.city_level;if(p.money<cost)return i.reply({content:'💸 Uang tidak cukup. Kota memang mahal, manusia suka beton.',ephemeral:true});db.prepare('UPDATE tycoon SET money=money-?,city_level=city_level+1 WHERE guild_id=? AND user_id=?').run(cost,gid,uid);return i.reply({content:'🏗️ Kota naik ke Level '+(p.city_level+1)+'!'})}
    if(sub==='gacha'){
- if(p.gacha_count>=10)return i.reply({embeds:[embed('🎴 Gacha Harian','Batas **10 kali per hari** sudah tercapai.',{color:EMBED_COLORS.warning})],ephemeral:true});
- if(p.money<10000)return i.reply({embeds:[embed('💸 Saldo Tidak Cukup','Gacha membutuhkan **Rp10.000**.',{color:EMBED_COLORS.warning})],ephemeral:true});
+ const daily=consumeDailyPull(jkt48Dbs.gacha,gid,uid,10);
+ if(!daily.allowed)return i.reply({embeds:[embed('🎴 Gacha Harian','Batas **10 kali per hari** sudah tercapai.',{color:EMBED_COLORS.warning})],ephemeral:true});
+ if(p.money<10000){jkt48Dbs.gacha.prepare('UPDATE gacha_daily SET pulls=MAX(0,pulls-1) WHERE guild_id=? AND user_id=? AND day=?').run(gid,uid,daily.day);return i.reply({embeds:[embed('💸 Saldo Tidak Cukup','Gacha membutuhkan **Rp10.000**.',{color:EMBED_COLORS.warning})],ephemeral:true});}
  const members=db.prepare("SELECT id as key,name,image_url,generation,status FROM jkt48_members WHERE generation BETWEEN 1 AND 14 ORDER BY name").all();
  if(!members.length)return i.reply({embeds:[embed('🎴 Gacha Belum Siap','Database member generasi **1–14** belum tersedia.',{color:EMBED_COLORS.warning})],ephemeral:true});
  const r=rollGacha(members);
- db.prepare('UPDATE tycoon SET gacha_count=gacha_count+1,money=money-10000 WHERE guild_id=? AND user_id=?').run(gid,uid);
+ db.prepare('UPDATE tycoon SET money=money-10000 WHERE guild_id=? AND user_id=?').run(gid,uid);
  const card=awardCard(jkt48Dbs.cards,{guildId:gid,userId:uid,type:'member',key:r.member.key||r.member.name,name:r.member.name||r.member.key,rarity:r.rarity,generation:r.member.generation||null,imageUrl:r.member.image_url||null,source:'sim-gacha'});
  saveGacha(jkt48Dbs.gacha,gid,uid,r,'sim-gacha',r.member.generation||null);
- return revealAnimation(i,{title:'🎴 JKT48 Gacha',prefix:'💰 Biaya: **Rp10.000**\\n\\n',rarity:r.rarity,finalDescription:'🎴 **'+card.subject_name+'**\\nGenerasi '+(card.generation||'?')+'\\n📦 Kartu diperoleh: **×'+card.quantity+'**\\n💰 Sisa cash: **Rp'+(p.money-10000).toLocaleString('id-ID')+'**',finalImage:card.image_url||null});
+ return revealAnimation(i,{title:'🎴 JKT48 Gacha',prefix:'💰 Biaya: **Rp10.000**\\n\\n',rarity:r.rarity,finalDescription:'🎴 **'+card.subject_name+'**\\nGenerasi '+(card.generation||'?')+'\\n📦 Kartu diperoleh: **×'+card.quantity+'**\\n💰 Sisa cash: **Rp'+(p.money-10000).toLocaleString('id-ID')+'**\\n🎟️ Sisa pull hari ini: **'+(10-daily.count)+'**,finalImage:card.image_url||null});
 }
   }
   if(n==='jkt48game'){
