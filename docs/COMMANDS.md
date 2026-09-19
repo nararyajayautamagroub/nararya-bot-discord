@@ -218,3 +218,24 @@ The data audit checks all configured bot databases and stored URLs every 10 seco
 - `/electronics category:<category> query:<product-or-brand> limit:<1-25>`
 
 Harga berasal dari katalog publik yang discrape. Harga final dapat berubah pada marketplace.
+
+
+## Owner Controls
+
+The following commands are restricted to the bot owner:
+
+- `/setup overview`
+- `/setup welcome channel:<channel>`
+- `/setup log channel:<channel>`
+- `/settingbot status`
+- `/settingbot maintenance enabled:<true|false>`
+- `/settingbot activity text:<text>`
+- `/settingbot reset`
+- `/blacklistserver add server_id:<id> reason:<reason>`
+- `/blacklistserver remove server_id:<id>`
+- `/blacklistserver list`
+- `/blacklistusers add user_id:<id> reason:<reason>`
+- `/blacklistusers remove user_id:<id>`
+- `/blacklistusers list`
+
+Configure `BOT_OWNER_IDS` as a comma-separated list of Discord user IDs. The runtime also recognizes the Discord application owner after login. Owners bypass blacklist and maintenance restrictions.
