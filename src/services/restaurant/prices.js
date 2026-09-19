@@ -96,11 +96,12 @@ function extractAddress(text){
 }
 
 function extractRangeFromText(text){
- const range=parsePriceRangeText(text);
- return {
-  minPrice:range.min,
-  maxPrice:range.max
- };
+ const value=normalizeWhitespace(text);
+ const currencyMatches=value.match(/(?:Rp|IDR)\\s*[0-9][0-9.,]*(?:\\s*(?:rb|ribu|jt|juta))?/gi)||[];
+ const currencyValues=currencyMatches.map(parsePriceToken).filter(Number.isFinite);
+ if(currencyValues.length)return{minPrice:Math.min(...currencyValues),maxPrice:Math.max(...currencyValues)};
+ const generic= parsePriceRangeText(value).values.filter(number=>number>=1000&&!/^20\\d{2}$/.test(String(number)));
+ return{minPrice:generic.length?Math.min(...generic):null,maxPrice:generic.length?Math.max(...generic):null};
 }
 
 function extractCategoryText(text){
