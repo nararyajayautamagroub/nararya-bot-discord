@@ -63,7 +63,7 @@ export async function removeWatermarkVideo(input,outdir,rect){
  const list=fs.readdirSync(frames).filter(x=>x.endsWith('.png')).sort();
  for(const file of list)await run(py,[script,path.join(frames,file),path.join(clean,file),String(rect.x),String(rect.y),String(rect.width),String(rect.height)]);
  const target=uniqueFile(outdir,'no-watermark','mp4');
- await ffmpeg('-y','-framerate','30','i',path.join(clean,'%08d.png'),'-i',input,'-map','0:v:0','-map','1:a?','-c:v','libx264','-crf','18','-preset','medium','-c:a','aac','-shortest',target);
+ await ffmpeg('-y','-framerate','30','-i',path.join(clean,'%08d.png'),'-i',input,'-map','0:v:0','-map','1:a?','-c:v','libx264','-crf','18','-preset','medium','-c:a','aac','-shortest',target);
  return {path:target,mime:'video/mp4'};
 }
 
