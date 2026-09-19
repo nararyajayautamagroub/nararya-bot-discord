@@ -5,7 +5,7 @@ import {getIndonesiaNews,getStockQuote,getFuelPrices,getElectricityPrices,getFoo
 import {AttachmentBuilder} from 'discord.js';
 import {DISASTER_URLS,recentDisasters,disasterStatus,configureDisaster} from './disasters/index.js';
 
-export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,gameCooldowns,gameCooldownMs,quizTimeoutMs,scraperOrchestrator,onQuizStarted}){
+export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,gameCooldowns,gameCooldownMs,quizTimeoutMs,scraperOrchestrator,getAuditStatus}){
  const cooldown=(guildId,userId)=>{
   const key=guildId+':'+userId;
   const last=gameCooldowns.get(key)||0;
@@ -78,6 +78,12 @@ export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,game
     const rows=scraperOrchestrator.status();
     const body=rows.slice(0,30).map(x=>'• **'+x.key+'** → HTTP '+(x.last_status||0)+' • '+(x.last_latency_ms||0)+'ms • '+(x.last_error||'OK')).join('\n')||'Belum ada sumber.';
     return i.reply({embeds:[embed('🔎 Scraper Status','Pengecekan URL dijalankan setiap **10 detik**.\n'+body,{color:0x3B82F6})]});
+   }
+   if(sub==='data'){
+    const state=getAuditStatus(db);
+    const summary=state.findings.map(x=>'• **'+x.status+'**: '+x.count).join('\n')||'Belum ada hasil audit.';
+    const missing=state.missing.slice(0,8).map(x=>'• **'+x.db_name+'.'+x.table_name+'.'+x.column_name+'**\nURL: '+x.url+'\nMetode: '+x.method+'\nSaran: '+x.suggestion+(x.error?'\nError: '+x.error:'')).join('\n\n')||'Tidak ada data URL yang bermasalah.';
+    return i.reply({embeds:[embed('🧪 Data Audit','Urutan pipeline: **database → scraper/URL → validasi → audit sumber**.\nAudit berjalan setiap **10 detik**.\n\n**Ringkasan**\n'+summary+'\n\n**Temuan yang perlu diperbaiki**\n'+missing,{color:state.missing.length?0xF59E0B:0x22C55E})]});
    }
    if(sub==='disasters'){
     const state=disasterStatus(db);
