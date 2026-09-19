@@ -1,8 +1,8 @@
 # Version
 
-Current project version: **2.0.0**
+Current project version: **2.1.0**
 
-Release date: **2026-09-19**
+Release date: **2026-09-20**
 
 This release adds:
 - owner-only /setup command enforcement
@@ -24,6 +24,10 @@ This release adds:
 - disaster location reporting and optional server notifications
 - system/status/data audit slash commands
 - 24-hour background news source refresh
+- `/restaurantprices` restaurant menu price aggregator for Indonesia
+- centralized shared toolbox and resilient HTTP client modules
+- parser/cache/refresh support for MenuKuliner public restaurant data
+- 151-feature registry with restaurant pricing
 
 JKT48 remains on its existing repository/source URL integration and is exempt from the generic scraper requirement.
 
