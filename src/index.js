@@ -21,6 +21,8 @@ import {createVerificationWebServer} from './web/verification/server.js';
 import {FEATURE_REGISTRY} from './config/features.js';
 import {createStreetViewQuestion} from './services/games/jkt48/streetview.js';
 import {getIndonesiaNews,getStockQuote,getFuelPrices,getElectricityPrices,getFoodPrices,findCity,getPrayerSchedule,upcomingRamadan,refreshIndonesiaCache,NEWS_CATEGORIES,DATA_SOURCES} from './services/indonesia/data.js';
+import {createScraperOrchestrator} from './services/scrapers/orchestrator.js';
+import {DISASTER_URLS,ensureDisasterTables,refreshDisasterDatabase,recentDisasters,disasterStatus,configureDisaster,notifyDisasterConfigs} from './services/disasters/index.js';
 
 const db=new Database(process.env.DATABASE_PATH||'./data/nararya.db');
 db.pragma('journal_mode=WAL');
@@ -42,6 +44,14 @@ CREATE TABLE IF NOT EXISTS ramadan_configs(guild_id TEXT PRIMARY KEY,city_id TEX
 ensureTables(db);
 const jkt48Dbs=createJkt48FeatureDatabases();
 const mediaDbState=createMediaDatabase();
+ensureDisasterTables(db);
+const scraperOrchestrator=createScraperOrchestrator({db,onDataRefresh:async row=>{
+ if(row.group_name==='disaster'){if(!globalThis.__nararyaDisasterRefreshAt||Date.now()-globalThis.__nararyaDisasterRefreshAt>=60*1000){globalThis.__nararyaDisasterRefreshAt=Date.now();await refreshDisasterDatabase({db})}return;}
+ if(row.key.startsWith('news.antaranews.')){const category=row.key.split('.').pop();await getIndonesiaNews(category,8);return;}
+ if(row.key==='price.pertamina'){await getFuelPrices();return;}
+ if(row.key==='price.pln'){await getElectricityPrices();return;}
+ if(row.key==='price.pihps'){await getFoodPrices();return;}
+}});
 const mediaService=createMediaService({db:mediaDbState.db,dir:mediaDbState.dir});
 const verificationService=createVerificationService({db,baseUrl:process.env.VERIFY_WEB_BASE_URL||'http://localhost:'+String(process.env.VERIFY_WEB_PORT||3000)});
 const verificationWeb=createVerificationWebServer({service:verificationService,featureRegistry:FEATURE_REGISTRY});
