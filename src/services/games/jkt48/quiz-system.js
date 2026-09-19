@@ -24,7 +24,7 @@ export function startSession(db,{guildId,userId,channelId,mode,answer,mediaUrl,r
 }
 export function getActiveSession(db,guildId,userId,channelId=null){
  const row=channelId?db.prepare('SELECT * FROM quiz_sessions WHERE guild_id=? AND user_id=? AND channel_id=? AND status=\'active\' ORDER BY id DESC LIMIT 1').get(guildId,userId,channelId):db.prepare('SELECT * FROM quiz_sessions WHERE guild_id=? AND user_id=? AND status=\'active\' ORDER BY id DESC LIMIT 1').get(guildId,userId);
- if(row&&row.expires_at<=Date.now()){db.prepare('UPDATE quiz_sessions SET status=\'expired\' WHERE id=?').run(row.id);return null}
+ if(row&&row.expires_at<=Date.now()){db.prepare('UPDATE quiz_sessions SET status=\'expired\' WHERE id=?').run(row.id);return {...row,status:'expired',timed_out:true}}
  return row;
 }
 export function finishSession(db,id,status='finished'){
