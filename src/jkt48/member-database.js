@@ -1,5 +1,6 @@
 import {request} from 'undici';
 import {JKT48V_MEMBERS} from './jkt48v-members.js';
+import {JKT48_GEN14_MEMBERS} from './gen14-members.js';
 
 const SOURCES={
  all:process.env.JKT48_ALL_MEMBER_URL||'https://raw.githubusercontent.com/FrenzY8/JKT48-Member/refs/heads/main/AllMember.json',
@@ -108,8 +109,31 @@ export async function syncMemberDatabase(db){
  `);
  let rows=[];
  try{rows=await fetchSourceMembers()}catch(error){console.warn('[jkt48-member-source] '+error.message);rows=await fetchApiMembers();}
+ if(JKT48_GEN14_MEMBERS.length){
+  const supplemental=JKT48_GEN14_MEMBERS.map((m)=>({
+   id:norm(m.name),
+   name:m.name,
+   nickname:null,
+   generation:m.generation,
+   status:m.status||'trainee',
+   team:null,
+   image_url:null,
+   profile_url:null,
+   join_date:null,
+   graduation_date:null,
+   showroom_url:m.showroom_url||null,
+   idn_url:m.idn_url||null,
+   youtube_url:null,
+   instagram_url:m.instagram_url||null,
+   tiktok_url:m.tiktok_url||null,
+   x_url:m.x_url||null
+  }));
+  const byId=new Map(rows.map(x=>[x.id,x]));
+  for(const row of supplemental)byId.set(row.id,{...(byId.get(row.id)||{}),...row});
+  rows=[...byId.values()];
+ }
  if(!rows.length)return 0;
- const up=db.prepare(`
+ const up=db.prepare(
  INSERT INTO jkt48_members(id,name,nickname,generation,virtual_generation,status,team,image_url,profile_url,join_date,graduation_date,showroom_url,idn_url,youtube_url,instagram_url,tiktok_url,x_url,updated_at)
  VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
  ON CONFLICT(id) DO UPDATE SET name=excluded.name,nickname=excluded.nickname,generation=excluded.generation,status=excluded.status,team=excluded.team,image_url=excluded.image_url,profile_url=excluded.profile_url,join_date=excluded.join_date,graduation_date=excluded.graduation_date,showroom_url=excluded.showroom_url,idn_url=excluded.idn_url,youtube_url=excluded.youtube_url,instagram_url=excluded.instagram_url,tiktok_url=excluded.tiktok_url,x_url=excluded.x_url,updated_at=excluded.updated_at
