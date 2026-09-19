@@ -209,6 +209,7 @@ async function checkRamadanNotifications(){
 client.on('messageCreate',async m=>{
  if(m.author.bot||!m.guild)return;
  if(botControl.isMaintenance()&&!botControl.isOwner(m.author.id))return;
+ if(botControl.getSetting('emergency_lockdown','false')==='true'&&!botControl.isOwner(m.author.id))return;
  if(botControl.denyReason({guildId:m.guild.id,userId:m.author.id}))return;
  void extendedFeatures.handleMessage(m).catch(error=>console.warn('[extended-security] '+error.message));
  const session=getActiveSession(jkt48Dbs.quiz,m.guild.id,m.author.id,m.channel.id);
@@ -277,6 +278,7 @@ client.on('interactionCreate',async i=>{
   const ownerControlCommand=['setup','settingbot','blacklistserver','blacklistusers','owner'].includes(n);
   if(!ownerControlCommand&&botControl.isMaintenance()&&!botControl.isOwner(i.user.id))return i.reply({embeds:[embed('🛠️ Bot Maintenance','Bot sedang dalam maintenance. Command publik sementara dinonaktifkan.',{color:EMBED_COLORS.warning})],ephemeral:true});
   if(!ownerControlCommand&&botControl.getSetting('command:'+n,'true')==='false'&&!botControl.isOwner(i.user.id))return i.reply({embeds:[embed('🛠️ Command Nonaktif','Command publik ini sedang dinonaktifkan oleh konfigurasi bot.',{color:EMBED_COLORS.warning})],ephemeral:true});
+if(!ownerControlCommand&&botControl.getSetting('emergency_lockdown','false')==='true'&&!botControl.isOwner(i.user.id))return i.reply({embeds:[embed('🚨 Emergency Lockdown','Bot sedang dalam emergency lockdown. Command publik sementara dibatasi.',{color:EMBED_COLORS.error})],ephemeral:true});
 const deny=botControl.denyReason({guildId:i.guild?.id,userId:i.user.id});
   if(deny){
    return i.reply({embeds:[embed('🚫 Akses Ditolak',deny==='USER_BLACKLIST'?'Akun ini masuk blacklist bot.':'Server ini masuk blacklist bot. Gunakan support resmi bot jika merasa terjadi kesalahan.',{color:EMBED_COLORS.error})],ephemeral:true});
@@ -376,8 +378,8 @@ const deny=botControl.denyReason({guildId:i.guild?.id,userId:i.user.id});
   }
   if(n==='moderation'){
    const sub=i.options.getSubcommand(true);
-   if(sub==='warn'){const u=i.options.getUser('user',true),reason=i.options.getString('reason')||'Tidak ada alasan';db.prepare('INSERT INTO warnings(guild_id,user_id,reason,moderator_id,created_at) VALUES(?,?,?,?,?)').run(i.guild.id,u.id,reason,i.user.id,Date.now());return i.reply({embeds:[embed('⚠️ Warning','User <@'+u.id+'> diberi warning.\nAlasan: **'+reason+'**',{color:EMBED_COLORS.warning})]});}
-   if(sub==='ban'){const u=i.options.getUser('user',true),m=await i.guild.members.fetch(u.id).catch(()=>null);if(!m)return i.reply({embeds:[embed('❌ Member Tidak Ditemukan','Target tidak ditemukan di server.',{color:EMBED_COLORS.error})],ephemeral:true});await m.ban({reason:i.options.getString('reason')||'Ban via Nararya Bot Discord'});return i.reply({embeds:[embed('🔨 Member Dibanned','User <@'+u.id+'> berhasil dibanned.',{color:EMBED_COLORS.error})]});}
+   if(sub==='warn'){const u=i.options.getUser('user',true),reason=i.options.getString('reason')||'Tidak ada alasan',now=Date.now();db.prepare('INSERT INTO warnings(guild_id,user_id,reason,moderator_id,created_at) VALUES(?,?,?,?,?)').run(i.guild.id,u.id,reason,i.user.id,now);const caseRow=db.prepare("INSERT INTO moderation_cases(guild_id,target_id,moderator_id,type,reason,created_at,status) VALUES(?,?,?,?,?,?,?)").run(i.guild.id,u.id,i.user.id,'warn',reason,now,'open');return i.reply({embeds:[embed('⚠️ Warning','User <@'+u.id+'> diberi warning.\nCase: **#'+caseRow.lastInsertRowid+'**\nAlasan: **'+reason+'**',{color:EMBED_COLORS.warning})]});}
+   if(sub==='ban'){const u=i.options.getUser('user',true),m=await i.guild.members.fetch(u.id).catch(()=>null);if(!m)return i.reply({embeds:[embed('❌ Member Tidak Ditemukan','Target tidak ditemukan di server.',{color:EMBED_COLORS.error})],ephemeral:true});const reason=i.options.getString('reason')||'Ban via Nararya Bot Discord';await m.ban({reason});const caseRow=db.prepare("INSERT INTO moderation_cases(guild_id,target_id,moderator_id,type,reason,created_at,status) VALUES(?,?,?,?,?,?,?)").run(i.guild.id,u.id,i.user.id,'ban',reason,Date.now(),'open');return i.reply({embeds:[embed('🔨 Member Dibanned','User <@'+u.id+'> berhasil dibanned.\nCase: **#'+caseRow.lastInsertRowid+'**',{color:EMBED_COLORS.error})]});}
   }
   if(n==='support'){
    const sub=i.options.getSubcommand(true);
