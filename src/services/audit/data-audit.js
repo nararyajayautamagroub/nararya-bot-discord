@@ -17,7 +17,8 @@ function isUrl(value){
  try{const u=new URL(String(value));return ['http:','https:'].includes(u.protocol)?u:null}catch{return null}
 }
 
-function isJkt48Url(value){
+function isJkt48Url(value,{dbName='',tableName=''}={}){
+ if(String(dbName).startsWith('jkt48-')||String(tableName).toLowerCase().includes('jkt48'))return true;
  const u=isUrl(value);if(!u)return false;
  if(JKT48_HOSTS.has(u.hostname))return u.hostname==='jkt48.com'||u.pathname.includes('/FrenzY8/JKT48-Member');
  return false;
@@ -95,7 +96,7 @@ export async function runDataAudit({databases}){
      primary.prepare("INSERT INTO data_audit_findings(run_id,db_name,table_name,column_name,record_key,url,status,method,suggestion,error,checked_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)").run(runIdHolder.id,item.dbName,item.table,item.column,item.recordKey,item.url,'invalid_url','n/a',suggestMethod(item.url),'Perbaiki URL menjadi http/https.', 'URL tidak valid',Date.now());
      continue;
     }
-    if(isJkt48Url(item.url)){
+    if(isJkt48Url(item.url,{dbName:item.dbName,tableName:item.table})){
      primary.prepare("INSERT INTO data_audit_findings(run_id,db_name,table_name,column_name,record_key,url,status,method,suggestion,error,checked_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)").run(runIdHolder.id,item.dbName,item.table,item.column,item.recordKey,item.url,'jkt48-exempt','repository-source','JKT48 URL exempt from generic scraper validation','Sumber JKT48 mengikuti URL repository yang dikonfigurasi.',null,Date.now());
      continue;
     }
