@@ -2,6 +2,48 @@
 
 All notable changes to this project are documented here.
 
+## [1.7.0] - 2026-09-19
+
+### Scraper and Data Integrity
+- Added a centralized scraper registry for external data sources.
+- Added a database audit pipeline that runs every 10 seconds.
+- Database audit scans the main DB, media DB, and separate JKT48 quiz/gacha/cards DBs.
+- Stored URLs are revalidated and matched against the scraper registry.
+- Unknown external URLs are marked `missing_scraper`.
+- Invalid URLs and failed URL checks are recorded with error details.
+- Unknown sources receive a suggested adapter method.
+- JKT48 repository/source URLs remain exempt from the generic scraper requirement.
+- Registered news feeds perform a full background refresh every 24 hours while command requests can refresh their own short-lived cache.
+
+### General Game
+- Moved Google Street View game into the generic game namespace.
+- Street View is no longer a JKT48-specific mode.
+- Street View questions are delivered as direct attachments so API keys are not exposed in Discord messages.
+- Game status now reads the dedicated quiz database correctly.
+
+### Disaster Monitoring
+- Added BMKG earthquake and tsunami monitoring.
+- Added BNPB GIS disaster-event monitoring.
+- Added MAGMA/ESDM volcano-source monitoring.
+- Added location-aware disaster records.
+- Added optional per-server disaster notifications with a minimum earthquake magnitude filter.
+
+### Developer and Status Commands
+- Added `/game status`.
+- Added `/status system`.
+- Added `/status scrapers`.
+- Added `/status data`.
+- Added `/status disasters`.
+- Added `/status sources`.
+- Added `/disaster status`.
+- Added `/disaster latest`.
+- Added `/disaster earthquake`.
+- Added `/disaster tsunami`.
+- Added `/disaster volcano`.
+- Added `/disaster general`.
+- Added `/disaster setup` and `/disaster disable`.
+- Added `/upcoming ramadan` and `/upcoming disasters`.
+
 ## [1.6.0] - 2026-09-19
 
 ### Game
@@ -14,54 +56,31 @@ All notable changes to this project are documented here.
 - Added `/news` for Indonesian news categories.
 - Added `/market stock` and `/market ihsg`.
 - Added `/prices fuel`, `/prices electricity`, `/prices food`, and `/prices all`.
-- Added 15-minute background refresh for public Indonesia data with longer per-source caches.
 - Added city-based imsakiyah retrieval for Ramadan.
 
 ### Ramadan
 - Added `/ramadan upcoming`.
 - Added `/ramadan today city:<city>`.
 - Added `/ramadan setup`, `/ramadan disable`, and `/ramadan test`.
-- Added scheduled sahur reminders 30 minutes before imsak.
-- Added scheduled iftar reminders at Maghrib.
-- Added environment overrides for official Ramadan date announcements.
-
-### Configuration
-- Added `GOOGLE_MAPS_API_KEY`.
-- Added `BOT_TIMEZONE`.
-- Added data-source and Ramadan override environment variables.
+- Added scheduled sahur and iftar notifications.
 
 ## [1.5.0] - 2026-09-19
 
 ### Added
-- Web verification flow with an “I’m not a robot” checkbox.
-- 4-character server-bound verification codes with one-time redemption and expiry.
-- Optional automatic verified role assignment.
-- `/verify` commands for start, code, status, and role configuration.
-- `/bot` commands for info, feature registry, and health.
-- `src/config/features.js` centralized feature registry.
-- `SECURITY.md` and verification documentation.
-- Developer HTTP endpoints for verification health and feature discovery.
-
-### Security
-- Verification codes are stored only as hashes.
-- Each Discord server receives its own random secret.
-- Verification sessions have attempt limits and expiry.
-- Verification tickets are random and user/server bound.
+- Web verification flow.
+- 4-character server-bound verification codes.
+- Verification role and attempt limits.
+- Feature registry and developer diagnostics.
 
 ## [1.4.0] - 2026-09-19
 
 ### Added
-- Dedicated media subsystem for video, audio, image, vocal separation, background removal, watermark removal, resolution controls, and per-user media settings.
+- Dedicated media subsystem.
 
 ## [1.3.0] - 2026-09-19
 
 ### Added
-- Modern Discord slash-command namespaces.
-- JKT48 member synchronization for generations 1-14.
-- Separate JKT48 game databases for quiz, gacha, and cards.
-- JKT48 card collection system.
-- Seven card rarities from Common through Secret.
-- Persistent quiz sessions, attempts, streaks, and leaderboard data.
+- Modern command namespaces and separated JKT48 game databases.
 
 ## [1.2.0]
 - Previous JKT48 feed/live integration baseline.
@@ -69,7 +88,4 @@ All notable changes to this project are documented here.
 ## [1.0.0]
 - Initial modular Discord bot foundation.
 
-[1.6.0]: https://github.com/nararyajayautamagroub/nararya-bot-discord/releases/tag/v1.6.0
-[1.5.0]: https://github.com/nararyajayautamagroub/nararya-bot-discord/releases/tag/v1.5.0
-[1.4.0]: https://github.com/nararyajayautamagroub/nararya-bot-discord/releases/tag/v1.4.0
-[1.3.0]: https://github.com/nararyajayautamagroub/nararya-bot-discord/releases/tag/v1.3.0
+[1.7.0]: https://github.com/nararyajayautamagroub/nararya-bot-discord/releases/tag/v1.7.0
