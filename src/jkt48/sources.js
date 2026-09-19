@@ -30,10 +30,24 @@ const base=[
  tuple('shopee-jkt48','Shopee JKT48','shopee','https://shopee.co.id/'),
 ];
 
+const liveIdn=splitEnv('JKT48_IDN_URLS');
+const liveShowroom=splitEnv('JKT48_SHOWROOM_URLS');
+const liveYoutube=splitEnv('JKT48_YOUTUBE_URLS');
+const liveInstagram=splitEnv('JKT48_INSTAGRAM_URLS');
+const liveTiktok=splitEnv('JKT48_TIKTOK_URLS');
+
 const costumeYoutube=splitEnv('JKT48_COSTUME_YOUTUBE_URLS');
 const costumeInstagram=splitEnv('JKT48_COSTUME_INSTAGRAM_URLS');
 const costumeTiktok=splitEnv('JKT48_COSTUME_TIKTOK_URLS');
 const memberSocials=jsonEnv('JKT48_MEMBER_SOCIAL_URLS');
+
+for(const [index,url] of liveIdn.entries())base.push(tuple('idn-live-'+(index+1),'IDN Live JKT48 '+(index+1),'idn',url));
+for(const [index,url] of liveShowroom.entries())base.push(tuple('showroom-live-'+(index+1),'SHOWROOM JKT48 '+(index+1),'showroom',url));
+for(const [index,url] of liveYoutube.entries())base.push(tuple('youtube-live-'+(index+1),'YouTube JKT48 Live '+(index+1),'youtube-channel',url));
+for(const [index,url] of liveInstagram.entries())base.push(tuple('instagram-live-'+(index+1),'Instagram JKT48 Live '+(index+1),'instagram',url));
+for(const [index,url] of liveTiktok.entries())base.push(tuple('tiktok-live-'+(index+1),'TikTok JKT48 Live '+(index+1),'tiktok',url));
+
+
 
 for(const [index,url] of costumeYoutube.entries())base.push(tuple('costume-youtube-'+(index+1),'YouTube Costume '+(index+1),'costume-youtube',url));
 for(const [index,url] of costumeInstagram.entries())base.push(tuple('costume-instagram-'+(index+1),'Instagram Costume '+(index+1),'costume-instagram',url));
