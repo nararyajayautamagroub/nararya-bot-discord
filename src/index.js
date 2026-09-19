@@ -16,6 +16,9 @@ import {revealAnimation,revealChannel} from './services/games/jkt48/reveal-anima
 import {createMediaDatabase} from './media/database.js';
 import {createMediaService} from './media/service.js';
 import {handleMediaCommand} from './media/command.js';
+import {createVerificationService} from './security/verification.js';
+import {createVerificationWebServer} from './web/verification/server.js';
+import {FEATURE_REGISTRY} from './config/features.js';
 
 const db=new Database(process.env.DATABASE_PATH||'./data/nararya.db');
 db.pragma('journal_mode=WAL');
@@ -37,6 +40,9 @@ ensureTables(db);
 const jkt48Dbs=createJkt48FeatureDatabases();
 const mediaDbState=createMediaDatabase();
 const mediaService=createMediaService({db:mediaDbState.db,dir:mediaDbState.dir});
+const verificationService=createVerificationService({db,baseUrl:process.env.VERIFY_WEB_BASE_URL||'http://localhost:'+String(process.env.VERIFY_WEB_PORT||3000)});
+const verificationWeb=createVerificationWebServer({service:verificationService,featureRegistry:FEATURE_REGISTRY});
+verificationWeb.start();
 migrateLegacyAssets(db,jkt48Dbs.quiz);
 try{db.prepare('ALTER TABLE feed_sources ADD COLUMN kind TEXT DEFAULT "public"').run()}catch{}
 const EMBED_COLORS=Object.freeze({default:0xFF6200,success:0x22C55E,error:0xEF4444,warning:0xF59E0B,info:0x3B82F6,jkt48:0xE91E63,gacha:0x8B5CF6,game:0x06B6D4,bank:0x16A34A,shop:0xF97316,city:0x64748B,fishing:0x0891B2});
@@ -116,6 +122,53 @@ client.on('interactionCreate',async i=>{
   const n=i.commandName;
 
   if(n==='media')return handleMediaCommand(i,{mediaService,embed,colors:EMBED_COLORS});
+  if(n==='verify'){
+   const sub=i.options.getSubcommand(true);
+   if(sub==='start'){
+    const session=verificationService.createSession({guildId:i.guild.id,userId:i.user.id});
+    return i.reply({embeds:[embed('🔐 Verifikasi Akun','Buka website berikut untuk menyelesaikan verifikasi:**\\n'+session.url+'**\\n\\nSetelah berhasil, website akan menampilkan **kode 4 karakter**. Masukkan kode itu dengan **/verify code**.\\n\\nSesi berlaku sekitar **'+Math.round((session.expiresAt-Date.now())/60000)+' menit**.',{color:EMBED_COLORS.info})],ephemeral:true});
+   }
+   if(sub==='code'){
+    const code=i.options.getString('code',true);
+    try{
+      const result=verificationService.redeemCode({guildId:i.guild.id,userId:i.user.id,code});
+      let roleMessage='Tidak ada role otomatis yang dikonfigurasi.';
+      if(result.roleId){
+       const member=await i.guild.members.fetch(i.user.id);
+       const role=i.guild.roles.cache.get(result.roleId);
+       if(role&&role.editable){await member.roles.add(role,'Nararya verification');roleMessage='Role <@&'+role.id+'> berhasil diberikan.';}
+       else roleMessage='Kode valid, tetapi role verifikasi tidak dapat diberikan. Periksa permission Manage Roles dan posisi role bot.';
+      }
+      return i.reply({embeds:[embed('✅ Verifikasi Berhasil','Akun kamu sudah diverifikasi untuk server ini.\\n'+roleMessage,{color:EMBED_COLORS.success})],ephemeral:true});
+    }catch(e){return i.reply({embeds:[embed('❌ Verifikasi Gagal',e.message,{color:EMBED_COLORS.error})],ephemeral:true});}
+   }
+   if(sub==='status'){
+    const cfg=verificationService.getConfig(i.guild.id),h=verificationService.health();
+    return i.reply({embeds:[embed('🔐 Verification Status','Role: '+(cfg.role_id?'<@&'+cfg.role_id+'>':'Belum diatur')+'\\nKode: **'+h.codeLength+' karakter**\\nSesi aktif: **'+h.pending+'**\\nMasa berlaku: **'+h.ttlSeconds+' detik**\\nPercobaan maksimum: **'+h.maxAttempts+'**',{color:EMBED_COLORS.info})]});
+   }
+   if(sub==='role'){
+    const role=i.options.getRole('role',true);
+    if(role.managed)return i.reply({embeds:[embed('❌ Role Tidak Bisa Digunakan','Pilih role biasa yang dapat diberikan oleh bot.',{color:EMBED_COLORS.error})],ephemeral:true});
+    verificationService.setRole(i.guild.id,role.id);
+    return i.reply({embeds:[embed('✅ Role Verifikasi Disimpan','Role verified: <@&'+role.id+'>\\nPastikan role bot berada di atas role tersebut pada hierarki Discord.',{color:EMBED_COLORS.success})]});
+   }
+  }
+
+  if(n==='bot'){
+   const sub=i.options.getSubcommand(true);
+   if(sub==='info')return i.reply({embeds:[embed('🤖 Bot Info','**Nama:** '+i.client.user.tag+'\\n**Version:** '+(process.env.npm_package_version||'1.5.0')+'\\n**Guild:** '+i.client.guilds.cache.size+'\\n**Node:** '+process.version+'\\n**Uptime:** '+Math.floor(process.uptime()/60)+' menit',{color:EMBED_COLORS.info})]});
+   if(sub==='features'){
+    const grouped=new Map();
+    for(const f of FEATURE_REGISTRY){if(!grouped.has(f.category))grouped.set(f.category,[]);grouped.get(f.category).push(f);}
+    const body=[...grouped].map(([cat,rows])=>'**'+cat+'**\\n'+rows.map(x=>'• '+x.name+' — '+x.status).join('\\n')).join('\\n\\n');
+    return i.reply({embeds:[embed('🧩 Feature Registry',body.slice(0,3900),{color:EMBED_COLORS.default,fields:[{name:'Total fitur terdaftar',value:String(FEATURE_REGISTRY.length),inline:true}]} )]});
+   }
+   if(sub==='health'){
+    let dbOk=false;try{db.prepare('SELECT 1').get();dbOk=true}catch{}
+    const mem=process.memoryUsage();
+    return i.reply({embeds:[embed('🩺 Bot Health','Database: **'+(dbOk?'OK':'ERROR')+'**\\nVerification Web: **'+(verificationWeb.enabled?'ENABLED':'DISABLED')+'**\\nWeb Port: **'+verificationWeb.port+'**\\nHeap: **'+Math.round(mem.heapUsed/1024/1024)+' MB**\\nRSS: **'+Math.round(mem.rss/1024/1024)+' MB**\\nUptime: **'+Math.floor(process.uptime())+' detik**',{color:dbOk?EMBED_COLORS.success:EMBED_COLORS.error})]});
+   }
+  }
 
   if(n==='utility'){
    const sub=i.options.getSubcommand(true);
