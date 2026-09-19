@@ -19,7 +19,7 @@ import {handleMediaCommand} from './media/command.js';
 import {createVerificationService} from './security/verification.js';
 import {createVerificationWebServer} from './web/verification/server.js';
 import {FEATURE_REGISTRY} from './config/features.js';
-import {createStreetViewQuestion} from './services/games/jkt48/streetview.js';
+import {createStreetViewQuestion} from './services/games/streetview.js';
 import {getIndonesiaNews,getStockQuote,getFuelPrices,getElectricityPrices,getFoodPrices,findCity,getPrayerSchedule,upcomingRamadan,refreshIndonesiaCache,NEWS_CATEGORIES,DATA_SOURCES} from './services/indonesia/data.js';
 import {createScraperOrchestrator} from './services/scrapers/orchestrator.js';
 import {DISASTER_URLS,ensureDisasterTables,refreshDisasterDatabase,recentDisasters,disasterStatus,configureDisaster,notifyDisasterConfigs} from './services/disasters/index.js';
@@ -95,7 +95,7 @@ const QUIZ_TIMEOUT_MS=60000;
 function gameCooldownLeft(guildId,userId){const key=guildId+':'+userId,last=gameCooldowns.get(key)||0,remaining=GAME_COOLDOWN_MS-(Date.now()-last);if(remaining>0)return remaining;gameCooldowns.set(key,Date.now());return 0;}
 function scheduleQuizExpiry(session){setTimeout(async()=>{const current=jkt48Dbs.quiz.prepare('SELECT * FROM quiz_sessions WHERE id=?').get(session.id);if(!current||current.status!=='active')return;if(current.expires_at>Date.now())return scheduleQuizExpiry({...current});finishSession(jkt48Dbs.quiz,current.id,'expired');recordResult(jkt48Dbs.quiz,{guildId:current.guild_id,userId:current.user_id,mode:current.mode,rarity:current.rarity,answer:current.answer,input:'[timeout]',correct:false,points:0,durationMs:QUIZ_TIMEOUT_MS});const ch=await client.channels.fetch(current.channel_id).catch(()=>null);if(ch?.isTextBased())await ch.send({embeds:[embed('⏰ Waktu Habis','Tantangan **'+current.mode+'** gagal karena tidak dijawab dalam **1 menit**. Coba lagi setelah cooldown.',{color:EMBED_COLORS.error})]}).catch(()=>{});},Math.max(100,current.expires_at-Date.now()+100));}
 function money(v){return Number.isFinite(Number(v))?'Rp'+Number(v).toLocaleString('id-ID'):'-';}
-const additionalCommandHandler=createAdditionalCommandHandler({db,jkt48QuizDb:jkt48Dbs.quiz,client,embed,gameCooldowns,gameCooldownMs:GAME_COOLDOWN_MS,quizTimeoutMs:QUIZ_TIMEOUT_MS,scraperOrchestrator});
+const additionalCommandHandler=createAdditionalCommandHandler({db,jkt48QuizDb:jkt48Dbs.quiz,client,embed,gameCooldowns,gameCooldownMs:GAME_COOLDOWN_MS,quizTimeoutMs:QUIZ_TIMEOUT_MS,scraperOrchestrator,onQuizStarted:scheduleQuizExpiry});
 async function sendIndonesiaDataRefresh(){return refreshIndonesiaCache().catch(error=>[{ok:false,error:error.message}]);}
 function jakartaClock(date=new Date()){
  const parts=new Intl.DateTimeFormat('en-GB',{timeZone:process.env.BOT_TIMEZONE||'Asia/Jakarta',hour12:false,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}).formatToParts(date);
