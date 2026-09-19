@@ -81,7 +81,7 @@ Project/legal documentation:
 
 ## Current version
 
-**v1.5.0** — 2026-09-19
+**v1.6.0** — 2026-09-19
 
 ### Modern command layout
 
@@ -116,3 +116,27 @@ The bot now includes a server-bound web verification flow:
 
 Developer diagnostics are available through `/bot info`, `/bot features`, and `/bot health`.
 See [SECURITY.md](./SECURITY.md), [docs/VERIFICATION.md](./docs/VERIFICATION.md), and [docs/FEATURE-REGISTRY.md](./docs/FEATURE-REGISTRY.md).
+
+
+## Game Guessing
+
+The JKT48 game system now supports a Google Street View photo mode in addition to the existing quiz modes.
+
+Game rules:
+- 10-second cooldown per user/server for quiz and gacha.
+- 1-minute answer window for every active guessing session.
+- Unanswered sessions fail automatically and are stored as failed quiz results.
+- Google Street View mode requires `GOOGLE_MAPS_API_KEY`.
+
+## Indonesia Information
+
+New slash-command namespaces provide:
+- Indonesian news by category.
+- IDX stock quotes and IHSG.
+- Fuel prices.
+- Electricity tariffs.
+- Strategic food prices.
+- Ramadan dates and imsakiyah schedules.
+- Automated sahur and iftar notifications.
+
+See [docs/INDONESIA-DATA.md](./docs/INDONESIA-DATA.md) for sources, refresh behavior, and limitations.
