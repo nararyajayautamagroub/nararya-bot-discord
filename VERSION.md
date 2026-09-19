@@ -29,6 +29,8 @@ This release adds:
 - centralized shared toolbox and resilient HTTP client modules
 - parser/cache/refresh support for MenuKuliner public restaurant data
 - 151-feature registry with restaurant pricing
+- dedicated red-and-white JKT48 Center website with responsive hamburger navigation
+- GitHub Pages workflow and frontend regression tests
 - core dependency cleanup and deprecated-package override
 - CI migrated to pinned Node 22 container for cleaner toolchain diagnostics
 
