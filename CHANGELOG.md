@@ -1,5 +1,14 @@
 ## [2.1.2] - 2026-09-20
 
+### JKT48 Center Website
+- Added `website/jkt48/` responsive frontend dedicated to JKT48 bot features.
+- Added red buttons, white background, red embedded-card styling, and mobile hamburger `=` navigation.
+- Added live public member loading for all/active member JSON sources with search and generation/status filters.
+- Added frontend safety tests and CI JavaScript syntax coverage.
+- Added GitHub Pages deployment workflow for the JKT48 website.
+
+## [2.1.2] - 2026-09-20
+
 ### Reliability Cleanup
 - Removed unused native media/voice dependencies that caused deprecated transitive-package warnings.
 - Migrated media HTTP downloads from `undici` package imports to the Node fetch API.
