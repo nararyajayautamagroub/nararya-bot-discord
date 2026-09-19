@@ -9,7 +9,7 @@ export function createJkt48Monitor({db,client,embed,interval=30000}){
  async function broadcast(e){for(const g of client.guilds.cache.values()){const id=db.prepare('SELECT feed_channel FROM guild_config WHERE guild_id=?').get(g.id)?.feed_channel;const ch=id?await client.channels.fetch(id).catch(()=>null):null;if(ch?.isTextBased())await ch.send({embeds:[e]}).catch(()=>{});}}
  async function pollLive(){
   const now=await allLive(),old=get('live_keys'),keys=now.map(key),misses=get('live_misses');
-  for(const x of now.filter(x=>!old.includes(key(x))))await broadcast(embed('🔴 START LIVE • '+label(x),'Live baru terdeteksi.\nPlatform: **'+String(x.platform||'').toUpperCase()+'**\n'+(x.room_url||x.url||x.stream_url||''),{color:0xEF4444,image:x.image||x.thumbnail||x.thumbnail_url}));
+  for(const x of now.filter(x=>!old.includes(key(x))))await broadcast(embed('🔴 START LIVE • '+label(x),membership(x)+'\nLive baru terdeteksi.\nPlatform: **'+String(x.platform||'').toUpperCase()+'**\n'+(x.room_url||x.url||x.stream_url||''),{color:0xEF4444,image:x.image||x.thumbnail||x.thumbnail_url}));
   const nextMisses={};
   for(const k of old){if(keys.includes(k))continue;const count=Number(misses[k]||0)+1;if(count>=2)await broadcast(embed('⚫ END LIVE','Siaran live dengan ID **'+k+'** terdeteksi sudah berakhir.',{color:0x64748B}));else nextMisses[k]=count;}
   for(const k of keys)delete nextMisses[k];
