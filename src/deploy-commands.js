@@ -8,10 +8,9 @@ const choiceModes=[
  {name:'Tebak member foto graduation',value:'graduationPhoto'},
  {name:'Tebak member random',value:'randomMember'},
  {name:'Tebak foto setlist',value:'setlistPhoto'},
- {name:'Tebak lagu dari foto',value:'songPhoto'},
- {name:'Tebak lokasi Google Street View',value:'streetView'}
+ {name:'Tebak lagu dari foto',value:'songPhoto'}
 ];
-const assetModes=choiceModes.filter(x=>x.value!=='streetView');
+const assetModes=choiceModes;
 const rarityChoices=[
  {name:'Common',value:'common'},{name:'Uncommon',value:'uncommon'},{name:'Rare',value:'rare'},
  {name:'Epic',value:'epic'},{name:'Legendary',value:'legendary'},{name:'Mythic',value:'mythic'},{name:'Secret',value:'secret'}
