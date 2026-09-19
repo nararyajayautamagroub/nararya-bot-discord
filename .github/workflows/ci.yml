@@ -14,4 +14,4 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: find src test -type f -name '*.js' -print0 | xargs -0 -n1 node --check
       - run: node --trace-deprecation --input-type=module -e "await import('discord.js'); await import('cheerio'); await import('better-sqlite3')"
-      - run: npm test
+      - run: NODE_OPTIONS=--trace-deprecation npm test
