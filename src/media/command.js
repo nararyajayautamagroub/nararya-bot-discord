@@ -49,18 +49,17 @@ export async function handleMediaCommand(i,{mediaService,embed,colors}){
  await i.deferReply();
 
  try{
-  if(sub==='download'){
-   const kind=i.options.getString('type',true);
+  if(['video','audio','image'].includes(sub)){
    const source=i.options.getString('url',true);
    const settings=mediaService.getSettings(guildId,userId);
-   const resolution=i.options.getString('resolution')||settings.resolution;
-   let format=i.options.getString('format');
-   if(!format||format==='auto')format=kind==='audio'?settings.audio_format:kind==='video'?settings.video_format:'auto';
+   const kind=sub;
+   const resolution=kind==='video'?(i.options.getString('resolution')||settings.resolution):'best';
+   let format=kind==='video'?(i.options.getString('format')||settings.video_format):kind==='audio'?(i.options.getString('format')||settings.audio_format):'auto';
    if(kind==='audio'&&!AUDIO_FORMATS.includes(format))throw new Error('Unsupported audio format: '+format);
    if(kind==='video'&&!VIDEO_FORMATS.includes(format))throw new Error('Unsupported video format: '+format);
    const result=await mediaService.download({url:source,kind,resolution,format},{...ctx});
    await i.editReply({
-    embeds:[resultEmbed(embed,result,'Media Download')],
+    embeds:[resultEmbed(embed,result,'Media '+kind.charAt(0).toUpperCase()+kind.slice(1)+' Download')],
     files:[new AttachmentBuilder(result.path)]
    });
    await cleanup(path.dirname(result.path));
