@@ -31,7 +31,6 @@ YouTube membership-only status is displayed when the upstream source exposes a m
 
 Instagram and TikTok live detection is not claimed from generic HTML scraping. These platforms require a supported public/API data source for reliable start/end status. The existing feed adapters can still monitor public profile metadata where available.
 
-
 ## Member datasets
 
 The member database also syncs these public datasets:
@@ -44,7 +43,6 @@ Optional overrides:
 - `JKT48_MEMBER_SYNC_INTERVAL_SECONDS` (default 21600)
 
 The bot stores normalized records in SQLite and uses the same member table for member lookup, generation listings, and JKT48 gacha data. The importer only accepts generations 1-14 for this dataset and marks members found in ActiveMember.json as active.
-
 
 ## JKT48 game card architecture
 
@@ -66,7 +64,6 @@ Quiz asset management:
 - `/jkt48game asset_add`: add an asset, answer aliases, public media URL, and rarity.
 - `/jkt48game asset_list`: inspect asset counts by mode or rarity.
 - `/jkt48game inventory`: view the combined card collection.
-
 
 ## Modern Discord command layout
 
