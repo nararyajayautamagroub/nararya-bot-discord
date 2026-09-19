@@ -45,7 +45,10 @@ const jkt48=new SlashCommandBuilder().setName('jkt48').setDescription('Jadwal, e
 
 const member=new SlashCommandBuilder().setName('member').setDescription('Cari profil member JKT48').addStringOption(o=>o.setName('query').setDescription('Nama atau nama panggilan member').setRequired(true));
 
+const members=new SlashCommandBuilder().setName('members').setDescription('Daftar member JKT48 berdasarkan generasi').addIntegerOption(o=>o.setName('generation').setDescription('Generasi JKT48 1-14').setMinValue(1).setMaxValue(14));
+
 const commands=[
+ members,
  member,
  jkt48,
  sim,
