@@ -28,6 +28,7 @@ import {ensureDataAuditTables,runDataAudit,getAuditStatus} from './services/audi
 import {createBotControl} from './security/bot-control.js';
 import {createExtendedFeatures} from './services/extended-features.js';
 import {createPresenceRotation} from './services/presence-rotation.js';
+import {createXpCardBuffer} from './services/leveling/xp-card.js';
 
 const db=new Database(process.env.DATABASE_PATH||'./data/nararya.db');
 db.pragma('journal_mode=WAL');
@@ -366,7 +367,7 @@ const deny=botControl.denyReason({guildId:i.guild?.id,userId:i.user.id});
    if(sub==='ping')return i.reply({embeds:[embed('🏓 Pong','Latency Discord: **'+i.client.ws.ping+'ms**',{color:EMBED_COLORS.info})]});
    if(sub==='server')return i.reply({embeds:[embed('🏠 Server Info','**'+i.guild.name+'**\n👥 Member: **'+i.guild.memberCount+'**\n🆔 '+i.guild.id)]});
    if(sub==='user'){const u=i.options.getUser('target')||i.user;return i.reply({embeds:[embed('👤 User Info','**'+u.tag+'**\n🆔 '+u.id+'\n🤖 Bot: '+(u.bot?'Ya':'Tidak'))]});}
-   if(sub==='level'){const r=db.prepare('SELECT * FROM levels WHERE guild_id=? AND user_id=?').get(i.guild.id,i.user.id);return i.reply({embeds:[embed('⭐ Level','Level **'+(r?.level||0)+'**\nXP **'+(r?.xp||0)+'**',{color:EMBED_COLORS.info})]});}
+   if(sub==='level'){const r=db.prepare('SELECT * FROM levels WHERE guild_id=? AND user_id=?').get(i.guild.id,i.user.id)||{level:0,xp:0};const streak=db.prepare('SELECT streak FROM daily_streaks WHERE guild_id=? AND user_id=?').get(i.guild.id,i.user.id)?.streak||0;const wins=db.prepare('SELECT COALESCE(SUM(wins),0) wins FROM game_scores WHERE guild_id=? AND user_id=?').get(i.guild.id,i.user.id)?.wins||0;const rarity=jkt48Dbs.cards.prepare("SELECT c.rarity FROM user_cards u JOIN cards c ON c.card_id=u.card_id WHERE u.guild_id=? AND u.user_id=? ORDER BY CASE c.rarity WHEN 'secret' THEN 7 WHEN 'mythic' THEN 6 WHEN 'legendary' THEN 5 WHEN 'epic' THEN 4 WHEN 'rare' THEN 3 WHEN 'uncommon' THEN 2 ELSE 1 END DESC LIMIT 1").get(i.guild.id,i.user.id)?.rarity||'common';const card=createXpCardBuffer({username:i.user.username,level:r.level,xp:r.xp,streak,rarity,wins});return i.reply({embeds:[embed('⭐ EXP Profile Card','EXP, level, streak, win count, dan rarity card ditampilkan dalam satu profile card.',{color:EMBED_COLORS.info,image:'attachment://xp-card.svg'})],files:[new AttachmentBuilder(card,{name:'xp-card.svg'})]});}
   }
   if(n==='economy'){
    const sub=i.options.getSubcommand(true);
