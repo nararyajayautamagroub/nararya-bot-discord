@@ -68,13 +68,23 @@ export function createAbortController(timeoutMs){
  return {controller,cancel:()=>clearTimeout(timer)};
 }
 
+function combineSignals(primary,timeoutSignalValue){
+ if(!primary)return timeoutSignalValue;
+ if(!timeoutSignalValue)return primary;
+ if(typeof AbortSignal.any==='function')return AbortSignal.any([primary,timeoutSignalValue]);
+ const controller=new AbortController();
+ const forward=signal=>{if(signal.aborted){controller.abort(signal.reason);return;}signal.addEventListener('abort',()=>controller.abort(signal.reason),{once:true});};
+ forward(primary);forward(timeoutSignalValue);
+ return controller.signal;
+}
+
 export async function request(url,options={}){
  if(!isHttpUrl(url))throw new Error('URL HTTP tidak valid: '+url);
  const config=normalizeHttpOptions(options);
  return retry(async attempt=>{
   const timeout=createAbortController(config.timeoutMs);
   try{
-   const signal=config.signal||timeout.controller.signal;
+   const signal=combineSignals(config.signal,timeout.controller.signal);
    const response=await fetch(url,{
     method:config.method,
     headers:config.headers,
