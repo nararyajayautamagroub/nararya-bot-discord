@@ -1,5 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {Readable} from 'node:stream';
+import {pipeline} from 'node:stream/promises';
 import {createJob,updateJob} from './database.js';
 import {newJobDir,fileSize} from './utils.js';
 import {downloadWithYtdlp,downloadImage,validateUrl} from './download.js';
@@ -19,10 +21,13 @@ async function downloadAttachment(attachment,dir){
  if(!response.ok)throw new Error('Attachment download failed: HTTP '+response.status);
  const name=(attachment.name||'attachment').replace(/[^a-zA-Z0-9._-]/g,'_');
  const target=path.join(dir,name);
- const buffer=Buffer.from(await response.arrayBuffer());
  const max=Number(process.env.MEDIA_MAX_DOWNLOAD_MB||200)*1024*1024;
- if(buffer.length>max)throw new Error('Downloaded attachment exceeds MEDIA_MAX_DOWNLOAD_MB');
- await fs.promises.writeFile(target,buffer);
+ const contentLength=Number(response.headers.get('content-length')||0);
+ if(Number.isFinite(contentLength)&&contentLength>max)throw new Error('Downloaded attachment exceeds MEDIA_MAX_DOWNLOAD_MB');
+ if(!response.body)throw new Error('Attachment response body is unavailable');
+ await pipeline(Readable.fromWeb(response.body),fs.createWriteStream(target));
+ const stat=await fs.promises.stat(target);
+ if(stat.size>max){await fs.promises.rm(target,{force:true}).catch(()=>{});throw new Error('Downloaded attachment exceeds MEDIA_MAX_DOWNLOAD_MB');}
  return target;
 }
 export function createMediaService({db,dir}){
