@@ -5,11 +5,8 @@ import {
   refreshRestaurantMenu,
   restaurantSourceStatus,
   restaurantDataDisclaimer,
-  formatRupiah,
-  formatRange,
   filterMenuItems,
-  pageSlice,
-  parseRestaurantOptions,
+    parseRestaurantOptions,
   sanitizeEmbedText,
   buildRestaurantSourceField
 } from './prices.js';
