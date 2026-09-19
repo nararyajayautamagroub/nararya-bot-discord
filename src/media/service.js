@@ -8,19 +8,23 @@ import {removeVocals,removeBackgroundImage,removeBackgroundVideo,removeWatermark
 const MAX_UPLOAD_MB=Number(process.env.MEDIA_MAX_UPLOAD_MB||8);
 
 async function downloadAttachment(attachment,dir){
- const res=await request(attachment.url,{headers:{'user-agent':'NararyaBotDiscord/1.0'},bodyTimeout:30000});
- if(res.statusCode<200||res.statusCode>=300)throw new Error('Attachment download failed: HTTP '+res.statusCode);
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),30000);
+ let response;
+ try{
+  response=await fetch(attachment.url,{headers:{'user-agent':'NararyaBotDiscord/2.1'},signal:controller.signal});
+ }finally{
+  clearTimeout(timer);
+ }
+ if(!response.ok)throw new Error('Attachment download failed: HTTP '+response.status);
  const name=(attachment.name||'attachment').replace(/[^a-zA-Z0-9._-]/g,'_');
  const target=path.join(dir,name);
- const buffer=Buffer.from(await res.body.arrayBuffer());
+ const buffer=Buffer.from(await response.arrayBuffer());
  const max=Number(process.env.MEDIA_MAX_DOWNLOAD_MB||200)*1024*1024;
  if(buffer.length>max)throw new Error('Downloaded attachment exceeds MEDIA_MAX_DOWNLOAD_MB');
  await fs.promises.writeFile(target,buffer);
  return target;
 }
-
-function sourceExtension(name=''){return path.extname(name).slice(1).toLowerCase()||'bin';}
-
 export function createMediaService({db,dir}){
  async function runJob(ctx,operation,opts,prepare,transform){
   const jobId=createJob(db,{guildId:ctx.guildId,userId:ctx.userId,operation,inputSource:opts.url||null,resolution:opts.resolution,format:opts.format});
