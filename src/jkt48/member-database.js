@@ -1,4 +1,5 @@
 import {request} from 'undici';
+import {JKT48V_MEMBERS} from './jkt48v-members.js';
 
 const API_BASE=process.env.JKT48CONNECT_BASE_URL||'https://v2.jkt48connect.com/api/jkt48';
 const API_KEY=process.env.JKT48CONNECT_API_KEY||'';
@@ -37,5 +38,9 @@ export async function syncMemberDatabase(db){
   const tx=db.transaction(items=>{for(const m of items){const id=String(m.id||m.member_id||m.slug||m.name);up.run(id,m.name||'Unknown',m.nickname||null,Number(m.generation)||null,m.virtual_generation||null,m.is_active===true||m.status==='active'?'active':m.graduation_date?'graduated':(m.status||'historical'),m.team||null,m.image||m.image_url||m.photo||null,m.profile_url||m.url||null,m.join_date||null,m.graduation_date||null,m.showroom_url||m.showroom?.url||null,m.idn_url||m.idn?.url||null,m.youtube_url||m.youtube||null,m.instagram_url||m.instagram||null,m.tiktok_url||m.tiktok||null,m.x_url||m.twitter||m.x||null,Date.now())}});
   tx(rows);
  }
+ const uv=db.prepare(`INSERT INTO jkt48_virtual_members(id,name,cohort,status,youtube_url,x_url,instagram_url,tiktok_url,graduation_date,updated_at)
+ VALUES(?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,cohort=excluded.cohort,status=excluded.status,youtube_url=excluded.youtube_url,x_url=excluded.x_url,instagram_url=excluded.instagram_url,tiktok_url=excluded.tiktok_url,graduation_date=excluded.graduation_date,updated_at=excluded.updated_at`);
+ const tv=db.transaction(items=>{for(const m of items)uv.run(m.id,m.name,m.cohort,m.status,m.youtube_url||null,m.x_url||null,m.instagram_url||null,m.tiktok_url||null,m.graduation_date||null,Date.now())});
+ tv(JKT48V_MEMBERS);
  return rows.length;
 }
