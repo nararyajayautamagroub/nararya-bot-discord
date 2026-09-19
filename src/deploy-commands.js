@@ -181,8 +181,7 @@ const help=new SlashCommandBuilder().setName('help').setDescription('Bantuan dan
   {name:'Media',value:'Media'},{name:'Developer',value:'Developer'},{name:'Indonesia',value:'Indonesia'},{name:'Ramadan',value:'Ramadan'}))
  .addIntegerOption(o=>o.setName('page').setDescription('Halaman bantuan').setMinValue(1));
 
-const setup=new SlashCommandBuilder().setName('setup').setDescription('Konfigurasi fitur server')
- .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)
+const setup=new SlashCommandBuilder().setName('setup').setDescription('Konfigurasi global bot (owner bot saja)')
  .addSubcommand(s=>s.setName('overview').setDescription('Lihat seluruh status konfigurasi fitur'))
  .addSubcommand(s=>s.setName('welcome').setDescription('Atur channel welcome/onboarding').addChannelOption(o=>o.setName('channel').setDescription('Channel welcome').addChannelTypes(ChannelType.GuildText).setRequired(true)))
  .addSubcommand(s=>s.setName('log').setDescription('Atur channel log audit').addChannelOption(o=>o.setName('channel').setDescription('Channel log').addChannelTypes(ChannelType.GuildText).setRequired(true)));
@@ -224,7 +223,22 @@ const upcoming=new SlashCommandBuilder().setName('upcoming').setDescription('Inf
  .addSubcommand(s=>s.setName('ramadan').setDescription('Perkiraan Ramadan berikutnya'))
  .addSubcommand(s=>s.setName('disasters').setDescription('Status peringatan bencana resmi'));
 
-const commands=[jkt48,jkt48game,sim,utility,economy,moderation,support,feed,media,verify,bot,news,market,prices,ramadan,game,disaster,status,upcoming,help,setup,electronics];
+const settingbot=new SlashCommandBuilder().setName('settingbot').setDescription('Pengaturan global bot (owner bot saja)')
+ .addSubcommand(s=>s.setName('status').setDescription('Lihat pengaturan global bot'))
+ .addSubcommand(s=>s.setName('maintenance').setDescription('Aktifkan/nonaktifkan maintenance').addBooleanOption(o=>o.setName('enabled').setDescription('Status maintenance').setRequired(true)))
+ .addSubcommand(s=>s.setName('activity').setDescription('Atur activity/status bot').addStringOption(o=>o.setName('text').setDescription('Teks activity').setRequired(true).setMaxLength(100)))
+ .addSubcommand(s=>s.setName('reset').setDescription('Reset pengaturan global bot'));
+
+const blacklistserver=new SlashCommandBuilder().setName('blacklistserver').setDescription('Kelola blacklist server global (owner bot saja)')
+ .addSubcommand(s=>s.setName('add').setDescription('Blacklist server').addStringOption(o=>o.setName('server_id').setDescription('Discord server ID').setRequired(true)).addStringOption(o=>o.setName('reason').setDescription('Alasan blacklist').setMaxLength(250)))
+ .addSubcommand(s=>s.setName('remove').setDescription('Hapus server dari blacklist').addStringOption(o=>o.setName('server_id').setDescription('Discord server ID').setRequired(true)))
+ .addSubcommand(s=>s.setName('list').setDescription('Lihat blacklist server'));
+
+const blacklistusers=new SlashCommandBuilder().setName('blacklistusers').setDescription('Kelola blacklist user global (owner bot saja)')
+ .addSubcommand(s=>s.setName('add').setDescription('Blacklist user').addStringOption(o=>o.setName('user_id').setDescription('Discord user ID').setRequired(true)).addStringOption(o=>o.setName('reason').setDescription('Alasan blacklist').setMaxLength(250)))
+ .addSubcommand(s=>s.setName('remove').setDescription('Hapus user dari blacklist').addStringOption(o=>o.setName('user_id').setDescription('Discord user ID').setRequired(true)))
+ .addSubcommand(s=>s.setName('list').setDescription('Lihat blacklist user'));
+const commands=[jkt48,jkt48game,sim,utility,economy,moderation,support,feed,media,verify,bot,news,market,prices,ramadan,game,disaster,status,upcoming,help,setup,electronics,settingbot,blacklistserver,blacklistusers];
 
 const rest=new REST({version:'10'}).setToken(process.env.DISCORD_TOKEN);
 await rest.put(Routes.applicationCommands(process.env.CLIENT_ID),{body:commands.map(x=>x.toJSON())});
