@@ -28,16 +28,25 @@ export function createScraperOrchestrator({db,onDataRefresh}={}){
  for(const item of SCRAPER_REGISTRY)upsert.run(item.key,item.url,item.group,item.intervalMs);
 
  async function checkSources(){
-  const rows=db.prepare('SELECT * FROM scraper_sources WHERE enabled=1 ORDER BY key').all();
-  for(const row of rows){
-   try{
-    const result=await probeUrl(row.url,{timeout:5000});
-    const ok=result.ok?1:0;
-    check.run(Date.now(),ok,Date.now(),result.status,result.latencyMs,result.etag,result.lastModified,ok?null:'HTTP '+result.status,row.key);
-   }catch(error){
-    check.run(Date.now(),0,Date.now(),0,0,null,null,error.message,row.key);
+  if(checkRunning)return {skipped:true,reason:'previous scraper URL check still running'};
+  checkRunning=true;
+  try{
+   const rows=db.prepare('SELECT * FROM scraper_sources WHERE enabled=1 ORDER BY key').all();
+   const batchSize=5;
+   for(let offset=0;offset<rows.length;offset+=batchSize){
+    const batch=rows.slice(offset,offset+batchSize);
+    await Promise.all(batch.map(async row=>{
+     try{
+      const result=await probeUrl(row.url,{timeout:5000});
+      const ok=result.ok?1:0;
+      check.run(Date.now(),ok,Date.now(),result.status,result.latencyMs,result.etag,result.lastModified,ok?null:'HTTP '+result.status,row.key);
+     }catch(error){
+      check.run(Date.now(),0,Date.now(),0,0,null,null,error.message,row.key);
+     }
+    }));
    }
-  }
+   return {skipped:false,count:rows.length};
+  }finally{checkRunning=false}
  }
 
  async function refreshDue(){
@@ -54,17 +63,15 @@ export function createScraperOrchestrator({db,onDataRefresh}={}){
   }
  }
 
- let checkTimer=null;
  let refreshTimer=null;
+ let checkRunning=false;
  return {
   start(){
-   void checkSources();
    void refreshDue();
-   checkTimer=setInterval(()=>void checkSources(),CHECK_MS);
    refreshTimer=setInterval(()=>void refreshDue(),Math.min(30*1000,Math.max(10*1000,Number(process.env.SCRAPER_REFRESH_TICK_MS||30000))));
    return {checkMs:CHECK_MS};
   },
-  stop(){if(checkTimer)clearInterval(checkTimer);if(refreshTimer)clearInterval(refreshTimer)},
+  stop(){if(refreshTimer)clearInterval(refreshTimer)},
   checkNow(){return checkSources()},
   refreshNow(){return refreshDue()},
   status(){return db.prepare('SELECT key,url,group_name,enabled,last_checked_at,last_success_at,last_refresh_at,last_status,last_latency_ms,last_error FROM scraper_sources ORDER BY group_name,key').all()},
