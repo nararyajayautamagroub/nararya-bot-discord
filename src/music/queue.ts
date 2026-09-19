@@ -1,0 +1,2 @@
+import type{Track}from'./types.js';
+export class TrackQueue{private items:Track[]=[];constructor(private limit=50){}add(t:Track){if(this.items.length>=this.limit)throw new Error('Queue penuh');this.items.push(t)}addMany(t:Track[]){t.forEach(x=>this.add(x))}next(){return this.items.shift()}peek(){return this.items[0]}clear(){this.items=[]}size(){return this.items.length}all(){return [...this.items]}}
