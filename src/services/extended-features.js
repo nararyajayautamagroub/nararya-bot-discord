@@ -1,5 +1,6 @@
 import {EXTENDED_FEATURES} from "../config/extended-features.js";
 import {getFuelPrices} from "./indonesia/data.js";
+import {createXpCardBuffer} from "./leveling/xp-card.js";
 
 function ensureTables(db){
  db.exec(
@@ -38,7 +39,7 @@ function incident(db,gid,uid,type,detail){db.prepare("INSERT INTO security_incid
 function ownerAudit(db,ownerId,action,guildId="global"){db.prepare("INSERT INTO owner_audit_log(owner_id,action,guild_id,created_at) VALUES(?,?,?,?)").run(ownerId,action,guildId,Date.now());}
 function score(db,gid,uid,game,win,points){db.prepare("INSERT INTO game_scores(guild_id,user_id,game,wins,plays,points,updated_at) VALUES(?,?,?,?,?,?,?) ON CONFLICT(guild_id,user_id,game) DO UPDATE SET wins=wins+excluded.wins,plays=plays+excluded.plays,points=points+excluded.points,updated_at=excluded.updated_at").run(gid,uid,game,win?1:0,1,points,Date.now());}
 
-export function createExtendedFeatures({db,client,embed,botControl}={}){
+export function createExtendedFeatures({db,client,embed,botControl,jkt48CardsDb=null}={}){
  ensureTables(db);
  const intervals=new Set(),rates=new Map(),joins=new Map();
 
@@ -125,7 +126,7 @@ export function createExtendedFeatures({db,client,embed,botControl}={}){
    const s=i.options.getSubcommand(true),gid=i.guild.id,uid=i.user.id;
    if(s==="remind"){const d=i.options.getInteger("delay_seconds",true),text=i.options.getString("text",true);db.prepare("INSERT INTO reminders(guild_id,user_id,channel_id,text,due_at) VALUES(?,?,?,?,?)").run(gid,uid,i.channel.id,text,Date.now()+d*1000);return i.reply({embeds:[embed("Reminder Dibuat","Akan dikirim dalam "+d+" detik.",{color:0x06B6D4})]}),true;}
    if(s==="suggest"){const text=i.options.getString("text",true),r=db.prepare("INSERT INTO suggestions(guild_id,user_id,text,created_at) VALUES(?,?,?,?)").run(gid,uid,text,Date.now());return i.reply({embeds:[embed("Suggestion Tersimpan","Nomor "+r.lastInsertRowid,{color:0xF59E0B})]}),true;}
-   if(s==="profile"){const p=db.prepare("SELECT * FROM user_profiles WHERE guild_id=? AND user_id=?").get(gid,uid),l=db.prepare("SELECT * FROM levels WHERE guild_id=? AND user_id=?").get(gid,uid)||{xp:0,level:0},st=db.prepare("SELECT streak FROM daily_streaks WHERE guild_id=? AND user_id=?").get(gid,uid)?.streak||0;return i.reply({embeds:[embed("User Profile Card","<@"+uid+">\nLevel "+l.level+"\nEXP "+l.xp+"\nStreak "+st+"\nBio: "+(p?.bio||"Belum diisi."),{color:0x8B5CF6})]}),true;}
+   if(s==="profile"){const p=db.prepare("SELECT * FROM user_profiles WHERE guild_id=? AND user_id=?").get(gid,uid),l=db.prepare("SELECT * FROM levels WHERE guild_id=? AND user_id=?").get(gid,uid)||{xp:0,level:0},st=db.prepare("SELECT streak FROM daily_streaks WHERE guild_id=? AND user_id=?").get(gid,uid)?.streak||0,wins=db.prepare("SELECT COALESCE(SUM(wins),0) wins FROM game_scores WHERE guild_id=? AND user_id=?").get(gid,uid)?.wins||0;const rarity=jkt48CardsDb?.prepare("SELECT c.rarity FROM user_cards u JOIN cards c ON c.card_id=u.card_id WHERE u.guild_id=? AND u.user_id=? ORDER BY CASE c.rarity WHEN 'secret' THEN 7 WHEN 'mythic' THEN 6 WHEN 'legendary' THEN 5 WHEN 'epic' THEN 4 WHEN 'rare' THEN 3 WHEN 'uncommon' THEN 2 ELSE 1 END DESC LIMIT 1").get(gid,uid)?.rarity||"common";const card=createXpCardBuffer({username:i.user.username,xp:l.xp,level:l.level,streak:st,rarity,wins});return i.reply({embeds:[embed("🪪 User Profile Card","Bio: "+(p?.bio||"Belum diisi."),{color:0x8B5CF6,image:"attachment://xp-card.svg"})],files:[{attachment:card,name:"xp-card.svg"}]}),true;}
    if(s==="poll"){const q=i.options.getString("question",true),o=i.options.getString("options",true).split(/[|,]+/).map(x=>x.trim()).filter(Boolean).slice(0,8);if(o.length<2)return i.reply({embeds:[embed("Poll","Minimal 2 pilihan.",{color:0xEF4444})],ephemeral:true}),true;const p=db.prepare("INSERT INTO polls(guild_id,channel_id,question,options_json,created_at) VALUES(?,?,?,?,?)").run(gid,i.channel.id,q,JSON.stringify(o),Date.now());const text=q+"\n"+o.map((x,n)=>(n+1)+". "+x).join("\n")+"\n\nPoll ID: #"+p.lastInsertRowid;return i.reply({embeds:[embed("📊 Poll #"+p.lastInsertRowid,text,{color:0x3B82F6})]}),true;}
    if(s==="star"){const messageId=i.options.getString("message_id",true),stars=i.options.getInteger("stars",true);db.prepare("INSERT INTO starboard(message_id,guild_id,channel_id,author_id,content,stars,updated_at) VALUES(?,?,?,?,?,?,?) ON CONFLICT(message_id) DO UPDATE SET stars=excluded.stars,updated_at=excluded.updated_at").run(messageId,gid,i.channel.id,uid,"Manual starboard entry",stars,Date.now());return i.reply({embeds:[embed("⭐ Starboard","Message "+messageId+" tercatat dengan **"+stars+"⭐**.",{color:0xFBBF24})]}),true;}
   }
