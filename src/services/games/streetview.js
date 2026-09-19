@@ -1,4 +1,4 @@
-import {pick} from './index.js';
+const pick=items=>items.length?items[Math.floor(Math.random()*items.length)]:null;
 
 const LOCATIONS=[
  {name:'Jakarta',country:'Indonesia',lat:-6.2088,lng:106.8456,answers:['jakarta']},
