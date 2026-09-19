@@ -19,6 +19,8 @@ import {handleMediaCommand} from './media/command.js';
 import {createVerificationService} from './security/verification.js';
 import {createVerificationWebServer} from './web/verification/server.js';
 import {FEATURE_REGISTRY} from './config/features.js';
+import {createStreetViewQuestion} from './services/games/jkt48/streetview.js';
+import {getIndonesiaNews,getStockQuote,getFuelPrices,getElectricityPrices,getFoodPrices,findCity,getPrayerSchedule,upcomingRamadan,refreshIndonesiaCache,NEWS_CATEGORIES,DATA_SOURCES} from './services/indonesia/data.js';
 
 const db=new Database(process.env.DATABASE_PATH||'./data/nararya.db');
 db.pragma('journal_mode=WAL');
@@ -34,6 +36,7 @@ CREATE TABLE IF NOT EXISTS tycoon(guild_id TEXT,user_id TEXT,money INTEGER DEFAU
         gacha_day TEXT DEFAULT '',PRIMARY KEY(guild_id,user_id));
 CREATE TABLE IF NOT EXISTS shop_items(id TEXT PRIMARY KEY,name TEXT NOT NULL,price INTEGER NOT NULL,category TEXT NOT NULL,stock INTEGER DEFAULT -1);
 CREATE TABLE IF NOT EXISTS owned_items(guild_id TEXT,user_id TEXT,item_id TEXT,qty INTEGER DEFAULT 1,PRIMARY KEY(guild_id,user_id,item_id));
+CREATE TABLE IF NOT EXISTS ramadan_configs(guild_id TEXT PRIMARY KEY,city_id TEXT NOT NULL,city_name TEXT NOT NULL,channel_id TEXT NOT NULL,enabled INTEGER DEFAULT 1,last_sahur TEXT,last_buka TEXT,created_at INTEGER NOT NULL,updated_at INTEGER NOT NULL);
 
 `);
 ensureTables(db);
@@ -75,6 +78,20 @@ async function openTicket(i){
 }
 const feedService=createFeedService({db,client,buildEmbed:feedEmbed});
 const jkt48Monitor=createJkt48Monitor({db,client,embed,interval:Number(process.env.JKT48_MONITOR_INTERVAL_MS||30000)});
+const gameCooldowns=new Map();
+const GAME_COOLDOWN_MS=10000;
+const QUIZ_TIMEOUT_MS=60000;
+function gameCooldownLeft(guildId,userId){const key=guildId+':'+userId,last=gameCooldowns.get(key)||0,remaining=GAME_COOLDOWN_MS-(Date.now()-last);if(remaining>0)return remaining;gameCooldowns.set(key,Date.now());return 0;}
+function scheduleQuizExpiry(session){setTimeout(async()=>{const current=jkt48Dbs.quiz.prepare('SELECT * FROM quiz_sessions WHERE id=?').get(session.id);if(!current||current.status!=='active')return;if(current.expires_at>Date.now())return scheduleQuizExpiry({...current});finishSession(jkt48Dbs.quiz,current.id,'expired');recordResult(jkt48Dbs.quiz,{guildId:current.guild_id,userId:current.user_id,mode:current.mode,rarity:current.rarity,answer:current.answer,input:'[timeout]',correct:false,points:0,durationMs:QUIZ_TIMEOUT_MS});const ch=await client.channels.fetch(current.channel_id).catch(()=>null);if(ch?.isTextBased())await ch.send({embeds:[embed('⏰ Waktu Habis','Tantangan **'+current.mode+'** gagal karena tidak dijawab dalam **1 menit**. Coba lagi setelah cooldown.',{color:EMBED_COLORS.error})]}).catch(()=>{});},Math.max(100,current.expires_at-Date.now()+100));}
+function money(v){return Number.isFinite(Number(v))?'Rp'+Number(v).toLocaleString('id-ID'):'-';}
+async function sendIndonesiaDataRefresh(){return refreshIndonesiaCache().catch(error=>[{ok:false,error:error.message}]);}
+async function checkRamadanNotifications(){
+ const rows=db.prepare('SELECT * FROM ramadan_configs WHERE enabled=1').all();
+ const now=new Date(),today=now.toLocaleDateString('en-CA',{timeZone:process.env.BOT_TIMEZONE||'Asia/Jakarta'}),estimated=upcomingRamadan();
+ if(today<estimated.estimatedStart||today>estimated.estimatedEnd)return;
+ for(const cfg of rows){
+  try{const schedule=await getPrayerSchedule(cfg.city_id,now);const channel=await client.channels.fetch(cfg.channel_id).catch(()=>null);if(!channel?.isTextBased())continue;const [ih,im]=String(schedule.jadwal.imsak||'').split(':').map(Number);const [mh,mm]=String(schedule.jadwal.maghrib||'').split(':').map(Number);if(Number.isFinite(ih)&&Number.isFinite(im)){const sahurAt=new Date();sahurAt.setHours(ih,im,0,0);sahurAt.setMinutes(sahurAt.getMinutes()-30);if(Math.abs(now-sahurAt)<30000&&cfg.last_sahur!==today){await channel.send({embeds:[embed('🌙 Pengingat Sahur','Waktu sahur untuk **'+cfg.city_name+'** mendekati batas.\n🕐 Imsak: **'+schedule.jadwal.imsak+'**\n🍽️ Segera selesaikan sahur.',{color:EMBED_COLORS.gacha})]}).catch(()=>{});db.prepare('UPDATE ramadan_configs SET last_sahur=?,updated_at=? WHERE guild_id=?').run(today,Date.now(),cfg.guild_id)}}if(Number.isFinite(mh)&&Number.isFinite(mm)){const bukaAt=new Date();bukaAt.setHours(mh,mm,0,0);if(Math.abs(now-bukaAt)<30000&&cfg.last_buka!==today){await channel.send({embeds:[embed('🌇 Waktu Berbuka','Waktu Maghrib untuk **'+cfg.city_name+'** telah tiba.\n🕌 Maghrib: **'+schedule.jadwal.maghrib+'**\n🥤 Selamat berbuka puasa.',{color:EMBED_COLORS.success})]}).catch(()=>{});db.prepare('UPDATE ramadan_configs SET last_buka=?,updated_at=? WHERE guild_id=?').run(today,Date.now(),cfg.guild_id)}}}catch(error){console.warn('[ramadan] '+cfg.guild_id+' '+error.message)}}
+}
 client.on('messageCreate',async m=>{
  if(m.author.bot||!m.guild)return;
  const session=getActiveSession(jkt48Dbs.quiz,m.guild.id,m.author.id,m.channel.id);
@@ -152,6 +169,35 @@ client.on('interactionCreate',async i=>{
     verificationService.setRole(i.guild.id,role.id);
     return i.reply({embeds:[embed('✅ Role Verifikasi Disimpan','Role verified: <@&'+role.id+'>\\nPastikan role bot berada di atas role tersebut pada hierarki Discord.',{color:EMBED_COLORS.success})]});
    }
+  }
+
+  if(n==='news'){
+   const sub=i.options.getSubcommand(true);
+   if(sub==='sources')return i.reply({embeds:[embed('📰 Sumber Berita Indonesia',Object.entries(DATA_SOURCES.news).map(([k,v])=>'**'+k+'** • '+v).join('\\n'),{color:EMBED_COLORS.info})]});
+   const category=i.options.getString('category')||'latest';
+   try{const data=await getIndonesiaNews(category,8);return i.reply({embeds:[embed('📰 Berita Indonesia • '+category.toUpperCase(),data.items.slice(0,8).map((x,n)=>'**'+(n+1)+'. ['+x.title+']('+x.link+')**\\n'+(x.description||'').slice(0,180)+'\\n'+(x.pubDate||'')).join('\\n\\n'),{color:EMBED_COLORS.info,fields:[{name:'Update',value:new Date(data.updatedAt).toLocaleString('id-ID',{timeZone:process.env.BOT_TIMEZONE||'Asia/Jakarta'})+' WIB'}]})]})}catch(e){return i.reply({embeds:[embed('❌ Berita Tidak Tersedia',e.message,{color:EMBED_COLORS.error})],ephemeral:true})}
+  }
+  if(n==='market'){
+   const sub=i.options.getSubcommand(true);let symbol=sub==='ihsg'?'IHSG':i.options.getString('symbol',true);try{const q=await getStockQuote(symbol);return i.reply({embeds:[embed('📈 '+q.symbol,'Harga: **'+q.price.toLocaleString('id-ID')+' '+q.currency+'**\\nPerubahan: **'+q.change.toLocaleString('id-ID')+' ('+q.changePercent.toFixed(2)+'%)**\\nExchange: **'+q.exchange+'**\\nStatus pasar: **'+q.marketState+'**\\nData diperbarui: <t:'+Math.floor(q.fetchedAt/1000)+':R>\\nSumber: **'+q.source+'**',{color:q.change>=0?EMBED_COLORS.success:EMBED_COLORS.error})]})}catch(e){return i.reply({embeds:[embed('❌ Data Saham Tidak Tersedia',e.message,{color:EMBED_COLORS.error})],ephemeral:true})}
+  }
+  if(n==='prices'){
+   const sub=i.options.getSubcommand(true);
+   try{
+    const render=(title,data)=>embed(title,data.items.map(x=>x.value===null?'• **'+x.name+'** • Data belum terbaca':'• **'+x.name+'** • **'+(x.unit==='Rp/kWh'?x.value.toLocaleString('id-ID'):'Rp'+Number(x.value).toLocaleString('id-ID'))+'** / '+(x.unit==='Rp/kWh'?'kWh':x.unit.replace('Rp/',''))).join('\\n')+'\\n\\nSumber: '+data.source+'\\nUpdate cache: <t:'+Math.floor(data.updatedAt/1000)+':R>',{color:EMBED_COLORS.info});
+    if(sub==='fuel')return i.reply({embeds:[render('⛽ Harga BBM Indonesia',await getFuelPrices())]});
+    if(sub==='electricity')return i.reply({embeds:[render('⚡ Tarif Listrik PLN',await getElectricityPrices())]});
+    if(sub==='food')return i.reply({embeds:[render('🛒 Harga Pangan Strategis',await getFoodPrices())]});
+    const [fuel,electricity,food]=await Promise.all([getFuelPrices(),getElectricityPrices(),getFoodPrices()]);
+    return i.reply({embeds:[render('🇮🇩 Ringkasan Harga Indonesia',{items:[...fuel.items.slice(0,7),...electricity.items.slice(0,4),...food.items.slice(0,6)],source:fuel.source,updatedAt:Math.min(fuel.updatedAt,electricity.updatedAt,food.updatedAt)})]});
+   }catch(e){return i.reply({embeds:[embed('❌ Data Harga Tidak Tersedia',e.message,{color:EMBED_COLORS.error})],ephemeral:true})}
+  }
+  if(n==='ramadan'){
+   const sub=i.options.getSubcommand(true);
+   if(sub==='upcoming'){const r=upcomingRamadan();return i.reply({embeds:[embed('🌙 Upcoming Ramadan 1448 H','Perkiraan awal Ramadan: **8 Februari 2027**\\nPerkiraan Nuzulul Qur’an: **24 Februari 2027**\\nPerkiraan akhir Ramadan: **8 Maret 2027**\\nPerkiraan Idulfitri: **9–10 Maret 2027**\\n\\nStatus: **'+r.officialStatus+'**',{color:EMBED_COLORS.gacha})]})}
+   if(sub==='today'){try{const matches=await findCity(i.options.getString('city',true));if(!matches.length)return i.reply({embeds:[embed('❌ Kota Tidak Ditemukan','Coba gunakan nama kota/kabupaten yang lebih lengkap.',{color:EMBED_COLORS.error})],ephemeral:true});const p=await getPrayerSchedule(matches[0].id);return i.reply({embeds:[embed('🕌 Jadwal Imsakiyah • '+matches[0].lokasi,'Imsak: **'+p.jadwal.imsak+'**\\nSubuh: **'+p.jadwal.subuh+'**\\nDzuhur: **'+p.jadwal.dzuhur+'**\\nAshar: **'+p.jadwal.ashar+'**\\nMaghrib: **'+p.jadwal.maghrib+'**\\nIsya: **'+p.jadwal.isya+'**\\n\\nSumber: **'+p.source+'**',{color:EMBED_COLORS.gacha})]})}catch(e){return i.reply({embeds:[embed('❌ Jadwal Tidak Tersedia',e.message,{color:EMBED_COLORS.error})],ephemeral:true})}}
+   if(sub==='setup'){try{const city=i.options.getString('city',true),channel=i.options.getChannel('channel',true),matches=await findCity(city);if(!matches.length)return i.reply({embeds:[embed('❌ Kota Tidak Ditemukan','Kota tidak ditemukan.',{color:EMBED_COLORS.error})],ephemeral:true});const selected=matches[0];db.prepare('INSERT INTO ramadan_configs(guild_id,city_id,city_name,channel_id,enabled,created_at,updated_at) VALUES(?,?,?,?,1,?,?) ON CONFLICT(guild_id) DO UPDATE SET city_id=excluded.city_id,city_name=excluded.city_name,channel_id=excluded.channel_id,enabled=1,updated_at=excluded.updated_at').run(i.guild.id,selected.id,selected.lokasi,channel.id,Date.now(),Date.now());return i.reply({embeds:[embed('✅ Notifikasi Ramadan Aktif','Kota: **'+selected.lokasi+'**\\nChannel: '+channel+'\\nSahur: **30 menit sebelum Imsak**\\nBuka: **saat Maghrib**\\nPemeriksaan jadwal berjalan otomatis.',{color:EMBED_COLORS.success})]})}catch(e){return i.reply({embeds:[embed('❌ Setup Ramadan Gagal',e.message,{color:EMBED_COLORS.error})],ephemeral:true})}}
+   if(sub==='disable'){db.prepare('UPDATE ramadan_configs SET enabled=0,updated_at=? WHERE guild_id=?').run(Date.now(),i.guild.id);return i.reply({embeds:[embed('🔕 Notifikasi Ramadan Dimatikan','Notifikasi sahur dan buka puasa untuk server ini dinonaktifkan.',{color:EMBED_COLORS.warning})]})}
+   if(sub==='test'){const cfg=db.prepare('SELECT * FROM ramadan_configs WHERE guild_id=?').get(i.guild.id);if(!cfg)return i.reply({embeds:[embed('⚠️ Belum Dikonfigurasi','Jalankan /ramadan setup terlebih dahulu.',{color:EMBED_COLORS.warning})],ephemeral:true});const p=await getPrayerSchedule(cfg.city_id);return i.reply({embeds:[embed('🧪 Ramadan Notification Test','Kota: **'+cfg.city_name+'**\\nImsak: **'+p.jadwal.imsak+'**\\nMaghrib: **'+p.jadwal.maghrib+'**\\nChannel: <#'+cfg.channel_id+'>',{color:EMBED_COLORS.info})]})}
   }
 
   if(n==='bot'){
