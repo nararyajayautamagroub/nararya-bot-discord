@@ -61,3 +61,10 @@ Jalankan audit dependency dan pertahankan yt-dlp, FFmpeg, Python packages, Node.
 ## API Keys
 
 Treat `GOOGLE_MAPS_API_KEY` and any future market/data provider API keys as secrets. Restrict Google Maps keys to the APIs and applications required by the deployment, and never expose them in frontend source, Discord messages, logs, or public repository files.
+
+
+## Bot Control Secrets
+
+`BOT_OWNER_IDS` contains privileged Discord user IDs and must be treated as sensitive configuration. Do not commit the real value into the repository or expose it in logs, embeds, API responses, screenshots, or client-side code.
+
+Owner-only controls include global bot settings, maintenance mode, server blacklist, and user blacklist.
