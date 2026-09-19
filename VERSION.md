@@ -1,10 +1,13 @@
 # Version
 
-Current project version: **1.7.1**
+Current project version: **1.8.0**
 
 Release date: **2026-09-19**
 
 This release adds:
+- /help feature catalog with category filters and pagination
+- /setup server configuration overview and channel setup
+- /electronics public marketplace price scraper for Indonesia
 - automatic one-time guild invite welcome message on bot join
 - safe system-channel/text-channel fallback for welcome delivery
 - migration support for existing guild configuration databases
