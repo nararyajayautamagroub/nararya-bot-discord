@@ -1,6 +1,7 @@
 import {
   findRestaurants,
   findRestaurantMenu,
+  searchCachedRestaurantItems,
   refreshRestaurantCity,
   refreshRestaurantMenu,
   restaurantSourceStatus,
@@ -200,6 +201,32 @@ export async function handleRestaurantPricesCommand(interaction,{db,embed}={}){
     ]}
    )]
   });
+ }
+
+ if(sub==='all'){
+  const input=parseRestaurantOptions({
+   query:interaction.options.getString('query'),
+   category:interaction.options.getString('category'),
+   minPrice:interaction.options.getNumber('min_price'),
+   maxPrice:interaction.options.getNumber('max_price'),
+   page:interaction.options.getInteger('page')||1,
+   limit:interaction.options.getInteger('limit')||15
+  });
+  const result=searchCachedRestaurantItems(db,input);
+  const body=combinedLines(result.items);
+  if(!body.length){
+   return interaction.reply({embeds:[embed('🍽️ Belum Ada Data Terindeks','Belum ada harga menu restoran yang tersimpan di cache nasional. Gunakan **/restaurantprices search** atau **/restaurantprices refresh** untuk membangun indeks.',{color:0xF59E0B})],ephemeral:true});
+  }
+  return interaction.reply({embeds:[embed(
+   '🇮🇩 Semua Harga Menu yang Terindeks',
+   body.join('\\n\\n'),
+   {color:0x8B5CF6,fields:[
+    {name:'Halaman',value:result.page+'/'+result.pages,inline:true},
+    {name:'Total terindeks',value:String(result.total),inline:true},
+    {name:'Filter',value:[input.query?'Menu: '+input.query:null,input.category?'Kategori: '+input.category:null,input.minPrice!==null?'Min: '+formatRupiah(input.minPrice):null,input.maxPrice!==null?'Max: '+formatRupiah(input.maxPrice):null].filter(Boolean).join(' • ')||'Semua'},
+    {name:'Catatan',value:restaurantDataDisclaimer()}
+   ]}
+  )]});
  }
 
  if(sub==='refresh'){
