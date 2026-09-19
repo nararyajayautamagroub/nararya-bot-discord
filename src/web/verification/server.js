@@ -30,7 +30,7 @@ export function createVerificationWebServer({service,featureRegistry}){
    try{
      const url=new URL(req.url||'/',`http://${req.headers.host||'localhost'}`);
      if(req.method==='GET'&&url.pathname==='/health'){
-       return json(res,200,{ok:true,service:'verification',version:process.env.npm_package_version||'1.5.0',verification:service.health()});
+       return json(res,200,{ok:true,service:'verification',version:process.env.npm_package_version||'1.6.0',verification:service.health()});
      }
      if(req.method==='GET'&&url.pathname==='/api/verify/session'){
        const ticket=url.searchParams.get('ticket');
