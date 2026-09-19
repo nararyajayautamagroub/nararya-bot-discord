@@ -81,6 +81,8 @@ export async function runDataAudit({databases}){
  ensureDataAuditTables(primary);
  const run=primary.prepare("INSERT INTO data_audit_runs(started_at,finished_at,status) VALUES(?,?,?)").run(started,null,'running');
  runIdHolder.id=run.lastInsertRowid;
+ primary.prepare('DELETE FROM data_audit_findings').run();
+ primary.prepare('DELETE FROM data_audit_runs WHERE id NOT IN (SELECT id FROM data_audit_runs ORDER BY id DESC LIMIT 1440)').run();
  let urlCount=0,missing=0,invalid=0,errors=0;
  try{
   for(const entry of databases){
