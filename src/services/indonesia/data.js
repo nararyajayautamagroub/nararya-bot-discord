@@ -21,7 +21,7 @@ const ELECTRICITY_DEFAULTS=[['R-1 Subsidi 450 VA',415,'Rp/kWh'],['R-1 Subsidi 90
 const FOOD_DEFAULTS=[['Beras Premium','Rp/kg'],['Beras Medium','Rp/kg'],['Bawang Merah','Rp/kg'],['Bawang Putih','Rp/kg'],['Cabai Merah Keriting','Rp/kg'],['Cabai Rawit Merah','Rp/kg'],['Daging Ayam Ras','Rp/kg'],['Daging Sapi Murni','Rp/kg'],['Telur Ayam Ras','Rp/kg'],['Gula Pasir Lokal','Rp/kg'],['Minyak Goreng Kemasan Sederhana','Rp/liter']];
 const escapeRegex=value=>String(value).replaceAll(/[-/\\^$*+?.()|[\]{}]/g,'\\$&');
 
-async function text(url,init={}){const res=await fetch(url,{...init,headers:{'user-agent':process.env.SCRAPER_USER_AGENT||'NararyaBotDiscord/1.5.0',...(init.headers||{})}});if(!res.ok)throw new Error('HTTP '+res.status+' dari '+url);return res.text()}
+async function text(url,init={}){const res=await fetch(url,{...init,headers:{'user-agent':process.env.SCRAPER_USER_AGENT||'NararyaBotDiscord/1.6.0',...(init.headers||{})}});if(!res.ok)throw new Error('HTTP '+res.status+' dari '+url);return res.text()}
 async function json(url,init={}){const body=await text(url,init);try{return JSON.parse(body)}catch{throw new Error('JSON tidak valid dari '+url)}}
 function getCached(key,ttl){const item=cache.get(key);if(item&&Date.now()-item.fetchedAt<ttl)return item.value;return null}
 function setCached(key,value){cache.set(key,{value,fetchedAt:Date.now()});return value}
