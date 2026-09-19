@@ -13,6 +13,7 @@ import {
   sanitizeEmbedText,
   buildRestaurantSourceField
 } from './prices.js';
+import {formatRupiah,formatRange,pageSlice} from '../../tools/toolbox.js';
 
 function asOptions(interaction){
  return {
