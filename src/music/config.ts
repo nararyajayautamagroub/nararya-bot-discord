@@ -1,0 +1,1 @@
+export const MUSIC={maxQueue:50,maxFileBytes:25*1024*1024,requestTimeout:20_000,volume:1,minVolume:0,maxVolume:2,allowedExtensions:['mp3','wav','ogg','flac','m4a','aac','opus','webm','mp4','mkv','mov'],allowedProtocols:['http:','https:']};
