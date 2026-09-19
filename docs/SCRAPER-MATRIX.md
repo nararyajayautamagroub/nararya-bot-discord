@@ -1,46 +1,56 @@
 # Scraper Matrix
 
-Semua fitur yang mengambil data eksternal wajib mempunyai scraper/API adapter atau source contract. JKT48 adalah pengecualian yang memakai URL repository/sumber JKT48 yang sudah ditetapkan di modul `src/jkt48/`.
+## Policy
 
-| Area | Method | Source / Adapter | Refresh |
-|---|---|---|---|
-| Indonesia news | RSS/XML parser | ANTARA RSS | background full refresh 24 jam, command cache 15 menit |
-| Indonesia stocks | JSON API adapter | Yahoo Finance IDX symbols | 10 menit |
-| Fuel | HTML adapter + configured baseline | MyPertamina | 24 jam |
-| Electricity | source probe + configured tariff table | PLN | 24 jam |
-| Food prices | HTML adapter | Bank Indonesia PIHPS | 24 jam |
-| Prayer / Ramadan | JSON API | MyQuran + Kemenag source contract | 24 jam |
-| Earthquake | HTML scraper | BMKG | 60 detik |
-| Tsunami | HTML scraper | BMKG | 60 detik |
-| Disaster general | ArcGIS JSON adapter | BNPB GIS | 5 menit |
-| Volcano | HTML scraper | MAGMA / ESDM source contract | 5 menit |
-| Street View | Google Maps API adapter | Google Street View | on demand + source health check |
-| Public media | external media adapter | yt-dlp/direct HTTP | on demand |
-| Verification website | local service | own web server | local health |
-| Discord economy/levels/tickets | local database | SQLite | local integrity audit |
-| JKT48 | repository/source URLs | existing JKT48 modules | exempt from generic scraper requirement |
+Every external non-JKT48 source must have a registered source contract and adapter.
 
-## 10-second audit pipeline
+JKT48 remains on the dedicated JKT48 integration and is exempt from the generic scraper requirement.
 
-The background pipeline runs in this order:
+## Source classes
 
-1. Check registered scraper source URLs.
-2. Scan all bot databases.
-3. Find URL-like fields in every table.
-4. Probe URLs that are stored in data.
-5. Compare the URL with the scraper registry.
-6. Exempt configured JKT48 repository URLs.
-7. Mark unknown external URLs as `missing_scraper`.
-8. Generate a suggested adapter method:
-   - JSON API
-   - RSS/XML
-   - Direct media
-   - HTML + Cheerio
-   - Official/public API
-9. Expose the result through `/status data`.
+| Group | Source | Adapter | Health |
+| --- | --- | --- | --- |
+| JKT48 | Configured repository or API | JKT48-specific | Dedicated integration |
+| News | Public RSS | RSS adapter | Registry |
+| Stocks | Public market data | JSON adapter | Registry |
+| Fuel | Public price source | HTML or JSON adapter | Registry |
+| Electricity | Public tariff source | HTML or JSON adapter | Registry |
+| Food | Public food price source | JSON or HTML adapter | Registry |
+| Electronics | Public catalog | HTML parser | Registry |
+| Restaurant | MenuKuliner.net | Directory and menu parser | Registry |
+| Disaster | BMKG, BNPB, MAGMA | JSON or XML adapters | Registry |
+| Feed | Configured public URLs | Source-specific adapters | Feed health |
 
-The audit does not invent a source. A data record without a verifiable scraper contract remains flagged until an adapter is added.
+## Ten-second audit
 
-## News
+1. Scan configured databases.
+2. Identify fields that contain URLs.
+3. Check URL availability.
+4. Match URL to the scraper registry.
+5. Record source health.
+6. Detect missing adapters.
+7. Suggest a scraper method.
+8. Send configured log alerts.
 
-News is refreshed continuously on demand while the background source contract is fully refreshed every 24 hours. URL health is checked independently every 10 seconds, so a reachable feed and fresh data are treated as two separate conditions.
+## Scraper method suggestions
+
+When no adapter exists, the audit can recommend:
+
+- JSON API
+- RSS/XML
+- direct media
+- HTML and Cheerio
+- official/public API
+
+## Adapter requirements
+
+Each adapter should implement:
+
+- timeout
+- retry
+- response validation
+- normalization
+- deduplication
+- cache or refresh policy
+- error reporting
+- test coverage
