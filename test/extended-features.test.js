@@ -21,6 +21,8 @@ test("extended feature manager initializes persistent tables",()=>{
  assert.ok(db.prepare("SELECT 1 FROM feature_settings").get());
  assert.ok(db.prepare("SELECT 1 FROM security_incidents").get());
  assert.ok(db.prepare("SELECT 1 FROM owner_audit_log").get());
+ assert.ok(db.prepare("SELECT 1 FROM polls").get());
+ assert.ok(db.prepare("SELECT 1 FROM starboard").get());
  manager.ensureTables(db);
  db.close();
 });
