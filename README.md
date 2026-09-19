@@ -4,20 +4,20 @@ Nararya Bot Discord adalah bot Discord modular untuk komunitas, JKT48, game, dat
 
 ## Current release
 
-Version: 2.1.2
+Version: 2.2.0
 Release date: 2026-09-20
 Active feature registry: 150 features
 
 ## Core capabilities
 
-- JKT48 member database, upcoming and latest information, platform feed, quiz, gacha, card collection, dan EXP profile card.
+- JKT48 member database generations 1-14, upcoming and latest information, platform feeds, live monitoring, quiz, gacha, card collection, and EXP profile card.
 - General Google Street View quiz. Fitur ini adalah game lokasi dan tidak berfokus pada JKT48.
 - Indonesia news, stock quotes, fuel prices, electricity tariffs, food prices, Ramadan schedules, dan disaster monitoring.
 - Restaurant menu and price aggregation melalui sumber publik MenuKuliner.net.
 - Media download dan processing melalui yt-dlp, FFmpeg, Demucs, dan rembg jika dependency terkait tersedia.
 - Web verification dengan server-bound one-time codes.
 - Owner-only setup, global bot settings, server blacklist, user blacklist, security controls, dan audit tooling.
-- Scraper registry dan database audit pipeline dengan pemeriksaan URL setiap 10 detik.
+- Scraper registry and database audit pipeline with URL checks every 10 seconds.
 - Leveling dengan visual EXP profile card.
 - Rotating Discord Playing status.
 
@@ -25,20 +25,20 @@ Active feature registry: 150 features
 
 ~~~
 src/
-  config/
-  commands/
-  jkt48/
-  media/
-  music/
-  security/
-  services/
-  tools/
-  web/
-  index.js
-  deploy-commands.js
+ config/
+ commands/
+ jkt48/
+ media/
+ music/
+ security/
+ services/
+ tools/
+ web/
+ index.js
+ deploy-commands.js
 
 tools/
-  media/
+ media/
 
 test/
 docs/
@@ -51,11 +51,11 @@ website/
 2. Configure DISCORD_TOKEN, CLIENT_ID, database paths, dan optional service credentials.
 3. Install Node dependencies with npm install.
 4. Install optional system dependencies for media processing:
-   - FFmpeg
-   - yt-dlp
-   - Python
-   - Python packages from tools/media/requirements.txt
-   - Demucs for vocal separation
+ - FFmpeg
+ - yt-dlp
+ - Python
+ - Python packages from tools/media/requirements.txt
+ - Demucs for vocal separation
 5. Deploy slash commands with npm run deploy.
 6. Start with npm start.
 
@@ -94,6 +94,22 @@ The data audit pipeline:
 The pipeline runs every 10 seconds.
 
 Indonesia source caches use a 24-hour refresh policy unless a source-specific policy requires a shorter interval.
+
+## JKT48 integration references
+
+The JKT48 subsystem uses adapter-based integrations inspired by the public architecture of the following repositories. Code is not vendored wholesale. Each integration is implemented behind Nararya Bot interfaces and must respect the upstream repository license and the target platform terms.
+
+- sendyarf/jkt48-archiver: IDN HLS health-check, recording-state, reconnect, and archive pipeline concepts.
+- ayouree/jkt48showroom-api: SHOWROOM data integration concepts.
+- ojixzzz/twitterbot48: JKT48 X/Twitter notification concepts.
+- pranendraa/piobot-live: multi-platform live notification concepts for SHOWROOM, IDN Live, and TikTok.
+- FrenzY8/JKT48Guessr: quiz and guessing-game concepts.
+- crstlnz/jkt48showroom-api: SHOWROOM API concepts.
+- FrenzY8/JKT48Member: historical and active member data source.
+- Synxx12/idn-api-live-jkt48: IDN Live data integration concepts.
+- faruuhan/scraping-jkt48-website: JKT48 website scraping concepts.
+
+The generation 14 seed is based on the JKT48 official announcement dated 18 May 2026 and is merged with the historical member source during synchronization.
 
 ## Security
 
