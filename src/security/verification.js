@@ -87,7 +87,7 @@ export function createVerificationService({db,baseUrl}){
      }
      if(!human)throw new Error('Centang “I\'m not a robot” terlebih dahulu.');
      if(honeypot)throw new Error('Verifikasi tidak valid.');
-     const elapsed=Date.now()-Number(startedAt||0);
+     const elapsed=Date.now()-row.issued_at;
      if(elapsed<1000)throw new Error('Selesaikan verifikasi secara normal.');
      if(hash(challenge)!==row.challenge_hash)throw new Error('Challenge tidak valid.');
      const secret=db.prepare('SELECT secret FROM verification_guilds WHERE guild_id=?').get(row.guild_id)?.secret;
