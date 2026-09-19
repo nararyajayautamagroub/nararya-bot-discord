@@ -431,10 +431,12 @@ export async function fetchRestaurantMenu(url){
 }
 
 export async function findRestaurants(options={}){
+ const db=options.db||null;
  const input=normalizeRestaurantQuery(options);
  const fetched=[];
  for(let page=1;page<=input.maxPages;page++){
   const directory=await fetchRestaurantDirectory(input.city,page);
+  if(db)saveDirectory(db,directory);
   fetched.push(...directory.restaurants);
   if(directory.restaurants.length===0)break;
   if(fetched.length>=Math.max(input.limit*page,100))break;
