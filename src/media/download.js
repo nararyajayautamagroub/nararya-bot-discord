@@ -12,7 +12,7 @@ const timeoutMs=Number(process.env.MEDIA_HTTP_TIMEOUT_MS||30000);
 function qualitySelector(resolution){
  if(resolution==='best')return 'bestvideo*+bestaudio/best';
  const h=resolution.replace(/p$/,'');
- return 'bestvideo*[height<=?'+h+']+bestaudio/best[height<=?'+h+']';
+ return 'bestvideo*[height<='+h+']+bestaudio/best[height<='+h+']';
 }
 
 export async function downloadWithYtdlp({url,outdir,kind='video',resolution='best',format='mp4'}){
