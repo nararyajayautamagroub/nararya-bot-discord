@@ -135,7 +135,19 @@ const media=new SlashCommandBuilder().setName('media').setDescription('Download 
   .addStringOption(o=>o.setName('audio_format').setDescription('Default audio format').addChoices(
    {name:'MP3',value:'mp3'},{name:'M4A',value:'m4a'},{name:'WAV',value:'wav'},{name:'FLAC',value:'flac'})))
 
-const commands=[jkt48,jkt48game,sim,utility,economy,moderation,support,feed,media];
+
+const verify=new SlashCommandBuilder().setName('verify').setDescription('Sistem verifikasi akun Discord melalui website')
+ .addSubcommand(s=>s.setName('start').setDescription('Buat sesi verifikasi dan dapatkan URL website'))
+ .addSubcommand(s=>s.setName('code').setDescription('Masukkan kode 4 karakter dari website').addStringOption(o=>o.setName('code').setDescription('Kode verifikasi').setRequired(true).setMinLength(4).setMaxLength(4)))
+ .addSubcommand(s=>s.setName('status').setDescription('Lihat status konfigurasi verifikasi'))
+ .addSubcommand(s=>s.setName('role').setDescription('Atur role yang diberikan setelah verifikasi').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild).addRoleOption(o=>o.setName('role').setDescription('Role verified').setRequired(true)));
+
+const bot=new SlashCommandBuilder().setName('bot').setDescription('Informasi dan developer tools bot')
+ .addSubcommand(s=>s.setName('info').setDescription('Lihat runtime dan informasi bot'))
+ .addSubcommand(s=>s.setName('features').setDescription('Lihat registry fitur aktif'))
+ .addSubcommand(s=>s.setName('health').setDescription('Lihat status kesehatan sistem'));
+
+const commands=[jkt48,jkt48game,sim,utility,economy,moderation,support,feed,media,verify,bot];
 
 const rest=new REST({version:'10'}).setToken(process.env.DISCORD_TOKEN);
 await rest.put(Routes.applicationCommands(process.env.CLIENT_ID),{body:commands.map(x=>x.toJSON())});
