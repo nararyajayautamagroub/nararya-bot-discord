@@ -16,7 +16,11 @@ function ensureTables(db){
  "CREATE TABLE IF NOT EXISTS economy_inventory(guild_id TEXT,user_id TEXT,item_id TEXT,quantity INTEGER DEFAULT 0,PRIMARY KEY(guild_id,user_id,item_id));"+
  "CREATE TABLE IF NOT EXISTS game_scores(guild_id TEXT,user_id TEXT,game TEXT,wins INTEGER DEFAULT 0,plays INTEGER DEFAULT 0,points INTEGER DEFAULT 0,updated_at INTEGER,PRIMARY KEY(guild_id,user_id,game));"+
  "CREATE TABLE IF NOT EXISTS owner_jobs(id INTEGER PRIMARY KEY AUTOINCREMENT,kind TEXT,payload TEXT,due_at INTEGER,created_at INTEGER,enabled INTEGER DEFAULT 1);"+
- "CREATE TABLE IF NOT EXISTS user_profiles(guild_id TEXT,user_id TEXT,bio TEXT DEFAULT '',badge TEXT DEFAULT '',updated_at INTEGER,PRIMARY KEY(guild_id,user_id));CREATE TABLE IF NOT EXISTS owner_audit_log(id INTEGER PRIMARY KEY AUTOINCREMENT,owner_id TEXT,action TEXT,guild_id TEXT,created_at INTEGER NOT NULL);"
+ "CREATE TABLE IF NOT EXISTS user_profiles(guild_id TEXT,user_id TEXT,bio TEXT DEFAULT '',badge TEXT DEFAULT '',updated_at INTEGER,PRIMARY KEY(guild_id,user_id));"+
+ "CREATE TABLE IF NOT EXISTS polls(id INTEGER PRIMARY KEY AUTOINCREMENT,guild_id TEXT,channel_id TEXT,question TEXT,options_json TEXT,created_at INTEGER,closed_at INTEGER);"+
+ "CREATE TABLE IF NOT EXISTS poll_votes(poll_id INTEGER,user_id TEXT,option_index INTEGER,created_at INTEGER,PRIMARY KEY(poll_id,user_id));"+
+ "CREATE TABLE IF NOT EXISTS starboard(message_id TEXT PRIMARY KEY,guild_id TEXT,channel_id TEXT,author_id TEXT,content TEXT,stars INTEGER DEFAULT 0,posted_message_id TEXT,updated_at INTEGER);"+
+ "CREATE TABLE IF NOT EXISTS owner_audit_log(id INTEGER PRIMARY KEY AUTOINCREMENT,owner_id TEXT,action TEXT,guild_id TEXT,created_at INTEGER NOT NULL);"
  );
  if(!db.prepare("SELECT 1 FROM economy_shop_items LIMIT 1").get()){
   const q=db.prepare("INSERT OR IGNORE INTO economy_shop_items(item_id,name,price,description,stock) VALUES(?,?,?,?,?)");
