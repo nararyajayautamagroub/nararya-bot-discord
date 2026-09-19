@@ -63,3 +63,25 @@ Detail integrasi ada di `docs/JKT48-SOURCES.md`.
 5. Jalankan `npm start`.
 
 Scraper hanya menggunakan sumber publik dan tidak melakukan bypass CAPTCHA, login, paywall, rate limit, atau sistem anti-bot. Gunakan URL/API yang sesuai dengan ketentuan layanan masing-masing platform.
+
+
+## Documentation
+
+Project/legal documentation:
+- [CHANGELOG](./CHANGELOG.md)
+- [CONTRIBUTING](./CONTRIBUTING.md)
+- [COPYRIGHT](./COPYRIGHT.md)
+- [LICENSE](./LICENSE)
+- [LICENSE NOTICE](./LICENSE-NOTICE.md)
+- [TRADEMARK NOTICE](./TRADEMARK.md)
+- [VERSION](./VERSION.md)
+
+## Current version
+
+**v1.3.0** — 2026-09-19
+
+### Modern command layout
+
+General commands are grouped under namespaces such as `/utility`, `/economy`, `/moderation`, and `/support`. JKT48 features use `/jkt48` and `/jkt48game`, while the simulation system uses `/sim`.
+
+General bot data remains in the main database. The JKT48 game/card subsystem uses separate feature databases for quiz, gacha, and cards.
