@@ -4,7 +4,7 @@ Nararya Bot Discord adalah bot Discord modular untuk komunitas, JKT48, game, dat
 
 ## Current release
 
-Version: 2.1.0
+Version: 2.1.2
 Release date: 2026-09-20
 Active feature registry: 150 features
 
