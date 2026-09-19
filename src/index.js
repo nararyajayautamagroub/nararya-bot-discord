@@ -25,6 +25,7 @@ import {createScraperOrchestrator} from './services/scrapers/orchestrator.js';
 import {ensureDisasterTables,refreshDisasterDatabase,disasterStatus,notifyDisasterConfigs} from './services/disasters/index.js';
 import {createAdditionalCommandHandler} from './services/additional-commands.js';
 import {ensureDataAuditTables,runDataAudit,getAuditStatus} from './services/audit/data-audit.js';
+import {createBotControl} from './security/bot-control.js';
 
 const db=new Database(process.env.DATABASE_PATH||'./data/nararya.db');
 db.pragma('journal_mode=WAL');
@@ -68,6 +69,7 @@ const embed=(title,description='',opts={})=>{const e=new EmbedBuilder().setTitle
 const memberEmbed=(m)=>embed('👤 '+m.name,`${m.status==='active'?'🟢 Aktif':'⚪ '+(m.status||'Tidak aktif')} • Generasi ${m.generation}${m.team?' • '+m.team:''}${m.virtual_generation?' • JKT48V Gen '+m.virtual_generation:''}`,{color:m.virtual_generation?0x7C3AED:EMBED_COLORS.jkt48,thumbnail:m.image_url,url:m.profile_url,fields:[{name:'Informasi',value:[m.nickname?'Nama panggilan: '+m.nickname:'',m.join_date?'Bergabung: '+m.join_date:'',m.graduation_date?'Graduasi: '+m.graduation_date:''].filter(Boolean).join('\n')||'Belum ada data tambahan.'}]});
 const feedEmbed=x=>embed('📡 '+x.sourceName,x.description||'Update baru terdeteksi.',{url:x.url,image:x.image});
 const client=new Client({intents:[GatewayIntentBits.Guilds,GatewayIntentBits.GuildMembers,GatewayIntentBits.GuildMessages,GatewayIntentBits.MessageContent,GatewayIntentBits.GuildVoiceStates,GatewayIntentBits.GuildModeration],partials:[Partials.Channel,Partials.Message]});
+const botControl=createBotControl({db,client});
 const recent=new Map();
 function moderate(m){
  const key=m.guild.id+':'+m.author.id,now=Date.now(),arr=(recent.get(key)||[]).filter(t=>now-t<8000);arr.push(now);recent.set(key,arr);
@@ -245,6 +247,10 @@ client.on('messageCreate',async m=>{
 });
 client.on('guildCreate',async guild=>{
  try{
+  if(await botControl.leaveIfBlacklisted(guild)){
+   console.log('[guildCreate] blacklisted server left: '+guild.name+' ('+guild.id+')');
+   return;
+  }
   db.prepare('INSERT OR IGNORE INTO guild_config(guild_id) VALUES(?)').run(guild.id);
   await sendGuildInviteWelcome(guild);
   console.log('[guildCreate] welcome sent for '+guild.name+' ('+guild.id+')');
@@ -260,6 +266,10 @@ client.on('interactionCreate',async i=>{
   if(i.isButton()&&i.customId==='ticket-close'){db.prepare("UPDATE tickets SET status='closed',closed_at=? WHERE channel_id=? AND status='open'").run(Date.now(),i.channel.id);await i.reply({embeds:[embed('🔒 Ticket Ditutup','Ticket ditandai closed.')]});return i.channel.permissionOverwrites.edit(i.user.id,{SendMessages:false}).catch(()=>{})}
   if(!i.isChatInputCommand())return;
   const n=i.commandName;
+  const deny=botControl.denyReason({guildId:i.guild?.id,userId:i.user.id});
+  if(deny){
+   return i.reply({embeds:[embed('🚫 Akses Ditolak',deny==='USER_BLACKLIST'?'Akun ini masuk blacklist bot.':'Server ini masuk blacklist bot. Gunakan support resmi bot jika merasa terjadi kesalahan.',{color:EMBED_COLORS.error})],ephemeral:true});
+  }
 
   if(n==='media')return handleMediaCommand(i,{mediaService,embed,colors:EMBED_COLORS});
   const additionalResult=await additionalCommandHandler(i);
@@ -482,6 +492,7 @@ client.on('interactionCreate',async i=>{
 });
 client.once('ready',async()=>{
  console.log('Nararya Bot Discord online as '+client.user.tag);
+ await botControl.applyPresence().catch(error=>console.warn('[bot-control] '+error.message));
  scraperOrchestrator.start();
  void runDataPipelineCheck();
  setInterval(()=>void runDataPipelineCheck(),10000);
