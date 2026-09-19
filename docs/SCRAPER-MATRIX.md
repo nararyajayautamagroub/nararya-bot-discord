@@ -8,7 +8,7 @@ Semua fitur yang mengambil data eksternal wajib mempunyai scraper/API adapter at
 | Indonesia stocks | JSON API adapter | Yahoo Finance IDX symbols | 10 menit |
 | Fuel | HTML adapter + configured baseline | MyPertamina | 24 jam |
 | Electricity | source probe + configured tariff table | PLN | 24 jam |
-| Food | HTML adapter | Bank Indonesia PIHPS | 24 jam |
+| Food prices | HTML adapter | Bank Indonesia PIHPS | 24 jam |
 | Prayer / Ramadan | JSON API | MyQuran + Kemenag source contract | 24 jam |
 | Earthquake | HTML scraper | BMKG | 60 detik |
 | Tsunami | HTML scraper | BMKG | 60 detik |
