@@ -99,6 +99,7 @@ function scheduleQuizExpiry(session){setTimeout(async()=>{const current=jkt48Dbs
 function money(v){return Number.isFinite(Number(v))?'Rp'+Number(v).toLocaleString('id-ID'):'-';}
 const additionalCommandHandler=createAdditionalCommandHandler({db,jkt48QuizDb:jkt48Dbs.quiz,client,embed,gameCooldowns,gameCooldownMs:GAME_COOLDOWN_MS,quizTimeoutMs:QUIZ_TIMEOUT_MS,scraperOrchestrator,getAuditStatus,onQuizStarted:scheduleQuizExpiry});
 let dataPipelineRunning=false;
+let lastAuditAlertSignature='';
 const auditDatabases=[
  {name:'main',db},
  {name:'media',db:mediaDbState.db},
@@ -106,10 +107,23 @@ const auditDatabases=[
  {name:'jkt48-gacha',db:jkt48Dbs.gacha},
  {name:'jkt48-cards',db:jkt48Dbs.cards}
 ];
+async function notifyDataAuditFindings(report){
+ if(!report?.missing?.length)return;
+ const signature=JSON.stringify(report.missing.map(x=>[x.url,x.status,x.method,x.suggestion,x.error]));
+ if(signature===lastAuditAlertSignature)return;
+ lastAuditAlertSignature=signature;
+ const channels=db.prepare('SELECT guild_id,log_channel FROM guild_config WHERE log_channel IS NOT NULL AND log_channel<>""').all();
+ const items=report.missing.slice(0,10).map(x=>'• **'+x.status+'**\\nURL: '+x.url+'\\nMetode: **'+x.method+'**\\nSaran: '+x.suggestion+(x.error?'\\nError: '+x.error:'')).join('\\n\\n');
+ for(const row of channels){
+  const channel=client.channels.cache.get(row.log_channel)||await client.channels.fetch(row.log_channel).catch(()=>null);
+  if(!channel?.isTextBased())continue;
+  await channel.send({embeds:[embed('🛠️ Scraper Audit Memerlukan Perbaikan','Audit menemukan URL/data yang belum memiliki scraper terdaftar.\\n\\n'+items,{color:EMBED_COLORS.warning})]}).catch(()=>{});
+ }
+}
 async function runDataPipelineCheck(){
  if(dataPipelineRunning)return null;
  dataPipelineRunning=true;
- try{await scraperOrchestrator.checkNow();return await runDataAudit({databases:auditDatabases});}
+ try{await scraperOrchestrator.checkNow();const report=await runDataAudit({databases:auditDatabases});await notifyDataAuditFindings(report);return report;}
  catch(error){console.warn('[data-audit] '+error.message);return null;}
  finally{dataPipelineRunning=false;}
 }
