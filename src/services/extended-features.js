@@ -1,4 +1,5 @@
 import {EXTENDED_FEATURES} from "../config/extended-features.js";
+import {getFuelPrices} from "./indonesia/data.js";
 
 function ensureTables(db){
  db.exec(
@@ -15,7 +16,7 @@ function ensureTables(db){
  "CREATE TABLE IF NOT EXISTS economy_inventory(guild_id TEXT,user_id TEXT,item_id TEXT,quantity INTEGER DEFAULT 0,PRIMARY KEY(guild_id,user_id,item_id));"+
  "CREATE TABLE IF NOT EXISTS game_scores(guild_id TEXT,user_id TEXT,game TEXT,wins INTEGER DEFAULT 0,plays INTEGER DEFAULT 0,points INTEGER DEFAULT 0,updated_at INTEGER,PRIMARY KEY(guild_id,user_id,game));"+
  "CREATE TABLE IF NOT EXISTS owner_jobs(id INTEGER PRIMARY KEY AUTOINCREMENT,kind TEXT,payload TEXT,due_at INTEGER,created_at INTEGER,enabled INTEGER DEFAULT 1);"+
- "CREATE TABLE IF NOT EXISTS user_profiles(guild_id TEXT,user_id TEXT,bio TEXT DEFAULT '',badge TEXT DEFAULT '',updated_at INTEGER,PRIMARY KEY(guild_id,user_id));"
+ "CREATE TABLE IF NOT EXISTS user_profiles(guild_id TEXT,user_id TEXT,bio TEXT DEFAULT '',badge TEXT DEFAULT '',updated_at INTEGER,PRIMARY KEY(guild_id,user_id));CREATE TABLE IF NOT EXISTS owner_audit_log(id INTEGER PRIMARY KEY AUTOINCREMENT,owner_id TEXT,action TEXT,guild_id TEXT,created_at INTEGER NOT NULL);"
  );
  if(!db.prepare("SELECT 1 FROM economy_shop_items LIMIT 1").get()){
   const q=db.prepare("INSERT OR IGNORE INTO economy_shop_items(item_id,name,price,description,stock) VALUES(?,?,?,?,?)");
@@ -30,6 +31,7 @@ function admin(i){return Boolean(i.guild&&i.memberPermissions?.has?.("ManageGuil
 function money(n){return "Rp"+Number(n||0).toLocaleString("id-ID");}
 function trust(db,gid,uid,delta=0){const old=db.prepare("SELECT score FROM member_trust WHERE guild_id=? AND user_id=?").get(gid,uid)?.score;const score=Math.max(0,Math.min(100,Number(old??100)+delta));db.prepare("INSERT INTO member_trust(guild_id,user_id,score,updated_at) VALUES(?,?,?,?) ON CONFLICT(guild_id,user_id) DO UPDATE SET score=excluded.score,updated_at=excluded.updated_at").run(gid,uid,score,Date.now());return score;}
 function incident(db,gid,uid,type,detail){db.prepare("INSERT INTO security_incidents(guild_id,user_id,type,detail,created_at) VALUES(?,?,?,?,?)").run(gid,uid,type,detail,Date.now());trust(db,gid,uid,-10);}
+function ownerAudit(db,ownerId,action,guildId="global"){db.prepare("INSERT INTO owner_audit_log(owner_id,action,guild_id,created_at) VALUES(?,?,?,?)").run(ownerId,action,guildId,Date.now());}
 function score(db,gid,uid,game,win,points){db.prepare("INSERT INTO game_scores(guild_id,user_id,game,wins,plays,points,updated_at) VALUES(?,?,?,?,?,?,?) ON CONFLICT(guild_id,user_id,game) DO UPDATE SET wins=wins+excluded.wins,plays=plays+excluded.plays,points=points+excluded.points,updated_at=excluded.updated_at").run(gid,uid,game,win?1:0,1,points,Date.now());}
 
 export function createExtendedFeatures({db,client,embed,botControl}={}){
@@ -40,7 +42,7 @@ export function createExtendedFeatures({db,client,embed,botControl}={}){
   const n=i.commandName;
   if(n==="owner"){
    if(!botControl?.isOwner(i.user.id))return i.reply({embeds:[embed("Owner Only","Command ini hanya untuk owner bot.",{color:0xEF4444})],ephemeral:true}),true;
-   const s=i.options.getSubcommand(true);
+   const s=i.options.getSubcommand(true);ownerAudit(db,i.user.id,"owner:"+s,i.guild?.id||"global");
    if(s==="dashboard"){const m=process.memoryUsage();return i.reply({embeds:[embed("Owner Dashboard","Guild: "+client.guilds.cache.size+"\nRSS: "+Math.round(m.rss/1048576)+" MB\nHeap: "+Math.round(m.heapUsed/1048576)+" MB\nMaintenance: "+(botControl.isMaintenance()?"ON":"OFF")+"\nExtended features: "+EXTENDED_FEATURES.length,{color:0x8B5CF6})],ephemeral:true}),true;}
    if(s==="broadcast"){const text=i.options.getString("text",true);let sent=0;for(const g of client.guilds.cache.values()){const ch=g.systemChannel||g.channels.cache.find(x=>x.isTextBased?.()&&x.viewable);if(ch)await ch.send({embeds:[embed("Pengumuman Bot",text,{color:0x3B82F6})]}).then(()=>sent++).catch(()=>{});}return i.reply({embeds:[embed("Broadcast Selesai","Terkirim: "+sent+" server.",{color:0x3B82F6})],ephemeral:true}),true;}
    if(s==="rotation"){const list=i.options.getString("texts",true).split(/[|,\n]+/).map(x=>x.trim()).filter(Boolean).slice(0,20);botControl.setSetting("activity_rotation",JSON.stringify(list));botControl.setSetting("activity",list[0]||"Nararya Bot");return i.reply({embeds:[embed("Playing Rotation Disimpan",list.join(" -> ")+".",{})],ephemeral:true}),true;}
@@ -88,6 +90,8 @@ export function createExtendedFeatures({db,client,embed,botControl}={}){
    if(s==="weather"){const city=i.options.getString("city",true);try{const r=await fetch("https://wttr.in/"+encodeURIComponent(city)+"?format=j1",{headers:{"User-Agent":"NararyaBot/2.0"}});if(!r.ok)throw new Error("Weather HTTP "+r.status);const d=await r.json(),c=d.current_condition?.[0];if(!c)throw new Error("Data cuaca kosong");return i.reply({embeds:[embed("Cuaca "+city,c.temp_C+" C • "+c.humidity+"% humidity • "+c.windspeedKmph+" km/h",{color:0x06B6D4})]});}catch(e){return i.reply({embeds:[embed("Cuaca Error",e.message,{color:0xEF4444})],ephemeral:true});}}
    if(s==="gold"){try{const r=await fetch("https://logam-mulia.com/harga-emas-hari-ini");if(!r.ok)throw new Error("Gold HTTP "+r.status);const t=await r.text(),m=t.match(/Rp[^<]{4,40}/i);return i.reply({embeds:[embed("Harga Emas",m?.[0]||"Data belum terbaca.",{color:0xF59E0B})]});}catch(e){return i.reply({embeds:[embed("Harga Emas Error",e.message,{color:0xEF4444})],ephemeral:true});}}
    if(s==="holiday"){const y=i.options.getInteger("year")||new Date().getFullYear();try{const r=await fetch("https://date.nager.at/api/v3/PublicHolidays/"+y+"/ID");if(!r.ok)throw new Error("Holiday HTTP "+r.status);const rows=await r.json();return i.reply({embeds:[embed("Hari Libur Indonesia "+y,rows.slice(0,20).map(x=>x.date+" - "+x.localName).join("\n"),{})]});}catch(e){return i.reply({embeds:[embed("Holiday Error",e.message,{color:0xEF4444})],ephemeral:true});}}
+   if(s==="fuel"){try{const d=await getFuelPrices();const text=d.items?.slice(0,12).map(x=>x.name+" • "+money(x.price)).join("\n")||"Data BBM belum tersedia.";return i.reply({embeds:[embed("Perbandingan BBM",text,{color:0x0EA5E9})]});}catch(e){return i.reply({embeds:[embed("BBM Error",e.message,{color:0xEF4444})],ephemeral:true});}}
+   if(s==="toll"){return i.reply({embeds:[embed("Tarif Tol","Tarif tol bergantung ruas, golongan kendaraan, dan operator. Gunakan data operator resmi untuk nominal terbaru.",{color:0x64748B})]});}
   }
 
   if(n==="economy"){
@@ -142,7 +146,7 @@ export function createExtendedFeatures({db,client,embed,botControl}={}){
   const stop=()=>{for(const t of intervals)clearInterval(t);intervals.clear();};
   process.once("SIGINT",stop);process.once("SIGTERM",stop);
   process.on("unhandledRejection",e=>console.error("[unhandledRejection]",e));
-  process.on("uncaughtException",e=>console.error("[uncaughtException]",e));
+  process.on("uncaughtException",e=>{console.error("[uncaughtException]",e);for(const t of intervals)clearInterval(t);setTimeout(()=>process.exit(1),250);});
   client.on("guildMemberAdd",handleMemberJoin);
  }
  return {handle,handleMessage,start,ensureTables};
