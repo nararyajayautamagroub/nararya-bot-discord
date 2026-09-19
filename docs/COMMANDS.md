@@ -1,24 +1,102 @@
-# Slash Commands
+# Command Reference
 
-## Admin
-/setup /config /features /announce /clear /rolepanel /logs /automod /maintenance
+This document describes the active slash-command structure deployed by the project.
+
+## JKT48
+
+### Member
+
+- `/jkt48 member query:<name>`
+- `/jkt48 members [generation:<1-14>]`
+
+### Upcoming
+
+- `/jkt48 upcoming event`
+- `/jkt48 upcoming theater`
+- `/jkt48 upcoming setlist`
+- `/jkt48 upcoming songs`
+- `/jkt48 upcoming live`
+- `/jkt48 upcoming birthday`
+- `/jkt48 upcoming graduation`
+
+### Latest
+
+- `/jkt48 latest event`
+- `/jkt48 latest theater`
+- `/jkt48 latest setlist`
+- `/jkt48 latest songs`
+- `/jkt48 latest live`
+- `/jkt48 latest birthday`
+- `/jkt48 latest graduation`
+- `/jkt48 latest live_showroom`
+- `/jkt48 latest live_idn`
+
+## JKT48 Game
+
+- `/jkt48game play mode:<mode>`
+- `/jkt48game gacha`
+- `/jkt48game inventory`
+- `/jkt48game leaderboard`
+- `/jkt48game asset_add`
+- `/jkt48game asset_list`
+
+### Quiz Modes
+
+- `song`
+- `memberVoice`
+- `activePhoto`
+- `graduationPhoto`
+- `randomMember`
+- `setlistPhoto`
+- `songPhoto`
+
+## Simulation
+
+- `/sim profile`
+- `/sim daily`
+- `/sim bank amount:<integer>`
+- `/sim fish`
+- `/sim build`
+- `/sim gacha`
+
+## Utility
+
+- `/utility ping`
+- `/utility server`
+- `/utility user [target:<user>]`
+- `/utility level`
+
+## Economy
+
+- `/economy balance`
+- `/economy daily`
 
 ## Moderation
-/warn /ban /kick /timeout /lock /slowmode
 
-## Security
-/verify /raid /lockdown /whitelist
+- `/moderation warn user:<user> [reason:<text>]`
+- `/moderation ban user:<user> [reason:<text>]`
 
-## Ticket
-/ticket /ticket-close /ticket-claim /ticket-reopen /ticket-transcript /ticket-add /ticket-remove
+## Support
 
-## Community & Economy
-/level /rank /leaderboard /balance /daily /pay /work /shop /inventory /dice /coinflip /rps /trivia
+- `/support ticket`
 
-## Utility & Info
-/ping /serverinfo /userinfo /avatar /botinfo /health /poll /remind /afk
+## Feed
 
-## Music
-/play /queue /skip /stop
+- `/feed list`
+- `/feed add`
+- `/feed remove id:<integer>`
+- `/feed test id:<integer>`
 
-Notification feed berjalan otomatis dan tidak bergantung pada slash command.
+## Permissions
+
+Moderation commands use the corresponding Discord moderation permissions. Quiz asset management requires Manage Server permissions.
+
+## Deployment
+
+After changing command definitions, register them with:
+
+```bash
+npm run deploy
+```
+
+Command registration is separate from starting the bot process.
