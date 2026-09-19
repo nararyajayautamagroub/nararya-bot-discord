@@ -104,7 +104,9 @@ Command registration is separate from starting the bot process.
 
 ## Media
 
-- `/media download type:<video|audio|image> url:<url> [resolution] [format]`
+- `/media video url:<url> [resolution] [format]`
+- `/media audio url:<url> [format]`
+- `/media image url:<url>`
 - `/media vocals [url|file] [format]`
 - `/media background type:<image|video> [url|file]`
 - `/media watermark type:<image|video> [url|file] x:<integer> y:<integer> width:<integer> height:<integer>`
