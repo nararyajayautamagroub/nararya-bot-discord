@@ -38,7 +38,7 @@ export function createVerificationWebServer({service,featureRegistry}){
      if(req.method==='POST'&&url.pathname==='/api/verify/complete'){
        const body=await readBody(req);
        const result=service.completeWebChallenge(body);
-       return json(res,200,{ok:true,message:'Verifikasi berhasil. Masukkan kode berikut ke Discord.',code:deriveDisplayCodeHint(body,result,service)});
+       return json(res,200,{ok:true,message:'Verifikasi berhasil. Masukkan kode berikut ke Discord.',code:result.code,expiresAt:result.expiresAt});
      }
      if(req.method==='GET'&&url.pathname==='/api/features'){
        return json(res,200,{ok:true,features:featureRegistry});
@@ -66,16 +66,6 @@ export function createVerificationWebServer({service,featureRegistry}){
    if(!fs.existsSync(full)){res.writeHead(404);return res.end('Not found');}
    res.writeHead(200,{'Content-Type':type,'Cache-Control':'no-store'});
    fs.createReadStream(full).pipe(res);
- }
-
- function deriveDisplayCodeHint(body,result,svc){
-   return svc.redeemPreview?svc.redeemPreview(body.ticket):readCodeForSession(body.ticket,svc);
- }
-
- function readCodeForSession(ticket,svc){
-   const secretResult=svc.getCodeForDisplay?.(ticket);
-   if(secretResult)return secretResult;
-   throw new Error('Server verification display endpoint belum aktif.');
  }
 
  return {
