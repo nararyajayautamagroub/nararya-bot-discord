@@ -4,7 +4,7 @@ import {startSession} from './games/jkt48/quiz-system.js';
 import {getIndonesiaNews,getStockQuote,getFuelPrices,getElectricityPrices,getFoodPrices,upcomingRamadan,DATA_SOURCES} from './indonesia/data.js';
 import {DISASTER_URLS,recentDisasters,disasterStatus,configureDisaster} from './disasters/index.js';
 
-export function createAdditionalCommandHandler({db,client,embed,gameCooldowns,gameCooldownMs,quizTimeoutMs,scraperOrchestrator}){
+export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,gameCooldowns,gameCooldownMs,quizTimeoutMs,scraperOrchestrator}){
  const cooldown=(guildId,userId)=>{
   const key=guildId+':'+userId;
   const last=gameCooldowns.get(key)||0;
@@ -32,7 +32,7 @@ export function createAdditionalCommandHandler({db,client,embed,gameCooldowns,ga
     try{
      const question=await createStreetViewQuestion();
      const rarity=rollRarity();
-     const active=startSession(db._jkt48Quiz||db,{guildId:i.guild.id,userId:i.user.id,channelId:i.channel.id,mode:'streetView',answer:question.answers.join('|'),mediaUrl:question.mediaUrl,rarity,durationMs:quizTimeoutMs});
+     const active=startSession(jkt48QuizDb,{guildId:i.guild.id,userId:i.user.id,channelId:i.channel.id,mode:'streetView',answer:question.answers.join('|'),mediaUrl:question.mediaUrl,rarity,durationMs:quizTimeoutMs});
      if(active)void active;
      return i.reply({embeds:[embed('🌍 Tebak Lokasi Google Street View','Tebak **kota** dari foto Street View.\n\n⏱️ Waktu: **1 menit**\n🎴 Rarity: **'+rarityInfo[rarity].label+'**\n\nMode ini adalah game lokasi umum, tidak berfokus pada JKT48.',{color:0x3B82F6,image:question.mediaUrl})]});
     }catch(error){return i.reply({embeds:[embed('❌ Street View Tidak Tersedia',error.message,{color:0xEF4444})],ephemeral:true})}
