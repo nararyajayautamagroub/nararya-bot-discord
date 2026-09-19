@@ -6,10 +6,14 @@ The media subsystem provides public URL downloads and local media transformation
 
 ## Commands
 
-- `/media download`
-  - Downloads video, audio, or image content from a public URL supported by the configured downloader.
-  - Video downloads support configurable resolutions.
-  - Audio downloads support MP3, M4A, WAV, and FLAC.
+- `/media video`
+  - Downloads video content from a public URL supported by the configured downloader.
+  - Supports configurable maximum resolution and video format.
+- `/media audio`
+  - Downloads audio or music from a public URL supported by the configured downloader.
+  - Supports MP3, M4A, WAV, and FLAC.
+- `/media image`
+  - Downloads an image from a direct public image URL or a page exposing a public preview image.
 - `/media vocals`
   - Separates vocals from a song and returns the instrumental track.
 - `/media background`
