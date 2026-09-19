@@ -26,6 +26,8 @@ import {ensureDisasterTables,refreshDisasterDatabase,disasterStatus,notifyDisast
 import {createAdditionalCommandHandler} from './services/additional-commands.js';
 import {ensureDataAuditTables,runDataAudit,getAuditStatus} from './services/audit/data-audit.js';
 import {createBotControl} from './security/bot-control.js';
+import {createExtendedFeatures} from './services/extended-features.js';
+import {createPresenceRotation} from './services/presence-rotation.js';
 
 const db=new Database(process.env.DATABASE_PATH||'./data/nararya.db');
 db.pragma('journal_mode=WAL');
@@ -70,6 +72,8 @@ const memberEmbed=(m)=>embed('👤 '+m.name,`${m.status==='active'?'🟢 Aktif':
 const feedEmbed=x=>embed('📡 '+x.sourceName,x.description||'Update baru terdeteksi.',{url:x.url,image:x.image});
 const client=new Client({intents:[GatewayIntentBits.Guilds,GatewayIntentBits.GuildMembers,GatewayIntentBits.GuildMessages,GatewayIntentBits.MessageContent,GatewayIntentBits.GuildVoiceStates,GatewayIntentBits.GuildModeration],partials:[Partials.Channel,Partials.Message]});
 const botControl=createBotControl({db,client});
+const extendedFeatures=createExtendedFeatures({db,client,embed,botControl,jkt48CardsDb:jkt48Dbs.cards});
+const presenceRotation=createPresenceRotation({client,botControl,intervalMs:Number(process.env.PRESENCE_ROTATION_INTERVAL_MS||45000)});
 const recent=new Map();
 function moderate(m){
  const key=m.guild.id+':'+m.author.id,now=Date.now(),arr=(recent.get(key)||[]).filter(t=>now-t<8000);arr.push(now);recent.set(key,arr);
@@ -205,6 +209,7 @@ client.on('messageCreate',async m=>{
  if(m.author.bot||!m.guild)return;
  if(botControl.isMaintenance()&&!botControl.isOwner(m.author.id))return;
  if(botControl.denyReason({guildId:m.guild.id,userId:m.author.id}))return;
+ void extendedFeatures.handleMessage(m).catch(error=>console.warn('[extended-security] '+error.message));
  const session=getActiveSession(jkt48Dbs.quiz,m.guild.id,m.author.id,m.channel.id);
  if(session?.timed_out){
   recordResult(jkt48Dbs.quiz,{guildId:session.guild_id,userId:session.user_id,mode:session.mode,rarity:session.rarity,answer:session.answer,input:'[timeout]',correct:false,points:0,durationMs:QUIZ_TIMEOUT_MS});
@@ -268,9 +273,10 @@ client.on('interactionCreate',async i=>{
   if(i.isButton()&&i.customId==='ticket-close'){db.prepare("UPDATE tickets SET status='closed',closed_at=? WHERE channel_id=? AND status='open'").run(Date.now(),i.channel.id);await i.reply({embeds:[embed('🔒 Ticket Ditutup','Ticket ditandai closed.')]});return i.channel.permissionOverwrites.edit(i.user.id,{SendMessages:false}).catch(()=>{})}
   if(!i.isChatInputCommand())return;
   const n=i.commandName;
-  const ownerControlCommand=['setup','settingbot','blacklistserver','blacklistusers'].includes(n);
+  const ownerControlCommand=['setup','settingbot','blacklistserver','blacklistusers','owner'].includes(n);
   if(!ownerControlCommand&&botControl.isMaintenance()&&!botControl.isOwner(i.user.id))return i.reply({embeds:[embed('🛠️ Bot Maintenance','Bot sedang dalam maintenance. Command publik sementara dinonaktifkan.',{color:EMBED_COLORS.warning})],ephemeral:true});
-  const deny=botControl.denyReason({guildId:i.guild?.id,userId:i.user.id});
+  if(!ownerControlCommand&&botControl.getSetting('command:'+n,'true')==='false'&&!botControl.isOwner(i.user.id))return i.reply({embeds:[embed('🛠️ Command Nonaktif','Command publik ini sedang dinonaktifkan oleh konfigurasi bot.',{color:EMBED_COLORS.warning})],ephemeral:true});
+const deny=botControl.denyReason({guildId:i.guild?.id,userId:i.user.id});
   if(deny){
    return i.reply({embeds:[embed('🚫 Akses Ditolak',deny==='USER_BLACKLIST'?'Akun ini masuk blacklist bot.':'Server ini masuk blacklist bot. Gunakan support resmi bot jika merasa terjadi kesalahan.',{color:EMBED_COLORS.error})],ephemeral:true});
   }
@@ -498,6 +504,8 @@ client.once('ready',async()=>{
  console.log('Nararya Bot Discord online as '+client.user.tag);
  await botControl.applyPresence().catch(error=>console.warn('[bot-control] '+error.message));
  scraperOrchestrator.start();
+ extendedFeatures.start();
+ await presenceRotation.start().catch(error=>console.warn('[presence] '+error.message));
  void runDataPipelineCheck();
  setInterval(()=>void runDataPipelineCheck(),10000);
  for(const g of client.guilds.cache.values()){
