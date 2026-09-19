@@ -82,7 +82,7 @@ Project/legal documentation:
 
 ## Current version
 
-**v1.7.1** — 2026-09-19
+**v1.8.0** — 2026-09-19
 
 ### Modern command layout
 
@@ -175,3 +175,14 @@ Saat bot berhasil diundang ke server baru, bot otomatis mengirim satu pesan onbo
 Pesan mencakup ringkasan fitur utama dan command awal seperti `/bot info`, `/bot features`, `/status system`, dan `/support ticket`.
 
 Pengiriman dicatat pada `guild_config.welcome_sent_at`, sehingga pesan onboarding tidak dikirim ulang hanya karena bot restart.
+
+
+## Help, Setup, and Electronics
+
+- `/help` shows the full feature catalog in embedded pages, with category filtering and pagination.
+- `/setup overview` shows current server feature configuration.
+- `/setup welcome channel:<channel>` configures the welcome channel.
+- `/setup log channel:<channel>` configures the scraper/data audit log channel.
+- `/electronics` scrapes Indonesian public electronics catalog prices with category and keyword filters.
+- Supported electronics categories include smartphone, laptop, tablet, TV, monitor, audio, camera, printer, router, storage, gaming, keyboard, mouse, smartwatch, and other electronics.
+- Electronics source refresh is registered at 30 minutes, while URL health remains part of the 10-second data integrity checks.
