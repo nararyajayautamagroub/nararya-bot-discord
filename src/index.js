@@ -498,10 +498,35 @@ const deny=botControl.denyReason({guildId:i.guild?.id,userId:i.user.id});
 
   if(n==='feed'){
    const sub=i.options.getSubcommand(false);
-   if(sub==='add'){const name=i.options.getString('name',true),url=i.options.getString('url',true),channel=i.options.getChannel('channel',true),kind=i.options.getString('kind',true);new URL(url);db.prepare('INSERT INTO feed_sources(guild_id,name,url,channel_id,kind,enabled) VALUES(?,?,?,?,?,1)').run(i.guild.id,name,url,channel.id,kind);return i.reply({embeds:[embed('✅ Feed ditambahkan',name+' → '+channel)]})}
-   if(sub==='remove'){const id=i.options.getInteger('id',true);db.prepare('DELETE FROM feed_sources WHERE id=? AND guild_id=?').run(id,i.guild.id);return i.reply({embeds:[embed('🗑️ Feed dihapus','ID '+id)]})}
-   if(sub==='test'){const id=i.options.getInteger('id',true),row=db.prepare('SELECT * FROM feed_sources WHERE id=? AND guild_id=?').get(id,i.guild.id);if(!row)return i.reply({embeds:[embed('❌ Feed Tidak Ditemukan','ID feed tersebut tidak tersedia.',{color:EMBED_COLORS.error})],ephemeral:true});const count=await feedService.pollSource(row);return i.reply({embeds:[embed('🧪 Feed test',row.name+' memproses '+count+' item.')]})}
-   const r=db.prepare('SELECT * FROM feed_sources WHERE guild_id=? ORDER BY id').all(i.guild.id);return i.reply({embeds:[embed('📡 Feed Sources',r.length?r.map(x=>'#'+x.id+' • '+x.name+' • '+x.kind+' → <#'+x.channel_id+'>').join('\\n'):'Belum ada feed. Gunakan /feed add')]});
+   if(sub==='defaults'){
+    const channel=db.prepare('SELECT feed_channel FROM guild_config WHERE guild_id=?').get(i.guild.id)?.feed_channel;
+    if(!channel)return i.reply({embeds:[embed('⚙️ Feed Channel Belum Diatur','Atur feed channel terlebih dahulu melalui konfigurasi server.',{color:EMBED_COLORS.warning})],ephemeral:true});
+    let added=0;
+    for(const [id,label,kind,url] of DEFAULT_SOURCES){
+     if(db.prepare('SELECT 1 FROM feed_sources WHERE guild_id=? AND url=?').get(i.guild.id,url))continue;
+     db.prepare('INSERT INTO feed_sources(guild_id,name,url,channel_id,kind,enabled) VALUES(?,?,?,?,?,1)').run(i.guild.id,label,url,channel,kind);
+     added++;
+    }
+    return i.reply({embeds:[embed('📡 JKT48 Feed Registry Dipasang','Menambahkan **'+added+'** sumber baru ke <#'+channel+'>. URL costume/member yang belum dikonfigurasi tidak dibuat secara palsu.',{color:EMBED_COLORS.success})]});
+   }
+   if(sub==='add'){
+    const name=i.options.getString('name',true).trim(),url=i.options.getString('url',true).trim(),channel=i.options.getChannel('channel',true),kind=i.options.getString('kind',true);
+    if(!/^https?:\\/\\//i.test(url))return i.reply({embeds:[embed('❌ URL Tidak Valid','Gunakan URL publik http/https.',{color:EMBED_COLORS.error})],ephemeral:true});
+    new URL(url);
+    const exists=db.prepare('SELECT id FROM feed_sources WHERE guild_id=? AND url=?').get(i.guild.id,url);
+    if(exists)return i.reply({embeds:[embed('ℹ️ Feed Sudah Ada','URL tersebut sudah terdaftar sebagai feed **#'+exists.id+'**.',{color:EMBED_COLORS.warning})],ephemeral:true});
+    db.prepare('INSERT INTO feed_sources(guild_id,name,url,channel_id,kind,enabled) VALUES(?,?,?,?,?,1)').run(i.guild.id,name,url,channel.id,kind);
+    return i.reply({embeds:[embed('✅ Feed Ditambahkan',name+' → '+channel,{color:EMBED_COLORS.success})]});
+   }
+   if(sub==='remove'){const id=i.options.getInteger('id',true);const result=db.prepare('DELETE FROM feed_sources WHERE id=? AND guild_id=?').run(id,i.guild.id);return i.reply({embeds:[embed(result.changes?'🗑️ Feed Dihapus':'ℹ️ Feed Tidak Ditemukan',result.changes?'ID '+id:'Feed tersebut tidak ditemukan.',{color:result.changes?EMBED_COLORS.success:EMBED_COLORS.warning})]})}
+   if(sub==='test'){
+    const id=i.options.getInteger('id',true),row=db.prepare('SELECT * FROM feed_sources WHERE id=? AND guild_id=?').get(id,i.guild.id);
+    if(!row)return i.reply({embeds:[embed('❌ Feed Tidak Ditemukan','ID feed tersebut tidak tersedia.',{color:EMBED_COLORS.error})],ephemeral:true});
+    const count=await feedService.pollSource(row);
+    return i.reply({embeds:[embed('🧪 Feed Test',row.name+' memproses **'+count+'** item.',{color:EMBED_COLORS.info})]});
+   }
+   const rows=db.prepare('SELECT * FROM feed_sources WHERE guild_id=? ORDER BY id').all(i.guild.id);
+   return i.reply({embeds:[embed('📡 Feed Sources',rows.length?rows.map(x=>'#'+x.id+' • '+x.name+' • '+x.kind+' → <#'+x.channel_id+'>').join('\\n'):'Belum ada feed. Gunakan /feed add atau /feed defaults',{color:EMBED_COLORS.info})]});
   }
  }catch(e){console.error(e);if(!i.replied&&!i.deferred)await i.reply({embeds:[embed('⚠️ Terjadi Error',e.message,{color:EMBED_COLORS.error})],ephemeral:true}).catch(()=>{})}
 });
