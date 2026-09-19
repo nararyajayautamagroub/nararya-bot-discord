@@ -32,7 +32,7 @@ test('feature registry contains the current implemented catalog',()=>{
 });
 
 test('electronics scraper exposes public category sources',()=>{
- assert.match(ELECTRONICS_SOURCES.electronics,/bandingin\\.id\\/kategori\\/elektronik/);
- assert.match(ELECTRONICS_SOURCES.audio,/bandingin\\.id\\/kategori\\/audio/);
+ assert.ok(ELECTRONICS_SOURCES.electronics.includes('bandingin.id/kategori/elektronik'));
+ assert.ok(ELECTRONICS_SOURCES.audio.includes('bandingin.id/kategori/audio'));
  assert.equal(typeof getElectronicsPrices,'function');
 });
