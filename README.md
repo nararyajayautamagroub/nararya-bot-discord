@@ -77,10 +77,24 @@ Project/legal documentation:
 
 ## Current version
 
-**v1.3.0** — 2026-09-19
+**v1.4.0** — 2026-09-19
 
 ### Modern command layout
 
 General commands are grouped under namespaces such as `/utility`, `/economy`, `/moderation`, and `/support`. JKT48 features use `/jkt48` and `/jkt48game`, while the simulation system uses `/sim`.
 
 General bot data remains in the main database. The JKT48 game/card subsystem uses separate feature databases for quiz, gacha, and cards.
+
+
+## Media Subsystem
+
+The project provides a dedicated `/media` command namespace for:
+
+- public video, audio, and image downloads
+- selectable video resolution
+- vocal separation and instrumental generation
+- image and video background removal
+- image and video watermark removal
+- per-user media settings
+
+See [docs/MEDIA.md](./docs/MEDIA.md) for installation requirements and operational details.
