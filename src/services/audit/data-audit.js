@@ -120,6 +120,8 @@ export async function runDataAudit({databases}){
  }catch(error){
   primary.prepare("UPDATE data_audit_runs SET finished_at=?,status='error',db_count=?,url_count=?,missing_scraper_count=?,invalid_url_count=?,error_count=? WHERE id=?").run(Date.now(),databases.length,urlCount,missing,invalid,errors+1,runIdHolder.id);
   throw error;
+ }finally{
+  auditRunning=false;
  }
 }
 
