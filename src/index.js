@@ -78,13 +78,13 @@ client.on('interactionCreate',async i=>{
    if(sub==='bank'){const amount=i.options.getInteger('amount',true);if(amount<=0||amount>p.money)return i.reply({content:'Jumlah tidak valid.',ephemeral:true});db.prepare('UPDATE tycoon SET money=money-?,bank=bank+? WHERE guild_id=? AND user_id=?').run(amount,amount,gid,uid);return i.reply({content:'🏦 Deposit berhasil: Rp'+amount.toLocaleString('id-ID')})}
    if(sub==='fish'){const gain=5000+p.fish_level*1000;db.prepare('UPDATE tycoon SET money=money+?,energy=MAX(0,energy-10) WHERE guild_id=? AND user_id=?').run(gain,gid,uid);return i.reply({content:'🎣 Kamu memancing dan mendapat Rp'+gain.toLocaleString('id-ID')+' dari hasil tangkapan.'})}
    if(sub==='build'){const cost=25000*p.city_level;if(p.money<cost)return i.reply({content:'💸 Uang tidak cukup. Kota memang mahal, manusia suka beton.',ephemeral:true});db.prepare('UPDATE tycoon SET money=money-?,city_level=city_level+1 WHERE guild_id=? AND user_id=?').run(cost,gid,uid);return i.reply({content:'🏗️ Kota naik ke Level '+(p.city_level+1)+'!'})}
-   if(sub==='gacha'){if(p.gacha_count>=10)return i.reply({content:'🎴 Batas gacha 10 kali per hari sudah tercapai.',ephemeral:true});const members=JSON.parse(process.env.JKT48_GACHA_MEMBERS_JSON||'[]');if(!members.length)return i.reply({content:'Gacha member belum dikonfigurasi.',ephemeral:true});const r=rollGacha(members);db.prepare('UPDATE tycoon SET gacha_count=gacha_count+1,money=MAX(0,money-10000) WHERE guild_id=? AND user_id=?').run(gid,uid);return i.reply({embeds:[embed('🎴 Gacha Member JKT48',r.emoji+' **'+r.rarity.toUpperCase()+'**\\n'+(r.member.name||r.member.key))]})}
+   if(sub==='gacha'){if(p.gacha_count>=10)return i.reply({content:'🎴 Batas gacha 10 kali per hari sudah tercapai.',ephemeral:true});const members=db.prepare("SELECT id as key,name,image_url,generation,status FROM jkt48_members WHERE generation BETWEEN 1 AND 13 ORDER BY name").all();if(!members.length)return i.reply({embeds:[embed('🎴 Gacha Belum Siap','Database member generasi **1–13** belum tersedia.',{color:EMBED_COLORS.warning})],ephemeral:true});const r=rollGacha(members);db.prepare('UPDATE tycoon SET gacha_count=gacha_count+1,money=MAX(0,money-10000) WHERE guild_id=? AND user_id=?').run(gid,uid);return i.reply({embeds:[embed('🎴 Gacha Member JKT48',r.emoji+' **'+r.rarity.toUpperCase()+'**\\n'+(r.member.name||r.member.key))]})}
   }
   if(n==='jkt48game'){
    const sub=i.options.getSubcommand(true);
    if(sub==='gacha'){
-    const members=JSON.parse(process.env.JKT48_GACHA_MEMBERS_JSON||'[]');
-    if(!members.length)return i.reply({content:'Gacha belum dikonfigurasi. Isi JKT48_GACHA_MEMBERS_JSON dengan daftar member.',ephemeral:true});
+    const members=db.prepare("SELECT id as key,name,image_url,generation,status FROM jkt48_members WHERE generation BETWEEN 1 AND 13 ORDER BY name").all();
+    if(!members.length)return i.reply({embeds:[embed('🎴 Gacha Belum Siap','Database member generasi **1–13** belum tersedia. Sinkronisasi member perlu berhasil terlebih dahulu.',{color:EMBED_COLORS.warning})],ephemeral:true});
     const r=rollGacha(members); const key=r.member.key||r.member.name;
     db.prepare('INSERT INTO jkt48_gacha(guild_id,user_id,member_key,rarity,count) VALUES(?,?,?,?,1) ON CONFLICT(guild_id,user_id,member_key,rarity) DO UPDATE SET count=count+1').run(i.guild.id,i.user.id,key,r.rarity);
     return i.reply({embeds:[embed('🎴 Gacha JKT48',r.emoji+' **'+r.rarity.toUpperCase()+'**\\n'+(r.member.name||key))]});
@@ -120,7 +120,10 @@ client.once('ready',async()=>{
   const existing=db.prepare('SELECT COUNT(*) c FROM feed_sources WHERE guild_id=?').get(g.id)?.c||0;
   if(existing===0){const ch=db.prepare('SELECT feed_channel FROM guild_config WHERE guild_id=?').get(g.id)?.feed_channel;if(ch)for(const [name,label,kind,url] of DEFAULT_SOURCES)db.prepare('INSERT INTO feed_sources(guild_id,name,url,channel_id,kind,enabled) VALUES(?,?,?,?,?,1)').run(g.id,label,url,ch,kind)}
  }
+ const synced=await syncMemberDatabase(db).catch(error=>{console.warn('[jkt48-members] '+error.message);return 0;});
+ console.log('[jkt48-members] synced '+synced+' members from AllMember/ActiveMember');
+ setInterval(()=>syncMemberDatabase(db).catch(error=>console.warn('[jkt48-members] '+error.message)),Math.max(3600,Number(process.env.JKT48_MEMBER_SYNC_INTERVAL_SECONDS||21600))*1000);
  await feedService.poll();
- setInterval(()=>feedService.poll().catch(console.error),Math.max(30,Number(process.env.SCRAPER_INTERVAL_SECONDS||120))*1000);
+ setInterval(()=>feedService.poll().catch(console.error),Math.max(30,Number(process.env.SCRAPER_INTERVAL_SECONDS||120))*1000;
 });
 client.login(process.env.DISCORD_TOKEN);
