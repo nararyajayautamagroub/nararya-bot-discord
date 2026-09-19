@@ -1,13 +1,10 @@
-import crypto from 'node:crypto';
 import {fetch} from 'undici';
 import * as cheerio from 'cheerio';
-import {stableHash,safePublicUrl,cleanText,parseDate,uniqueByUrl,retry} from '../tools/scraper-toolbox.js';
+import {stableHash,safePublicUrl,cleanText,parseDate,uniqueByUrl} from '../tools/scraper-toolbox.js';
 
 const UA=process.env.SCRAPER_USER_AGENT||'NararyaBotDiscord/3.0 (+public-feed-monitor)';
 const TIMEOUT_MS=Math.max(3000,Number(process.env.SCRAPER_TIMEOUT_MS||15000));
 const MAX_ITEMS=Math.min(100,Math.max(5,Number(process.env.SCRAPER_MAX_ITEMS||40)));
-
-const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
 function hash(value){
  return stableHash(value);
