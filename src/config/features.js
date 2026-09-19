@@ -16,6 +16,7 @@ export const FEATURE_REGISTRY=[
  {id:'moderation',name:'Moderation',category:'Security',description:'Warning, ban, anti-spam, anti-invite, link moderation, dan timeout.',status:'active'},
  {id:'tickets',name:'Support Tickets',category:'Support',description:'Ticket privat dengan role staff dan tombol close.',status:'active'},
  {id:'welcome-goodbye',name:'Welcome / Goodbye',category:'Community',description:'Pesan otomatis saat member masuk atau keluar.',status:'active'},
+ {id:'guild-invite-welcome',name:'Guild Invite Welcome',category:'Community',description:'Pesan otomatis sekali saat bot berhasil diundang ke server baru.',status:'active'},
  {id:'media-download',name:'Media Downloader',category:'Media',description:'Download video, audio, dan image dari sumber publik melalui yt-dlp/direct metadata.',status:'active'},
  {id:'media-resolution',name:'Media Resolution',category:'Media',description:'Pilihan resolusi video dari 360p sampai 2160p/best sesuai sumber.',status:'active'},
  {id:'media-vocals',name:'Vocal Separation',category:'Media',description:'Pemisahan vocal dan instrumental dengan Demucs.',status:'active'},
