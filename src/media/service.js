@@ -61,7 +61,7 @@ export function createMediaService({db,dir}){
    );
   },
   async removeVocals(opts,ctx){
-   return runJob(ctx,'remove-vocals',opts,dirPath=>prepareSource({...opts,kind:'video'},dirPath),(inputPath,dirPath)=>removeVocals(inputPath,dirPath,opts.format||'mp3'));
+   return runJob(ctx,'remove-vocals',opts,dirPath=>prepareSource({...opts,kind:'audio',format:opts.format||'mp3'},dirPath),(inputPath,dirPath)=>removeVocals(inputPath,dirPath,opts.format||'mp3'));
   },
   async removeBackground(opts,ctx){
    return runJob(ctx,'remove-background',opts,dirPath=>prepareSource(opts,dirPath),(inputPath,dirPath)=>{
