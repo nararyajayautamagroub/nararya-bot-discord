@@ -79,6 +79,13 @@ Daftar fitur aktif bot berasal dari `src/config/features.js`.
 ### Security
 49. Disaster Monitor
 50. Disaster Notification
+51. Help Command
+52. Setup Command
+53. Electronics Prices
+54. Setting Bot Command
+55. Server Blacklist
+56. User Blacklist
+57. Guild Invite Welcome
 
 ## Game policy
 
