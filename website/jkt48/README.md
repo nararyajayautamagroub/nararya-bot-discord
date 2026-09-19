@@ -1,61 +1,34 @@
-# JKT48 Center Website
+# JKT48 Website
 
-Frontend khusus fitur JKT48 untuk Nararya Bot Discord.
+This website is a read-only frontend for JKT48 member data and bot feature documentation.
 
-## Fitur
+## Data source
 
-- Header merah dengan background putih.
-- Tombol hamburger = untuk navigasi mobile.
-- Member database generasi 1–14.
-- Pencarian nama/nickname.
-- Filter generasi.
-- Filter status aktif, graduated, dan historical.
-- Status kesehatan sumber data.
-- Kartu fitur JKT48.
-- Ringkasan game quiz dan gacha.
-- Ringkasan feed JKT48.
-- Daftar slash command JKT48.
-- Informasi sumber data dan transparansi.
-- Responsive desktop, tablet, dan mobile.
-- Read-only, tanpa token/API key rahasia.
-- Graceful error saat source publik tidak tersedia.
+The frontend reads the configured public member JSON sources:
 
-## Sumber Member
+- AllMember.json
+- ActiveMember.json
 
-Website memakai sumber publik yang sama dengan service JKT48 member database bot.
+The frontend does not invent fallback member data when the source fails.
 
-All members:
-https://raw.githubusercontent.com/FrenzY8/JKT48-Member/refs/heads/main/AllMember.json
+## Features
 
-Active members:
-https://raw.githubusercontent.com/FrenzY8/JKT48-Member/refs/heads/main/ActiveMember.json
+- member search
+- generation filter
+- status filter
+- pagination
+- source status
+- public feature reference
+- command reference
 
-Frontend melakukan fetch langsung ke sumber publik dari browser.
+## Runtime
 
-## Struktur
+The page can be served as static files.
 
-website/jkt48/
-  index.html
-  style.css
-  app.js
-  README.md
+The frontend uses browser-native APIs and does not require a backend session.
 
-## Local Preview
+## Security
 
-Gunakan static HTTP server dari root repository, contoh:
+External images are rendered with restrictive referrer handling.
 
-npx serve website/jkt48
-
-Membuka index.html langsung dengan file:// dapat terkena pembatasan browser terhadap fetch(), sehingga HTTP server lebih disarankan.
-
-## GitHub Pages
-
-Workflow deploy tersedia pada:
-
-.github/workflows/jkt48-pages.yml
-
-GitHub Pages tetap harus diaktifkan pada pengaturan repository.
-
-## Catatan
-
-Website ini merupakan dashboard informasi read-only untuk fitur JKT48. Data eksternal dapat berubah ketika struktur sumber publik berubah.
+Source URLs must remain public and should be replaced in the frontend configuration when the upstream repository changes.
