@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import Database from 'better-sqlite3';
-import {Client,GatewayIntentBits,Partials,EmbedBuilder,ActionRowBuilder,ButtonBuilder,ButtonStyle,ChannelType,PermissionFlagsBits,SlashCommandBuilder} from 'discord.js';
+import {Client,GatewayIntentBits,Partials,EmbedBuilder,ActionRowBuilder,ButtonBuilder,ButtonStyle,ChannelType,PermissionFlagsBits} from 'discord.js';
 import {createFeedService} from './jkt48/feed-service.js';
 import {DEFAULT_SOURCES} from './jkt48/sources.js';
 import {ensureTables,MODES,matches,rollGacha,rollRarity,rarityInfo,validMedia} from './services/games/jkt48/index.js';
@@ -19,10 +19,9 @@ import {handleMediaCommand} from './media/command.js';
 import {createVerificationService} from './security/verification.js';
 import {createVerificationWebServer} from './web/verification/server.js';
 import {FEATURE_REGISTRY} from './config/features.js';
-import {createStreetViewQuestion} from './services/games/streetview.js';
-import {getIndonesiaNews,getStockQuote,getFuelPrices,getElectricityPrices,getFoodPrices,findCity,getPrayerSchedule,upcomingRamadan,refreshIndonesiaCache,NEWS_CATEGORIES,DATA_SOURCES} from './services/indonesia/data.js';
+import {getIndonesiaNews,getStockQuote,getFuelPrices,getElectricityPrices,getFoodPrices,findCity,getPrayerSchedule,upcomingRamadan,refreshIndonesiaCache,DATA_SOURCES} from './services/indonesia/data.js';
 import {createScraperOrchestrator} from './services/scrapers/orchestrator.js';
-import {DISASTER_URLS,ensureDisasterTables,refreshDisasterDatabase,recentDisasters,disasterStatus,configureDisaster,notifyDisasterConfigs} from './services/disasters/index.js';
+import {ensureDisasterTables,refreshDisasterDatabase,disasterStatus,notifyDisasterConfigs} from './services/disasters/index.js';
 import {createAdditionalCommandHandler} from './services/additional-commands.js';
 import {ensureDataAuditTables,runDataAudit,getAuditStatus} from './services/audit/data-audit.js';
 
@@ -384,18 +383,6 @@ client.on('interactionCreate',async i=>{
    const mode=i.options.getString('mode',true);
    const cooldown=gameCooldownLeft(i.guild.id,i.user.id);
    if(cooldown)return i.reply({embeds:[embed('⏳ Game Cooldown','Tunggu **'+Math.ceil(cooldown/1000)+' detik** sebelum memainkan tebak-tebakan lagi.',{color:EMBED_COLORS.warning})],ephemeral:true});
-
-   if(mode==='streetView'){
-    try{
-      const question=await createStreetViewQuestion();
-      const rarity=rollRarity();
-      const active=startSession(jkt48Dbs.quiz,{guildId:i.guild.id,userId:i.user.id,channelId:i.channel.id,mode,answer:question.answers.join('|'),mediaUrl:question.mediaUrl,rarity,durationMs:QUIZ_TIMEOUT_MS});
-      scheduleQuizExpiry(active);
-      return i.reply({embeds:[embed('🌍 Tebak Lokasi Google Street View','Tebak **kota** dari foto Street View berikut.\\n\\n⏱️ Waktu menjawab: **1 menit**\\n🎴 Rarity: **'+(rarityInfo[rarity]?.label||rarity)+'**\\n\\nJawab langsung di channel ini.',{color:EMBED_COLORS.info,image:question.mediaUrl,fields:[{name:'Petunjuk',value:question.region||'Indonesia'}]})]});
-    }catch(e){
-      return i.reply({embeds:[embed('❌ Street View Tidak Tersedia',e.message,{color:EMBED_COLORS.error})],ephemeral:true});
-    }
-   }
 
    const assets=getQuizAssets(jkt48Dbs.quiz,mode);
    if(!assets.length)return i.reply({embeds:[embed('🎯 Asset Game Kosong','Asset untuk mode **'+MODES[mode]+'** belum tersedia. Admin perlu menambah asset ke database quiz.',{color:EMBED_COLORS.warning})],ephemeral:true});
