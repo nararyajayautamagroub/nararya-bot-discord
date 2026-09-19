@@ -8,7 +8,9 @@
     "dev": "node --watch src/index.js",
     "deploy": "node src/deploy-commands.js",
     "check": "tsc --noEmit",
-    "test": "node --test"
+    "test": "node --test",
+    "start:ticket": "node src/ticket-bot/index.js",
+    "check:runtime": "node --check src/index.js && node --check src/jkt48/adapters.js && node --check src/jkt48/sources.js && node --check src/ticket-bot/index.js"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
