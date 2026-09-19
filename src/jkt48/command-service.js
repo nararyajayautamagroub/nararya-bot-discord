@@ -30,5 +30,10 @@ export async function getLatest(type,db=null){
  if(type==='songs'){const api=await news({category:'Music'});return (api.length?api:dbFallback(db,type,true)).slice(0,10)}
  return [];
 }
-export async function getLatestPlatform(platform){return (await recentLive()).filter(x=>String(x.platform||'').toLowerCase()===platform).slice(0,10)}
+export async function getLatestPlatform(platform,db=null){
+ const api=(await recentLive()).filter(x=>String(x.platform||'').toLowerCase()===platform).slice(0,10);
+ if(api.length||!db)return api;
+ const kind=platform==='showroom'?'showroom':platform==='idn'?'idn':platform;
+ return db.prepare('SELECT fi.title,fi.url,fi.published_at FROM feed_items fi JOIN feed_sources fs ON fs.id=fi.source_id WHERE fs.kind=? ORDER BY fi.published_at DESC LIMIT 10').all(kind).map(x=>({title:x.title,url:x.url,published_at:x.published_at,platform}));
+}
 export function renderList(title,items){return items.length?items.map(line).join('\n\n'):'Belum ada data '+title.toLowerCase()+' yang tersedia.'}
