@@ -77,7 +77,7 @@ Project/legal documentation:
 
 ## Current version
 
-**v1.4.0** — 2026-09-19
+**v1.5.0** — 2026-09-19
 
 ### Modern command layout
 
@@ -98,3 +98,17 @@ The project provides a dedicated `/media` command namespace for:
 - per-user media settings
 
 See [docs/MEDIA.md](./docs/MEDIA.md) for installation requirements and operational details.
+
+## Security and Verification
+
+The bot now includes a server-bound web verification flow:
+
+- `/verify start` generates a private verification URL.
+- Website checkbox “I’m not a robot” completes the application challenge.
+- Website returns a temporary 4-character code.
+- `/verify code` redeems the code for the same Discord user and server.
+- Optional verified role can be configured with `/verify role`.
+- Verification sessions expire and have a maximum number of attempts.
+
+Developer diagnostics are available through `/bot info`, `/bot features`, and `/bot health`.
+See [SECURITY.md](./SECURITY.md), [docs/VERIFICATION.md](./docs/VERIFICATION.md), and [docs/FEATURE-REGISTRY.md](./docs/FEATURE-REGISTRY.md).
