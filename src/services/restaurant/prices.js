@@ -28,6 +28,8 @@ export const INDONESIA_CITIES=Object.freeze([
  'palopo','ambon','jayapura','palangkaraya','bojonegoro','kisaran'
 ]);
 
+export const RESTAURANT_CITY_SOURCE_MAP=Object.freeze({depok:'jakarta',bekasi:'jakarta',bogor:'jakarta',tangerang:'jakarta','tangerang-selatan':'jakarta'});
+
 export const RESTAURANT_CATEGORIES=Object.freeze([
  'jajanan','kopi','roti','aneka nasi','ayam & bebek','minuman','cepat saji','sweets',
  'bakmie','bakso & soto','jepang','barat','seafood','chinese','pizza & pasta',
@@ -39,8 +41,9 @@ function absoluteUrl(href){
  return value&&value.startsWith(RESTAURANT_PRICE_BASE_URL)?value:value;
 }
 
+function sourceCity(city){const slug=slugify(city);return RESTAURANT_CITY_SOURCE_MAP[slug]||slug;}
 function cityUrl(city,page=1){
- const slug=slugify(city);
+ const slug=sourceCity(city);
  const base=RESTAURANT_PRICE_BASE_URL.replace(/\/$/,'')+'/menu/'+slug;
  return page>1?base+'/page/'+page:base;
 }
@@ -303,11 +306,14 @@ export function normalizeRestaurantQuery(options={}){
  };
 }
 
-export function filterRestaurants(rows,{query='',category='',minPrice=null,maxPrice=null}={}){
+export function filterRestaurants(rows,{query='',category='',minPrice=null,maxPrice=null,city=''}={}){
  const normalizedQuery=normalizeSearch(query);
  const normalizedCategory=normalizeSearch(category);
+ const normalizedCity=normalizeSearch(city);
  return rows.filter(row=>{
-  if(normalizedQuery&&!normalizeSearch(row.name+' '+(row.address||'')+' '+(row.categories||[]).join(' ')).includes(normalizedQuery))return false;
+  const searchable=normalizeSearch((row.name||'')+' '+(row.address||'')+' '+(row.city||'')+' '+(row.categories||[]).join(' '));
+  if(normalizedCity&&!searchable.includes(normalizedCity))return false;
+  if(normalizedQuery&&!searchable.includes(normalizedQuery))return false;
   if(normalizedCategory&&!row.categories?.some(value=>normalizeSearch(value).includes(normalizedCategory)))return false;
   const min=asNumber(row.minPrice,NaN);
   const max=asNumber(row.maxPrice,NaN);
@@ -366,9 +372,9 @@ function saveRestaurant(db,data,{city=null}={}){
  return id;
 }
 
-function saveDirectory(db,directory){
+function saveDirectory(db,directory,{requestedCity=null}={}){
  if(!db)return;
- const city=directory.city||null;
+ const city=requestedCity||directory.city||null;
  const upsert=db.prepare('INSERT INTO restaurants(id,name,city,address,url,categories_json,min_price,max_price,source,source_updated_text,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET name=excluded.name,city=excluded.city,address=excluded.address,categories_json=excluded.categories_json,min_price=excluded.min_price,max_price=excluded.max_price,source=excluded.source,source_updated_text=excluded.source_updated_text,updated_at=excluded.updated_at');
  const tx=db.transaction(rows=>{
   for(const row of rows){
@@ -436,7 +442,7 @@ export async function findRestaurants(options={}){
  const fetched=[];
  for(let page=1;page<=input.maxPages;page++){
   const directory=await fetchRestaurantDirectory(input.city,page);
-  if(db)saveDirectory(db,directory);
+  if(db)saveDirectory(db,directory,{requestedCity:city});
   fetched.push(...directory.restaurants);
   if(directory.restaurants.length===0)break;
   if(fetched.length>=Math.max(input.limit*page,100))break;
@@ -596,7 +602,7 @@ export function buildRestaurantEmbedData(data,{page=1,limit=12,query='',category
 export async function restaurantSourceStatus(){
  const url=cityUrl('jakarta',1);
  try{
-  const {response}=await requestText(url,{timeoutMs:5000,retries:1});
+  const {response}=await requestText(url,{timeoutMs:7000,retries:1,headers:{accept:'text/html,application/xhtml+xml'}});
   return{source:RESTAURANT_PRICE_SOURCE,url,status:response.status,ok:response.ok,checkedAt:Date.now()};
  }catch(error){
   return{source:RESTAURANT_PRICE_SOURCE,url,status:0,ok:false,error:error.message,checkedAt:Date.now()};
