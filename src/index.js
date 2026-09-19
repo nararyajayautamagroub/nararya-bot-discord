@@ -404,6 +404,7 @@ client.once('ready',async()=>{
   const existing=db.prepare('SELECT COUNT(*) c FROM feed_sources WHERE guild_id=?').get(g.id)?.c||0;
   if(existing===0){const ch=db.prepare('SELECT feed_channel FROM guild_config WHERE guild_id=?').get(g.id)?.feed_channel;if(ch)for(const [name,label,kind,url] of DEFAULT_SOURCES)db.prepare('INSERT INTO feed_sources(guild_id,name,url,channel_id,kind,enabled) VALUES(?,?,?,?,?,1)').run(g.id,label,url,ch,kind)}
  }
+ for(const session of jkt48Dbs.quiz.prepare("SELECT * FROM quiz_sessions WHERE status='active'").all())scheduleQuizExpiry(session);
  const synced=await syncMemberDatabase(db).catch(error=>{console.warn('[jkt48-members] '+error.message);return 0;});
  console.log('[jkt48-members] synced '+synced+' members from AllMember/ActiveMember');
  setInterval(()=>syncMemberDatabase(db).catch(error=>console.warn('[jkt48-members] '+error.message)),Math.max(3600,Number(process.env.JKT48_MEMBER_SYNC_INTERVAL_SECONDS||21600))*1000);
