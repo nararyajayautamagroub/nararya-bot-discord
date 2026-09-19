@@ -152,7 +152,7 @@ export function createAdditionalCommandHandler({db,jkt48QuizDb,client,embed,game
     return i.reply({embeds:[embed('🚨 Disaster Source Status',body,{color:0xEF4444})]});
    }
    if(sub==='sources'){
-    return i.reply({embeds:[embed('🌐 Active Data Sources',Object.entries(DATA_SOURCES.news).map(([k,v])=>'• **'+k+'** → '+v).join('\n')+'\n\n• BMKG → '+DISASTER_URLS.earthquake+'\n• BMKG Tsunami → '+DISASTER_URLS.tsunami+'\n• BNPB → '+DISASTER_URLS.bnpb+'\n• MAGMA → '+DISASTER_URLS.magma,{color:0x3B82F6})]});
+    return i.reply({embeds:[embed('🌐 Active Data Sources',Object.entries(DATA_SOURCES.news).map(([k,v])=>'• **'+k+'** → '+v).join('\n')+'\n\n• Electronics → '+DATA_SOURCES.electronics+'\n• Audio → '+DATA_SOURCES.electronicsAudio+'\n• BMKG → '+DISASTER_URLS.earthquake+'\n• BMKG Tsunami → '+DISASTER_URLS.tsunami+'\n• BNPB → '+DISASTER_URLS.bnpb+'\n• MAGMA → '+DISASTER_URLS.magma,{color:0x3B82F6})]});
    }
   }
 
