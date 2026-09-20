@@ -1,10 +1,12 @@
 # Version
 
-Current version: 3.2.0
+Current version: 3.2.1
 
 Release date: 2026-09-20
 
 ## Release scope
+
+Version 3.2.1 aligns the website and Discord bot footer branding to PT. NARARYA JAYA UTAMA GROUB - All Right Reserved and keeps the full-stack runtime validation green.
 
 Version 3.2.0 adds the modular web gateway, versioned /api/v1 routes, responsive device runtime modules, graceful shutdown, install-ready CI validation, and expanded scraper/frontend regression coverage.
 
