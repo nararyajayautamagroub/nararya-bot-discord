@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.2.2 - 2026-09-20
+
+- Fixed the primary Discord runtime embed footer to use the official PT. NARARYA JAYA UTAMA GROUB footer.
+
 ## 3.2.1 - 2026-09-20
 
 - Aligned website and Discord embed footer branding to PT. NARARYA JAYA UTAMA GROUB - All Right Reserved.
