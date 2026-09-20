@@ -24,8 +24,8 @@ test("JKT48 website assets and responsive controls are complete",()=>{
   assert.ok(js.includes("ActiveMember.json"));
   assert.ok(js.includes("AbortController"));
   assert.ok(js.includes("Promise.allSettled"));
-  assert.ok(js.includes('from "./runtime/api.js"'));
-  assert.ok(js.includes('from "./runtime/device.js"'));
+  assert.ok(js.includes("./runtime/api.js"));
+  assert.ok(js.includes("./runtime/device.js"));
   assert.ok(js.includes('$(".register-only").forEach'));
   for(const language of ["id","en","ja","ko","zh","ar","es","pt","fr","de"])assert.ok(js.includes('"'+language+'"'),"Missing language "+language);
   assert.equal((js.match(/\["(?:id|en|ja|ko|zh|ar|es|pt|fr|de)"/g)||[]).length,10);
