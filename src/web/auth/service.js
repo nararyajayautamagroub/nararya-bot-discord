@@ -168,8 +168,10 @@ export function createWebAuthService({db}){
     const email=String(profile.email||'').trim().toLowerCase();
     const subject=String(profile.sub||'').trim();
     if(!email||!subject)throw new Error('Google tidak mengembalikan identitas email yang valid.');
-    let user=queries.byProviderSubject.get('google',subject)||queries.byEmail.get(email);
+    let user=queries.byProviderSubject.get('google',subject);
+    const localByEmail=queries.byEmail.get(email);
     const now=Date.now();
+    if(!user&&localByEmail&&localByEmail.provider==='local')throw new Error('Email sudah terdaftar sebagai akun lokal. Gunakan Login biasa terlebih dahulu.');
     if(user){
       db.prepare('UPDATE web_users SET email=?,display_name=?,avatar_url=?,provider=CASE WHEN provider=\'local\' THEN provider ELSE \'google\' END,provider_subject=CASE WHEN provider=\'local\' THEN provider_subject ELSE ? END,last_login_at=?,updated_at=? WHERE id=?')
         .run(email,String(profile.name||user.display_name||email).slice(0,80),profile.picture||null,subject,now,now,user.id);
