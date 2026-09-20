@@ -6,6 +6,7 @@ import crypto from 'node:crypto';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../../..');
 const websiteDir=path.join(root,'website','jkt48');
+const verificationDir=path.join(root,'src','web','verification','public');
 const COOKIE_NAME='nararya_web_session';
 const OAUTH_COOKIE='nararya_google_state';
 const OAUTH_VERIFIER_COOKIE='nararya_google_verifier';
@@ -22,7 +23,7 @@ function safeReturnTo(value){const clean=String(value||'/');return /^\/(?!\/)/.t
 function pkceVerifier(){return crypto.randomBytes(48).toString('base64url')}
 function pkceChallenge(verifier){return crypto.createHash('sha256').update(verifier).digest('base64url')}
 
-export function createWebsiteServer({db,authService,featureRegistry}){
+export function createWebsiteServer({db,authService,verificationService,featureRegistry}){
   const port=Number(process.env.WEBSITE_PORT||process.env.VERIFY_WEB_PORT||3000);
   const host=process.env.WEBSITE_HOST||process.env.VERIFY_WEB_HOST||'0.0.0.0';
   const enabled=String(process.env.WEBSITE_DISABLED||'false').toLowerCase()!=='true';
@@ -80,9 +81,13 @@ export function createWebsiteServer({db,authService,featureRegistry}){
       ]);
     }
     if(url.pathname==='/api/auth/health'&&req.method==='GET')return json(res,200,{ok:true,...authService.health()});
+    if(url.pathname==='/api/verify/session'&&req.method==='GET'){const row=verificationService.getSession(url.searchParams.get('ticket')||'');if(!row)return json(res,404,{ok:false,error:'Sesi tidak ditemukan.'});return json(res,200,{ok:true,userId:row.user_id,guildId:row.guild_id,issuedAt:row.issued_at,expiresAt:row.expires_at,status:row.status});}
+    if(url.pathname==='/api/verify/complete'&&req.method==='POST'){const body=await readBody(req);const result=verificationService.completeWebChallenge(body);return json(res,200,{ok:true,message:'Verifikasi berhasil. Masukkan kode berikut ke Discord.',code:result.code,expiresAt:result.expiresAt});}
     if(url.pathname==='/api/features'&&req.method==='GET')return json(res,200,{ok:true,features:featureRegistry});
     return false;
   }
+
+  function sendVerificationStatic(res,file,type){const full=path.join(verificationDir,file);if(!full.startsWith(verificationDir)||!fs.existsSync(full)||!fs.statSync(full).isFile()){res.writeHead(404);return res.end('Not found')}res.writeHead(200,{'Content-Type':type,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'no-referrer'});fs.createReadStream(full).pipe(res)}
 
   function sendStatic(res,file){
     const safe=path.normalize(file).replace(/^([.][.][\/\\])+/, '');
@@ -99,6 +104,10 @@ export function createWebsiteServer({db,authService,featureRegistry}){
       const handled=await api(req,res,url);
       if(handled!==false)return;
       if(req.method==='GET'){
+        if(url.pathname==='/health')return json(res,200,{ok:true,service:'website',verification:verificationService.health(),auth:authService.health()});
+        if(url.pathname==='/verify')return sendVerificationStatic(res,'index.html','text/html; charset=utf-8');
+        if(url.pathname==='/verify/style.css')return sendVerificationStatic(res,'style.css','text/css; charset=utf-8');
+        if(url.pathname==='/verify/app.js')return sendVerificationStatic(res,'app.js','text/javascript; charset=utf-8');
         const requested=url.pathname==='/'||url.pathname==='/index.html'?'index.html':url.pathname.replace(/^\//,'');
         if(requested.includes('..'))return json(res,400,{ok:false,error:'Invalid path.'});
         return sendStatic(res,requested);
