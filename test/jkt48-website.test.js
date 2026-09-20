@@ -24,6 +24,9 @@ test("JKT48 website assets and responsive controls are complete",()=>{
   assert.ok(js.includes("ActiveMember.json"));
   assert.ok(js.includes("AbortController"));
   assert.ok(js.includes("Promise.allSettled"));
+  assert.ok(js.includes('$(".register-only").forEach'));
+  assert.doesNotThrow(()=>new Function(js));
+  for(const language of ["id","en","ja","ko","zh","ar","es","pt","fr","de"])assert.ok(js.includes('"'+language+'"'),"Missing language "+language);
 });
 
 test("JKT48 website never exposes bot secrets",()=>{
@@ -49,4 +52,11 @@ test("Discord embed utility uses the requested red theme",()=>{
   const source=readFileSync(join(root,"../../src/utils/embeds.js"),"utf8");
   assert.ok(source.includes("0xD71920"));
   assert.ok(source.includes("setColor(EMBED_RED)"));
+});
+
+test("website runtime security headers allow the documented public member source",()=>{
+  const server=readFileSync(join(root,"../../src/web/website/server.js"),"utf8");
+  assert.ok(server.includes("connect-src 'self' https://raw.githubusercontent.com"));
+  assert.ok(server.includes("function isInside(base,target)"));
+  assert.ok(server.includes("path.resolve(websiteDir,safe)"));
 });
