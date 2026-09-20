@@ -11,7 +11,8 @@
     "start:ticket": "node src/ticket-bot/index.js",
     "check:runtime": "npm run validate && find src test website -type f -name '*.js' -print0 | xargs -0 -n1 node --check",
     "validate": "node tools/validate-repo.mjs",
-    "test:all": "npm run validate && npm test"
+    "test:all": "npm run validate && npm test",
+    "start:web": "node -e \"import('./src/index.js')\""
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
