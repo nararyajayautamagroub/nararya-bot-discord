@@ -64,14 +64,17 @@ export function createScraperOrchestrator({db,onDataRefresh}={}){
  }
 
  let refreshTimer=null;
+ let checkTimer=null;
  let checkRunning=false;
  return {
   start(){
+   void checkSources();
    void refreshDue();
+   checkTimer=setInterval(()=>void checkSources(),Math.max(10000,Number(process.env.SCRAPER_CHECK_INTERVAL_MS||CHECK_MS)));
    refreshTimer=setInterval(()=>void refreshDue(),Math.min(30*1000,Math.max(10*1000,Number(process.env.SCRAPER_REFRESH_TICK_MS||30000))));
    return {checkMs:CHECK_MS};
   },
-  stop(){if(refreshTimer)clearInterval(refreshTimer)},
+  stop(){if(refreshTimer)clearInterval(refreshTimer);if(checkTimer)clearInterval(checkTimer)},
   checkNow(){return checkSources()},
   refreshNow(){return refreshDue()},
   status(){return db.prepare('SELECT key,url,group_name,enabled,last_checked_at,last_success_at,last_refresh_at,last_status,last_latency_ms,last_error FROM scraper_sources ORDER BY group_name,key').all()},
