@@ -592,4 +592,15 @@ client.once('ready',async()=>{
  setInterval(()=>checkRamadanNotifications().catch(console.error),30*1000);
  jkt48Monitor.start();
 });
+const shutdown=async(signal)=>{
+  console.log('[shutdown] '+signal);
+  try{verificationWeb.close()}catch{}
+  try{scraperOrchestrator.stop()}catch{}
+  try{presenceRotation.stop()}catch{}
+  try{client.destroy()}catch{}
+  try{db.close()}catch{}
+};
+process.once('SIGINT',()=>void shutdown('SIGINT'));
+process.once('SIGTERM',()=>void shutdown('SIGTERM'));
+
 client.login(process.env.DISCORD_TOKEN);
