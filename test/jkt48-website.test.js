@@ -28,7 +28,8 @@ test("JKT48 website assets and responsive controls are complete",()=>{
   assert.ok(js.includes("./runtime/device.js"));
   assert.ok(js.includes('$(".register-only").forEach'));
   for(const language of ["id","en","ja","ko","zh","ar","es","pt","fr","de"])assert.ok(js.includes('"'+language+'"'),"Missing language "+language);
-  assert.equal((js.match(/\["(?:id|en|ja|ko|zh|ar|es|pt|fr|de)"/g)||[]).length,10);
+  const languageBlock=js.match(/const LANGS=\[(.*?)\];/s)?.[1]||"";
+  assert.equal((languageBlock.match(/\["(?:id|en|ja|ko|zh|ar|es|pt|fr|de)",/g)||[]).length,10);
 });
 
 test("JKT48 website never exposes bot secrets",()=>{
