@@ -4,8 +4,10 @@ Nararya Bot Discord adalah bot Discord modular untuk komunitas, JKT48, game, dat
 
 ## Current release
 
-Version: 2.2.0
+Version: 3.1.0
 Release date: 2026-09-20
+
+The 3.1.0 web runtime adds responsive UI, local registration/login, secure sessions, Google OAuth 2.0 with PKCE, account settings, theme preferences, timezone preferences, and ten selectable interface languages.
 Active feature registry: 150 features
 
 ## Core capabilities
@@ -57,7 +59,9 @@ website/
  - Python packages from tools/media/requirements.txt
  - Demucs for vocal separation
 5. Deploy slash commands with npm run deploy.
-6. Start with npm start.
+6. Start the full Discord + website runtime with npm start. The website is served from the same Node process.
+7. For Google Login, configure GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GOOGLE_REDIRECT_URI. The redirect URI must match the Google OAuth client configuration exactly.
+8. GitHub Pages/static hosting can serve the public frontend, but cannot execute the Node authentication endpoints. Use the Node website runtime for login, register, settings, verification, and Google OAuth.
 
 ## Verification
 
@@ -148,3 +152,23 @@ find src test -type f -name '*.js' -print0 | xargs -0 -n1 node --check
 - docs/SCRAPER-MATRIX.md
 - docs/STRUCTURE.md
 - docs/VERIFICATION.md
+
+
+## Website
+
+The website at `website/jkt48/` is responsive across desktop, tablet, and mobile devices.
+
+Full runtime features:
+- Login and registration.
+- Google OAuth 2.0 with PKCE.
+- Secure HTTP-only session cookies.
+- Language selection: Indonesian, English, Japanese, Korean, Simplified Chinese, Arabic, Spanish, Portuguese, French, and German.
+- Light, dark, and system themes.
+- Timezone settings.
+- Password change.
+- JKT48 member database and source status.
+- Live scraper health status.
+
+Run the full runtime with `npm start`. The Node website server uses `WEBSITE_HOST`, `WEBSITE_PORT`, and `WEBSITE_PUBLIC_URL`.
+
+Static hosting is still supported for the read-only frontend. Authentication and OAuth require the backend runtime.
