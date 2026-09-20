@@ -16,10 +16,15 @@ const required=[
   'src/ticket-bot/index.js',
   'src/web/auth/service.js',
   'src/web/website/server.js',
+  'src/web/gateway/index.js',
   'test/web-auth.test.js',
+  'test/web-server.test.js',
+  'test/scraper-integrity.test.js',
   'website/jkt48/index.html',
   'website/jkt48/style.css',
-  'website/jkt48/app.js'
+  'website/jkt48/app.js',
+  'website/jkt48/runtime/api.js',
+  'website/jkt48/runtime/device.js'
 ];
 
 const errors=[];
@@ -59,7 +64,7 @@ for(const rel of jsFiles){
     errors.push('Possible hard-coded token in '+rel);
 }
 
-for(const name of ['DISCORD_TOKEN','CLIENT_ID','GUILD_ID']){
+for(const name of ['DISCORD_TOKEN','CLIENT_ID','GUILD_ID','WEBSITE_HOST','WEBSITE_PORT']){
   const env=fs.readFileSync(path.join(root,'.env.example'),'utf8');
   if(!new RegExp('^'+name+'=', 'm').test(env))warnings.push('.env.example is missing '+name);
 }
