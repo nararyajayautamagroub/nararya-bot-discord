@@ -10,7 +10,9 @@
 <link rel="stylesheet" href="./style.css">
 </head>
 <body>
+<a class="skip-link" href="#mainContent">Skip to content</a>
 <header class="site-header">
+<div class="network-status" id="networkStatus" data-i18n="network.online">Online</div>
 <div class="header-inner">
 <a class="brand" href="#home" aria-label="JKT48 Center"><span class="brand-mark">48</span><span class="brand-copy"><strong>JKT48 CENTER</strong><small>Nararya Bot Discord</small></span></a>
 <button class="hamburger" id="menuToggle" type="button" aria-expanded="false" aria-controls="mainNav" aria-label="Open menu">☰</button>
@@ -168,6 +170,6 @@
 </div>
 
 <div class="toast hidden" id="toast" role="status"></div>
-<script src="./app.js" defer></script>
+<script type="module" src="./app.js"></script>
 </body>
 </html>
