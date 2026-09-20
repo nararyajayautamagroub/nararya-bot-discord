@@ -26,6 +26,7 @@ test("JKT48 website assets and responsive controls are complete",()=>{
   assert.ok(js.includes("Promise.allSettled"));
   assert.ok(js.includes("./runtime/api.js"));
   assert.ok(js.includes("./runtime/device.js"));
+  assert.ok(html.includes("PT. NARARYA JAYA UTAMA GROUB - All Right Reserved"));
   assert.ok(js.includes('$(".register-only").forEach'));
   for(const language of ["id","en","ja","ko","zh","ar","es","pt","fr","de"])assert.ok(js.includes('"'+language+'"'),"Missing language "+language);
   const languageBlock=js.match(/const LANGS=\[(.*?)\];/s)?.[1]||"";
