@@ -64,7 +64,8 @@ function redirect(res,location,headers=[]){
 }
 function safeReturnTo(value){
   const clean=String(value||'/');
-  return /^\/(?!\/)/.test(clean)?clean:'/';
+  if(/[\r\n\\]/.test(clean)||!/^\/(?!\/)/.test(clean))return '/';
+  return clean;
 }
 function pkceVerifier(){return crypto.randomBytes(48).toString('base64url')}
 function pkceChallenge(verifier){return crypto.createHash('sha256').update(verifier).digest('base64url')}
