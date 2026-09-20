@@ -67,7 +67,7 @@ const scraperOrchestrator=createScraperOrchestrator({db,onDataRefresh:async row=
 const mediaService=createMediaService({db:mediaDbState.db,dir:mediaDbState.dir});
 const verificationService=createVerificationService({db,baseUrl:process.env.WEBSITE_PUBLIC_URL||process.env.VERIFY_WEB_BASE_URL||'http://localhost:'+String(process.env.WEBSITE_PORT||process.env.VERIFY_WEB_PORT||3000)});
 const webAuthService=createWebAuthService({db});
-const verificationWeb=createWebsiteServer({db,authService:webAuthService,verificationService,featureRegistry:FEATURE_REGISTRY});
+const verificationWeb=createWebsiteServer({db,authService:webAuthService,verificationService,featureRegistry:FEATURE_REGISTRY,scraperOrchestrator});
 verificationWeb.start();
 migrateLegacyAssets(db,jkt48Dbs.quiz);
 try{db.prepare('ALTER TABLE feed_sources ADD COLUMN kind TEXT DEFAULT "public"').run()}catch{}
