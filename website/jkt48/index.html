@@ -2,9 +2,9 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#d71920">
-<meta name="description" content="JKT48 Center - Nararya Bot Discord">
+<meta name="description" content="Nararya Bot Discord - JKT48 Center">
 <title>JKT48 Center • Nararya Bot</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="./style.css">
@@ -13,110 +13,161 @@
 <header class="site-header">
 <div class="header-inner">
 <a class="brand" href="#home" aria-label="JKT48 Center"><span class="brand-mark">48</span><span class="brand-copy"><strong>JKT48 CENTER</strong><small>Nararya Bot Discord</small></span></a>
-<button class="hamburger" id="menuToggle" type="button" aria-expanded="false" aria-controls="mainNav" aria-label="Buka menu">=</button>
-<nav class="main-nav" id="mainNav" aria-label="Navigasi utama">
-<a class="nav-link active" href="#home">Home</a>
-<a class="nav-link" href="#members">Members</a>
-<a class="nav-link" href="#features">Features</a>
-<a class="nav-link" href="#games">Games</a>
-<a class="nav-link" href="#feeds">Feeds</a>
-<a class="nav-link" href="#commands">Commands</a>
-<a class="nav-link" href="#sources">Sources</a>
+<button class="hamburger" id="menuToggle" type="button" aria-expanded="false" aria-controls="mainNav" aria-label="Open menu">☰</button>
+<nav class="main-nav" id="mainNav" aria-label="Primary navigation">
+<a class="nav-link active" href="#home" data-i18n="nav.home">Home</a>
+<a class="nav-link" href="#members" data-i18n="nav.members">Members</a>
+<a class="nav-link" href="#features" data-i18n="nav.features">Features</a>
+<a class="nav-link" href="#games" data-i18n="nav.games">Games</a>
+<a class="nav-link" href="#feeds" data-i18n="nav.feeds">Feeds</a>
+<a class="nav-link" href="#commands" data-i18n="nav.commands">Commands</a>
+<a class="nav-link" href="#sources" data-i18n="nav.sources">Sources</a>
 </nav>
-<a class="header-button" href="#commands">Lihat Command</a>
+<div class="header-actions">
+<label class="language-select"><span class="sr-only">Language</span><select id="languageSelect" aria-label="Language"></select></label>
+<button class="icon-button" id="settingsButton" type="button" aria-label="Settings">⚙</button>
+<button class="account-button" id="accountButton" type="button"><span id="accountLabel" data-i18n="auth.login">Login</span></button>
+</div>
 </div>
 </header>
+
 <main id="home">
 <section class="hero section">
 <div class="hero-grid">
 <div class="hero-copy">
-<span class="eyebrow">JKT48 FEATURE CENTER</span>
-<h1>Semua fitur JKT48<br><span>dalam satu tempat.</span></h1>
-<p class="hero-text">Pusat informasi database member, game JKT48, koleksi card, feed notifikasi, command Discord, dan sumber data publik yang dipakai Nararya Bot.</p>
-<div class="hero-actions"><a class="button button-red" href="#members">Lihat Member</a><a class="button button-outline" href="#features">Jelajahi Fitur</a></div>
+<span class="eyebrow" data-i18n="hero.eyebrow">JKT48 FEATURE CENTER</span>
+<h1 data-i18n="hero.title">Semua fitur JKT48<br><span>dalam satu tempat.</span></h1>
+<p class="hero-text" data-i18n="hero.description">Pusat informasi database member, game JKT48, koleksi card, feed notifikasi, command Discord, scraper, dan sumber data publik.</p>
+<div class="hero-actions"><a class="button button-red" href="#members" data-i18n="hero.members">Lihat Member</a><a class="button button-outline" href="#features" data-i18n="hero.features">Jelajahi Fitur</a></div>
 <div class="hero-notice"><span class="notice-dot"></span><span id="dataStatus">Memeriksa sumber data JKT48...</span></div>
 </div>
 <div class="hero-card embed-card">
 <div class="card-topline"><span class="card-badge">JKT48</span><span class="status-pill" id="sourceStatus">Checking</span></div>
-<h2>JKT48 Member Database</h2>
-<p>Data member aktif dan historis generasi 1–14 dari sumber JSON publik yang dikonfigurasi pada bot.</p>
+<h2 data-i18n="hero.database">JKT48 Member Database</h2>
+<p data-i18n="hero.databaseDesc">Data member aktif dan historis generasi 1–14 dari sumber JSON publik.</p>
 <div class="stat-grid">
-<div class="stat"><strong id="memberCount">—</strong><span>Member</span></div>
-<div class="stat"><strong id="generationCount">14</strong><span>Generasi</span></div>
-<div class="stat"><strong id="activeCount">—</strong><span>Aktif</span></div>
-<div class="stat"><strong id="websiteVersion">3.0</strong><span>Web</span></div>
+<div class="stat"><strong id="memberCount">—</strong><span data-i18n="stats.members">Member</span></div>
+<div class="stat"><strong id="generationCount">14</strong><span data-i18n="stats.generations">Generations</span></div>
+<div class="stat"><strong id="activeCount">—</strong><span data-i18n="stats.active">Active</span></div>
+<div class="stat"><strong id="websiteVersion">3.1</strong><span data-i18n="stats.web">Web</span></div>
 </div>
 </div>
 </div>
 </section>
+
 <section class="section section-muted" id="features">
-<div class="section-heading"><div><span class="section-kicker">FEATURES</span><h2>Fitur JKT48</h2></div><p>Frontend v3.0 memetakan fitur JKT48 yang tersedia di bot dan menampilkan status sumber publik secara read-only.</p></div>
+<div class="section-heading"><div><span class="section-kicker">FEATURES</span><h2 data-i18n="features.title">Fitur JKT48</h2></div><p data-i18n="features.description">Frontend dan bot berbagi sumber data serta status sistem.</p></div>
 <div class="feature-grid">
-<article class="feature-card embed-card"><div class="feature-icon">01</div><h3>Member Database</h3><p>Cari member, generasi, status, profil, dan sosial media publik.</p><a href="#members" class="text-link">Buka Member →</a></article>
-<article class="feature-card embed-card"><div class="feature-icon">02</div><h3>Upcoming & Latest</h3><p>Event, theater, setlist, songs, live, birthday, dan graduation.</p><a href="#commands" class="text-link">Lihat Command →</a></article>
-<article class="feature-card embed-card"><div class="feature-icon">03</div><h3>Quiz & Games</h3><p>Quiz suara, foto, setlist, lagu, random member, cooldown, dan timeout.</p><a href="#games" class="text-link">Lihat Games →</a></article>
-<article class="feature-card embed-card"><div class="feature-icon">04</div><h3>Gacha & Cards</h3><p>Koleksi card JKT48 dengan rarity Common sampai Secret.</p><a href="#games" class="text-link">Lihat Card →</a></article>
-<article class="feature-card embed-card"><div class="feature-icon">05</div><h3>Platform Feeds</h3><p>Website, IDN, SHOWROOM, YouTube, Instagram, TikTok, X dan lainnya.</p><a href="#feeds" class="text-link">Lihat Feeds →</a></article>
-<article class="feature-card embed-card"><div class="feature-icon">06</div><h3>EXP Profile Card</h3><p>Level, progress EXP, streak, wins, dan rarity card dalam satu kartu visual.</p><a href="#commands" class="text-link">Buka /utility level →</a></article>
+<article class="feature-card embed-card"><div class="feature-icon">01</div><h3 data-i18n="features.member">Member Database</h3><p data-i18n="features.memberDesc">Cari member, generasi, status, profil, dan sosial media publik.</p><a href="#members" class="text-link" data-i18n="common.open">Buka →</a></article>
+<article class="feature-card embed-card"><div class="feature-icon">02</div><h3 data-i18n="features.schedule">Upcoming & Latest</h3><p data-i18n="features.scheduleDesc">Event, theater, setlist, songs, live, birthday, dan graduation.</p><a href="#commands" class="text-link" data-i18n="common.commands">Commands →</a></article>
+<article class="feature-card embed-card"><div class="feature-icon">03</div><h3 data-i18n="features.games">Quiz & Games</h3><p data-i18n="features.gamesDesc">Quiz, game, cooldown, timeout, XP, dan leaderboard.</p><a href="#games" class="text-link" data-i18n="common.view">Lihat →</a></article>
+<article class="feature-card embed-card"><div class="feature-icon">04</div><h3 data-i18n="features.cards">Gacha & Cards</h3><p data-i18n="features.cardsDesc">Koleksi card JKT48 dari Common sampai Secret.</p><a href="#games" class="text-link" data-i18n="common.view">Lihat →</a></article>
+<article class="feature-card embed-card"><div class="feature-icon">05</div><h3 data-i18n="features.feeds">Platform Feeds</h3><p data-i18n="features.feedsDesc">Website, IDN, SHOWROOM, YouTube, Instagram, TikTok, X, Threads, dan shop.</p><a href="#feeds" class="text-link" data-i18n="common.view">Lihat →</a></article>
+<article class="feature-card embed-card"><div class="feature-icon">06</div><h3 data-i18n="features.account">Account & Settings</h3><p data-i18n="features.accountDesc">Login, register, Google Login, bahasa, tema, timezone, dan keamanan akun.</p><button class="text-link plain-button" id="openSettingsFromFeature" data-i18n="common.openSettings">Buka Settings →</button></article>
 </div>
 </section>
+
 <section class="section" id="members">
-<div class="section-heading"><div><span class="section-kicker">MEMBERS</span><h2>Member JKT48</h2></div><p>Data dimuat dari sumber publik dan diproses di browser. Jika sumber gagal, website tidak mengarang data.</p></div>
+<div class="section-heading"><div><span class="section-kicker">MEMBERS</span><h2 data-i18n="members.title">Member JKT48</h2></div><p data-i18n="members.description">Data dimuat dari sumber publik. Website tidak mengarang data saat source gagal.</p></div>
 <div class="member-toolbar">
-<label class="input-wrap"><span class="sr-only">Cari member</span><input id="memberSearch" type="search" placeholder="Cari nama atau nickname..." autocomplete="off"></label>
-<label class="select-wrap"><span class="sr-only">Filter generasi</span><select id="generationFilter"><option value="all">Semua Generasi</option><option value="1">Generasi 1</option><option value="2">Generasi 2</option><option value="3">Generasi 3</option><option value="4">Generasi 4</option><option value="5">Generasi 5</option><option value="6">Generasi 6</option><option value="7">Generasi 7</option><option value="8">Generasi 8</option><option value="9">Generasi 9</option><option value="10">Generasi 10</option><option value="11">Generasi 11</option><option value="12">Generasi 12</option><option value="13">Generasi 13</option><option value="14">Generasi 14</option></select></label>
-<label class="select-wrap"><span class="sr-only">Filter status</span><select id="statusFilter"><option value="all">Semua Status</option><option value="active">Aktif</option><option value="graduated">Graduated</option><option value="historical">Historical</option></select></label>
+<label class="input-wrap"><span class="sr-only">Search member</span><input id="memberSearch" type="search" data-i18n-placeholder="members.search" placeholder="Cari nama atau nickname..." autocomplete="off"></label>
+<label class="select-wrap"><span class="sr-only">Generation</span><select id="generationFilter" aria-label="Generation"><option value="all" data-i18n="members.allGenerations">Semua Generasi</option><option value="1">Generasi 1</option><option value="2">Generasi 2</option><option value="3">Generasi 3</option><option value="4">Generasi 4</option><option value="5">Generasi 5</option><option value="6">Generasi 6</option><option value="7">Generasi 7</option><option value="8">Generasi 8</option><option value="9">Generasi 9</option><option value="10">Generasi 10</option><option value="11">Generasi 11</option><option value="12">Generasi 12</option><option value="13">Generasi 13</option><option value="14">Generasi 14</option></select></label>
+<label class="select-wrap"><span class="sr-only">Status</span><select id="statusFilter" aria-label="Status"><option value="all" data-i18n="members.allStatus">Semua Status</option><option value="active" data-i18n="members.active">Aktif</option><option value="graduated" data-i18n="members.graduated">Graduated</option><option value="historical" data-i18n="members.historical">Historical</option></select></label>
 </div>
-<div class="member-meta"><span id="memberResultCount">0 member</span><span id="memberUpdatedAt">Belum dimuat</span><button class="mini-button" id="refreshMembers" type="button">Refresh Data</button></div>
-<div class="member-grid" id="memberGrid" aria-live="polite"><article class="loading-card embed-card"><span class="loader"></span><p>Memuat data member...</p></article></div>
-<div class="empty-state hidden" id="memberEmpty"><strong>Data member tidak ditemukan.</strong><span>Coba kata kunci atau filter lain.</span></div>
-<div class="pagination" id="memberPagination" aria-label="Pagination member"><button class="mini-button" id="prevMembers" type="button">← Sebelumnya</button><span id="memberPageLabel">Halaman 1</span><button class="mini-button" id="nextMembers" type="button">Berikutnya →</button></div><div class="error-state hidden" id="memberError"><strong>Sumber data JKT48 tidak dapat dibaca.</strong><span id="memberErrorText">Periksa source URL yang dikonfigurasi pada bot.</span></div>
+<div class="member-meta"><span id="memberResultCount">0 member</span><span id="memberUpdatedAt">Belum dimuat</span><button class="mini-button" id="refreshMembers" type="button" data-i18n="common.refresh">Refresh Data</button></div>
+<div class="member-grid" id="memberGrid" aria-live="polite"><article class="loading-card embed-card"><span class="loader"></span><p data-i18n="common.loading">Memuat...</p></article></div>
+<div class="empty-state hidden" id="memberEmpty"><strong data-i18n="members.empty">Data member tidak ditemukan.</strong><span data-i18n="members.emptyDesc">Coba kata kunci atau filter lain.</span></div>
+<div class="pagination" id="memberPagination" aria-label="Member pagination"><button class="mini-button" id="prevMembers" type="button" data-i18n="common.previous">← Sebelumnya</button><span id="memberPageLabel">Halaman 1</span><button class="mini-button" id="nextMembers" type="button" data-i18n="common.next">Berikutnya →</button></div>
+<div class="error-state hidden" id="memberError"><strong data-i18n="members.error">Sumber data JKT48 tidak dapat dibaca.</strong><span id="memberErrorText"></span></div>
 </section>
+
 <section class="section section-muted" id="games">
-<div class="section-heading"><div><span class="section-kicker">GAMES & CARDS</span><h2>Game JKT48</h2></div><p>Game dimainkan melalui Discord. Website menjadi pusat informasi dan panduan.</p></div>
+<div class="section-heading"><div><span class="section-kicker">GAMES & CARDS</span><h2 data-i18n="games.title">Game JKT48</h2></div><p data-i18n="games.description">Game dimainkan melalui Discord, website menjadi pusat informasi.</p></div>
 <div class="game-grid">
 <article class="game-card embed-card"><div class="game-cover cover-pink">QUIZ</div><div class="game-body"><span class="small-label">7 MODE</span><h3>Tebak JKT48</h3><p>Song, member voice, active photo, graduation photo, random member, setlist photo, song photo.</p><code>/jkt48game play</code></div></article>
 <article class="game-card embed-card"><div class="game-cover cover-purple">GACHA</div><div class="game-body"><span class="small-label">7 RARITY</span><h3>Card Gacha</h3><p>Bangun koleksi kartu dan lihat inventory user.</p><code>/jkt48game gacha</code></div></article>
-<article class="game-card embed-card"><div class="game-cover cover-red">EXP</div><div class="game-body"><span class="small-label">PROFILE CARD</span><h3>EXP Profile Card</h3><p>Gabungkan level, progress EXP, streak, wins, dan rarity card.</p><code>/utility level</code></div></article>
+<article class="game-card embed-card"><div class="game-cover cover-red">EXP</div><div class="game-body"><span class="small-label">PROFILE CARD</span><h3>EXP Profile Card</h3><p>Level, progress EXP, streak, wins, dan rarity card.</p><code>/utility level</code></div></article>
 </div>
-<div class="rule-box"><strong>Aturan game</strong><span>Cooldown quiz/gacha: 10 detik per user/server. Sesi tebak: maksimal 1 menit.</span></div>
+<div class="rule-box"><strong data-i18n="games.rules">Aturan game</strong><span data-i18n="games.rulesDesc">Cooldown quiz/gacha 10 detik per user. Sesi tebak maksimal 1 menit.</span></div>
 </section>
+
 <section class="section" id="feeds">
-<div class="section-heading"><div><span class="section-kicker">NOTIFICATION FEEDS</span><h2>Feed JKT48</h2></div><p>Feed memakai adapter publik dan dikonfigurasi per server melalui <code>/feed</code>.</p></div>
+<div class="section-heading"><div><span class="section-kicker">NOTIFICATION FEEDS</span><h2 data-i18n="feeds.title">Feed & Scraper JKT48</h2></div><p data-i18n="feeds.description">Adapter publik dan scraper dipantau backend.</p></div>
 <div class="feed-grid">
-<article class="feed-card embed-card"><span class="feed-label">OFFICIAL</span><h3>JKT48 Website</h3><p>Events, News, Theater, dan halaman publik lain yang dikonfigurasi bot.</p></article>
-<article class="feed-card embed-card"><span class="feed-label">LIVE</span><h3>SHOWROOM & IDN</h3><p>Notifikasi live publik bila feed adapter dan URL tersedia.</p></article>
-<article class="feed-card embed-card"><span class="feed-label">SOCIAL</span><h3>YouTube, Instagram, TikTok, X</h3><p>Feed sosial melalui konfigurasi adapter publik.</p></article>
-<article class="feed-card embed-card"><span class="feed-label">SHOP</span><h3>Tokopedia & Shopee</h3><p>Feed produk publik sesuai sumber yang diizinkan.</p></article>
+<article class="feed-card embed-card"><span class="feed-label">OFFICIAL</span><h3>JKT48 Website</h3><p>Events, News, Theater, dan halaman publik.</p></article>
+<article class="feed-card embed-card"><span class="feed-label">LIVE</span><h3>SHOWROOM & IDN</h3><p>Notifikasi live publik bila source mengekspos status live.</p></article>
+<article class="feed-card embed-card"><span class="feed-label">SOCIAL</span><h3>YouTube, Instagram, TikTok, X, Threads</h3><p>Feed sosial publik melalui adapter masing-masing.</p></article>
+<article class="feed-card embed-card"><span class="feed-label">SHOP</span><h3>Tokopedia & Shopee</h3><p>Produk publik sesuai source yang diizinkan.</p></article>
 </div>
+<div class="scraper-status-card embed-card"><div><span class="section-kicker">SCRAPER</span><h3 data-i18n="feeds.scraperTitle">Health monitoring</h3><p id="scraperSummary" data-i18n="feeds.scraperLoading">Memuat status scraper...</p></div><button class="mini-button" id="refreshScraper" data-i18n="common.refresh">Refresh</button></div>
 </section>
+
 <section class="section section-muted" id="commands">
-<div class="section-heading"><div><span class="section-kicker">DISCORD COMMANDS</span><h2>Command JKT48</h2></div><p>Gunakan command berikut di server Discord yang memiliki Nararya Bot.</p></div>
+<div class="section-heading"><div><span class="section-kicker">DISCORD COMMANDS</span><h2 data-i18n="commands.title">Command JKT48</h2></div><p data-i18n="commands.description">Command dapat digunakan di server Discord yang memiliki Nararya Bot.</p></div>
 <div class="command-list">
 <div class="command-row"><code>/jkt48 member query:&lt;nama&gt;</code><span>Cari member</span></div>
-<div class="command-row"><code>/jkt48 members generation:&lt;1-14&gt;</code><span>Filter generasi</span></div>
 <div class="command-row"><code>/jkt48 upcoming event</code><span>Upcoming event</span></div>
 <div class="command-row"><code>/jkt48 upcoming theater</code><span>Upcoming theater</span></div>
-<div class="command-row"><code>/jkt48 latest live_showroom</code><span>Live SHOWROOM terbaru</span></div>
+<div class="command-row"><code>/jkt48 latest live_showroom</code><span>Latest SHOWROOM live</span></div>
 <div class="command-row"><code>/jkt48game play mode:&lt;mode&gt;</code><span>Mulai game</span></div>
 <div class="command-row"><code>/jkt48game gacha</code><span>Buka card pack</span></div>
 <div class="command-row"><code>/jkt48game inventory</code><span>Lihat koleksi</span></div>
-<div class="command-row"><code>/jkt48game leaderboard</code><span>Leaderboard</span></div>
-<div class="command-row"><code>/utility level</code><span>EXP Profile Card</span></div>
+<div class="command-row"><code>/scraper status</code><span>Monitor kesehatan scraper</span></div>
 </div>
 </section>
+
 <section class="section" id="sources">
-<div class="section-heading"><div><span class="section-kicker">DATA SOURCES</span><h2>Sumber & transparansi</h2></div><p>Status sumber ditampilkan terbuka. Website read-only.</p></div>
+<div class="section-heading"><div><span class="section-kicker">DATA SOURCES</span><h2 data-i18n="sources.title">Sumber & transparansi</h2></div><p data-i18n="sources.description">Status sumber ditampilkan terbuka. Data website read-only untuk data publik.</p></div>
 <div class="source-panel embed-card">
 <div class="source-row"><div><span class="small-label">ALL MEMBERS</span><strong>FrenzY8/JKT48-Member • AllMember.json</strong></div><span class="source-dot" id="allSourceDot"></span></div>
 <div class="source-row"><div><span class="small-label">ACTIVE MEMBERS</span><strong>FrenzY8/JKT48-Member • ActiveMember.json</strong></div><span class="source-dot" id="activeSourceDot"></span></div>
-<div class="source-note">Sumber member mengikuti source publik yang digunakan oleh service member database bot. Endpoint dapat berubah sehingga frontend menyediakan fallback dan pesan error.</div>
 </div>
 </section>
 </main>
-<footer class="site-footer">
-<div class="footer-inner"><div><strong>JKT48 CENTER</strong><span>Nararya Bot Discord</span></div><div class="footer-links"><a href="#home">Home</a><a href="#members">Members</a><a href="#features">Features</a><a href="#commands">Commands</a></div><small>Data publik • Frontend read-only • Updated <span id="footerDate">—</span></small></div>
-</footer>
+
+<footer class="site-footer"><div class="footer-inner"><div><strong>JKT48 CENTER</strong><span>Nararya Bot Discord • v3.1</span></div><div class="footer-links"><a href="#home">Home</a><a href="#members">Members</a><a href="#features">Features</a><a href="#commands">Commands</a></div><small>Updated <span id="footerDate">—</span></small></div></footer>
+
+<div class="modal-backdrop hidden" id="authModal">
+<div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+<button class="modal-close" data-close-modal="authModal" aria-label="Close">×</button>
+<div class="modal-tabs"><button id="loginTab" class="modal-tab active" data-auth-mode="login" data-i18n="auth.login">Login</button><button id="registerTab" class="modal-tab" data-auth-mode="register" data-i18n="auth.register">Register</button></div>
+<h2 id="authTitle" data-i18n="auth.loginTitle">Masuk ke akun</h2>
+<p id="authSubtitle" class="modal-subtitle" data-i18n="auth.loginDesc">Gunakan email dan password atau Google Login.</p>
+<button class="google-button" id="googleLogin" type="button">G <span data-i18n="auth.google">Continue with Google</span></button>
+<div class="divider"><span data-i18n="auth.or">atau</span></div>
+<form id="authForm">
+<div class="form-row register-only hidden"><label for="authUsername" data-i18n="auth.username">Username</label><input id="authUsername" name="username" autocomplete="username"></div>
+<div class="form-row register-only hidden"><label for="authDisplayName" data-i18n="auth.displayName">Nama tampilan</label><input id="authDisplayName" name="displayName" autocomplete="name"></div>
+<div class="form-row"><label for="authEmail" data-i18n="auth.email">Email</label><input id="authEmail" name="email" type="email" autocomplete="email" required></div>
+<div class="form-row"><label for="authPassword" data-i18n="auth.password">Password</label><input id="authPassword" name="password" type="password" autocomplete="current-password" required></div>
+<button class="button button-red full" id="authSubmit" type="submit" data-i18n="auth.login">Login</button>
+<p class="form-message" id="authMessage" role="alert"></p>
+</form>
+</div>
+</div>
+
+<div class="modal-backdrop hidden" id="settingsModal">
+<div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+<button class="modal-close" data-close-modal="settingsModal" aria-label="Close">×</button>
+<h2 id="settingsTitle" data-i18n="settings.title">Settings</h2>
+<p class="modal-subtitle" data-i18n="settings.desc">Atur bahasa, tema, timezone, dan keamanan akun.</p>
+<div class="settings-grid">
+<label><span data-i18n="settings.language">Language</span><select id="settingsLanguage"></select></label>
+<label><span data-i18n="settings.theme">Theme</span><select id="settingsTheme"><option value="light">Light</option><option value="dark">Dark</option><option value="system">System</option></select></label>
+<label class="wide"><span data-i18n="settings.timezone">Timezone</span><select id="settingsTimezone"><option value="Asia/Jakarta">Asia/Jakarta</option><option value="Asia/Makassar">Asia/Makassar</option><option value="Asia/Jayapura">Asia/Jayapura</option><option value="UTC">UTC</option></select></label>
+</div>
+<button class="button button-red full" id="saveSettings" type="button" data-i18n="settings.save">Simpan Settings</button>
+<div class="security-box">
+<h3 data-i18n="settings.passwordTitle">Ganti Password</h3>
+<input id="currentPassword" type="password" data-i18n-placeholder="auth.currentPassword" placeholder="Password saat ini">
+<input id="newPassword" type="password" data-i18n-placeholder="auth.newPassword" placeholder="Password baru">
+<button class="mini-button" id="changePassword" type="button" data-i18n="settings.changePassword">Ganti Password</button>
+</div>
+<div class="account-footer"><button class="mini-button" id="logoutButton" type="button" data-i18n="auth.logout">Logout</button><p class="form-message" id="settingsMessage" role="alert"></p></div>
+</div>
+</div>
+
+<div class="toast hidden" id="toast" role="status"></div>
 <script src="./app.js" defer></script>
 </body>
 </html>
