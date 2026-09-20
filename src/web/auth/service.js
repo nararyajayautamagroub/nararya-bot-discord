@@ -5,6 +5,7 @@ const OAUTH_STATE_TTL_MS=10*60*1000;
 const PASSWORD_MIN=8;
 const EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const USERNAME_RE=/^[a-zA-Z0-9_.-]{3,32}$/;
+function normalizeTimezone(value){const timezone=String(value||"").trim();if(!timezone)return null;try{new Intl.DateTimeFormat("en-US",{timeZone:timezone}).format();return timezone}catch{return null}}
 
 const randomToken=bytes=>crypto.randomBytes(bytes).toString('base64url');
 const sha256=value=>crypto.createHash('sha256').update(String(value)).digest('hex');
@@ -199,7 +200,7 @@ export function createWebAuthService({db}){
   function updateSettings(userId,settings){
     const language=['id','en','ja','ko','zh','ar','es','pt','fr','de'].includes(String(settings.language))?String(settings.language):null;
     const theme=['light','dark','system'].includes(String(settings.theme))?String(settings.theme):null;
-    const timezone=/^[A-Za-z_]+\/[A-Za-z_+-]+$/.test(String(settings.timezone||''))?String(settings.timezone):null;
+    const timezone=normalizeTimezone(settings.timezone);
     const current=queries.byId.get(userId);
     if(!current)throw new Error('Akun tidak ditemukan.');
     db.prepare('UPDATE web_users SET language=COALESCE(?,language),theme=COALESCE(?,theme),timezone=COALESCE(?,timezone),updated_at=? WHERE id=?').run(language,theme,timezone,Date.now(),userId);
