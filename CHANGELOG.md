@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.0 - 2026-09-20
+
+- Hardened scraper HTTP handling and removed an undeclared runtime dependency.
+- Added repository integrity validation for required files, versions, imports, and token patterns.
+- Strengthened CI and JKT48 website build validation.
+- Aligned package and release metadata.
+
+
 ## 2.2.0 - 2026-09-20
 
 - Enforced a date-keyed limit of 10 JKT48 gacha pulls per user per day.
