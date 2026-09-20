@@ -1,10 +1,12 @@
 # Version
 
-Current version: 3.0.0
+Current version: 3.1.0
 
 Release date: 2026-09-20
 
 ## Release scope
+
+Version 3.1.0 adds a unified responsive website runtime, secure local authentication, Google OAuth 2.0 with PKCE, account sessions, profile settings, and ten-language UI support.
 
 Version 3.0.0 hardens the scraper/runtime pipeline, adds repository integrity validation, aligns package and release metadata, and strengthens CI checks for the Discord bot and JKT48 website.
 
