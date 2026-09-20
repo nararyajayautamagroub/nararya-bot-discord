@@ -1,10 +1,12 @@
 # Version
 
-Current version: 2.2.0
+Current version: 3.0.0
 
 Release date: 2026-09-20
 
 ## Release scope
+
+Version 3.0.0 hardens the scraper/runtime pipeline, adds repository integrity validation, aligns package and release metadata, and strengthens CI checks for the Discord bot and JKT48 website.
 
 This version adds date-keyed daily game limits, generation 14 member seed data, scraper-backed live detection, and database fallbacks for JKT48 schedule commands while retaining the separate Ticket Bot runtime.
 
