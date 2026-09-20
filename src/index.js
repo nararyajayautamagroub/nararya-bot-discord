@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import Database from 'better-sqlite3';
-import {Client,GatewayIntentBits,Partials,EmbedBuilder,ActionRowBuilder,ButtonBuilder,ButtonStyle,ChannelType,PermissionFlagsBits} from 'discord.js';
+import {Client,GatewayIntentBits,Partials,EmbedBuilder,ActionRowBuilder,ButtonBuilder,AttachmentBuilder,ButtonStyle,ChannelType,PermissionFlagsBits} from 'discord.js';
 import {createFeedService} from './jkt48/feed-service.js';
 import {DEFAULT_SOURCES} from './jkt48/sources.js';
 import {ensureTables,MODES,matches,rollGacha,rollRarity,rarityInfo,validMedia} from './services/games/jkt48/index.js';
@@ -366,6 +366,26 @@ const deny=botControl.denyReason({guildId:i.guild?.id,userId:i.user.id});
    }
   }
 
+  if(n==='scraper'){
+   const sub=i.options.getSubcommand(true);
+   if(sub==='status'){
+    const rows=scraperOrchestrator.status();
+    const body=rows.length?rows.map(x=>{
+      const state=x.last_error?'🔴 ERROR':(x.last_status===null||x.last_status===undefined?'⚪ PENDING':'🟢 OK');
+      const age=x.last_checked_at?Math.round((Date.now()-x.last_checked_at)/1000)+'s':'-';
+      return '**'+state+' '+x.key+'** • HTTP '+(x.last_status??'-')+' • '+(x.last_latency_ms??'-')+' ms • checked '+age+' ago'+(x.last_error?'\\nError: '+x.last_error:'');
+    }).join('\\n\\n'):'Belum ada scraper terdaftar.';
+    return i.reply({embeds:[embed('🩺 Scraper Status',body.slice(0,3900),{color:rows.some(x=>x.last_error)?EMBED_COLORS.warning:EMBED_COLORS.success})]});
+   }
+   if(sub==='check'){
+    const result=await scraperOrchestrator.checkNow();
+    return i.reply({embeds:[embed('🔎 Scraper Health Check','Health check selesai untuk **'+(result.count||0)+'** sumber publik.',{color:EMBED_COLORS.success})]});
+   }
+   if(sub==='refresh'){
+    await scraperOrchestrator.refreshNow();
+    return i.reply({embeds:[embed('🔄 Scraper Refresh','Refresh data scraper selesai dipicu. Status detail tersedia melalui **/scraper status**.',{color:EMBED_COLORS.info})]});
+   }
+  }
   if(n==='utility'){
    const sub=i.options.getSubcommand(true);
    if(sub==='ping')return i.reply({embeds:[embed('🏓 Pong','Latency Discord: **'+i.client.ws.ping+'ms**',{color:EMBED_COLORS.info})]});
