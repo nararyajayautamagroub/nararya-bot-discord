@@ -21,9 +21,11 @@ test('scraper does not depend on undeclared undici package',()=>{
 test('branding footer is aligned for bot and website',()=>{
   const website=fs.readFileSync(path.join(root,'website/jkt48/index.html'),'utf8');
   const embeds=fs.readFileSync(path.join(root,'src/utils/embeds.js'),'utf8');
+  const runtime=fs.readFileSync(path.join(root,'src/index.js'),'utf8');
   const footer='PT. NARARYA JAYA UTAMA GROUB - All Right Reserved';
   assert.ok(website.includes(footer));
   assert.ok(embeds.includes(footer));
+  assert.ok(runtime.includes(footer));
 });
 
 test('website exposes current major version',()=>{
