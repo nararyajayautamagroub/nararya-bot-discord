@@ -9,7 +9,7 @@ test('release metadata is aligned',()=>{
   const pkg=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
   const version=fs.readFileSync(path.join(root,'VERSION.md'),'utf8').match(/Current version:\s*([^\s]+)/i)?.[1];
   assert.equal(pkg.version,version);
-  assert.equal(pkg.version,'3.2.1');
+  assert.equal(pkg.version,'3.2.2');
   assert.equal(pkg.scripts['start:web'],'node src/index.js');
 });
 
@@ -30,7 +30,7 @@ test('branding footer is aligned for bot and website',()=>{
 
 test('website exposes current major version',()=>{
   const html=fs.readFileSync(path.join(root,'website/jkt48/index.html'),'utf8');
-  assert.match(html,/id="websiteVersion">3\.2\.1</);
+  assert.match(html,/id="websiteVersion">3\.2\.2</);
 });
 
 test('CI workflows contain repository validation',()=>{
