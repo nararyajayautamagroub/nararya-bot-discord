@@ -9,7 +9,7 @@ db.pragma('journal_mode=WAL');
 db.exec("CREATE TABLE IF NOT EXISTS ticket_config(guild_id TEXT PRIMARY KEY,category_id TEXT,staff_role_id TEXT,log_channel_id TEXT,enabled INTEGER NOT NULL DEFAULT 1);CREATE TABLE IF NOT EXISTS tickets(id INTEGER PRIMARY KEY AUTOINCREMENT,guild_id TEXT NOT NULL,channel_id TEXT UNIQUE NOT NULL,user_id TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'open',claimed_by TEXT,created_at INTEGER NOT NULL,closed_at INTEGER);");
 
 const RED=0xD71920;
-const embed=(title,description='',fields=[])=>new EmbedBuilder().setColor(RED).setTitle(title).setDescription(description).addFields(fields).setTimestamp().setFooter({text:'Nararya Ticket Bot'});
+const embed=(title,description='',fields=[])=>new EmbedBuilder().setColor(RED).setTitle(title).setDescription(description).addFields(fields).setTimestamp().setFooter({text:'PT. NARARYA JAYA UTAMA GROUB - All Right Reserved'});
 const safe=v=>String(v||'').replace(/[^a-z0-9-]/gi,'').slice(0,50)||'user';
 
 async function deploy(){
