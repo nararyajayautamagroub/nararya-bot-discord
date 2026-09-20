@@ -4,10 +4,10 @@ Nararya Bot Discord adalah bot Discord modular untuk komunitas, JKT48, game, dat
 
 ## Current release
 
-Version: 3.1.0
+Version: 3.2.0
 Release date: 2026-09-20
 
-The 3.1.0 web runtime adds responsive UI, local registration/login, secure sessions, Google OAuth 2.0 with PKCE, account settings, theme preferences, timezone preferences, and ten selectable interface languages.
+The 3.2.0 web runtime adds a modular gateway, versioned API routes, responsive device detection, local registration/login, secure sessions, Google OAuth 2.0 with PKCE, account settings, theme preferences, timezone preferences, and ten selectable interface languages.
 Active feature registry: 150 features
 
 ## Core capabilities
@@ -95,7 +95,7 @@ The data audit pipeline:
 6. Stores findings.
 7. Reports suggested scraper methods for unresolved URLs.
 
-The pipeline runs every 10 seconds.
+The scraper pipeline runs every 10 seconds and exposes live health status through the website gateway.
 
 Indonesia source caches use a 24-hour refresh policy unless a source-specific policy requires a shorter interval.
 
