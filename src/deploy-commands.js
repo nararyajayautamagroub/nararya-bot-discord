@@ -150,6 +150,11 @@ const verify=new SlashCommandBuilder().setName('verify').setDescription('Sistem 
  .addSubcommand(s=>s.setName('status').setDescription('Lihat status konfigurasi verifikasi'))
  .addSubcommand(s=>s.setName('role').setDescription('Atur role yang diberikan setelah verifikasi').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild).addRoleOption(o=>o.setName('role').setDescription('Role verified').setRequired(true)));
 
+const scraper=new SlashCommandBuilder().setName('scraper').setDescription('Monitoring dan maintenance scraper')
+ .addSubcommand(s=>s.setName('status').setDescription('Lihat status semua scraper'))
+ .addSubcommand(s=>s.setName('check').setDescription('Jalankan health check scraper sekarang').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild))
+ .addSubcommand(s=>s.setName('refresh').setDescription('Jalankan refresh data scraper sekarang').setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild));
+
 const bot=new SlashCommandBuilder().setName('bot').setDescription('Informasi dan developer tools bot')
  .addSubcommand(s=>s.setName('info').setDescription('Lihat runtime dan informasi bot'))
  .addSubcommand(s=>s.setName('features').setDescription('Lihat registry fitur aktif').addIntegerOption(o=>o.setName('page').setDescription('Halaman fitur').setMinValue(1)))
@@ -306,7 +311,7 @@ const community=new SlashCommandBuilder().setName('community').setDescription('F
  .addSubcommand(s=>s.setName('suggest').setDescription('Kirim suggestion').addStringOption(o=>o.setName('text').setDescription('Isi saran').setRequired(true).setMaxLength(1000)))
  .addSubcommand(s=>s.setName('profile').setDescription('Lihat profile card'))
  .addSubcommand(s=>s.setName('star').setDescription('Catat starboard').addStringOption(o=>o.setName('message_id').setDescription('Message ID').setRequired(true)).addIntegerOption(o=>o.setName('stars').setDescription('Jumlah star').setMinValue(1).setMaxValue(999).setRequired(true)));
-const commands=[jkt48,jkt48game,sim,utility,economy,financeExtra,moderation,support,feed,media,verify,bot,news,market,prices,ramadan,game,games,indonesia,community,security,serverconfig,modcase,disaster,status,upcoming,help,setup,electronics,restaurantprices,settingbot,owner,blacklistserver,blacklistusers];
+const commands=[jkt48,jkt48game,sim,utility,economy,financeExtra,moderation,support,feed,scraper,media,verify,bot,news,market,prices,ramadan,game,games,indonesia,community,security,serverconfig,modcase,disaster,status,upcoming,help,setup,electronics,restaurantprices,settingbot,owner,blacklistserver,blacklistusers];
 
 const rest=new REST({version:'10'}).setToken(process.env.DISCORD_TOKEN);
 await rest.put(Routes.applicationCommands(process.env.CLIENT_ID),{body:commands.map(x=>x.toJSON())});
