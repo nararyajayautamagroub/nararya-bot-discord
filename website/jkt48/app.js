@@ -1,3 +1,5 @@
+import {createApiClient} from "./runtime/api.js";
+import {initDeviceRuntime} from "./runtime/device.js";
 const CONFIG={
   allUrl:"https://raw.githubusercontent.com/FrenzY8/JKT48-Member/refs/heads/main/AllMember.json",
   activeUrl:"https://raw.githubusercontent.com/FrenzY8/JKT48-Member/refs/heads/main/ActiveMember.json",
@@ -59,7 +61,7 @@ const norm=v=>text(v).toLowerCase().normalize("NFKC").replace(/[^a-z0-9]+/gi," "
 const first=(...v)=>v.find(x=>x!==undefined&&x!==null&&text(x)!=="");
 const escapeHtml=v=>text(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
 const t=key=>text((I18N[state.language]||I18N.en)[key],key);
-const api=async(path,options={})=>{const response=await fetch(path,{credentials:"same-origin",headers:{"accept":"application/json","content-type":"application/json",...(options.headers||{})},...options});const data=await response.json().catch(()=>({}));if(!response.ok)throw new Error(data.error||"Request failed");return data};
+const api=createApiClient();
 
 function applyTheme(){
   const theme=state.theme;
@@ -141,5 +143,15 @@ function setupSettings(){const theme=$("#settingsTheme"),tz=$("#settingsTimezone
 async function refreshScraper(){try{const data=await api("/api/scrapers/status");const rows=data.rows||[];const ok=rows.filter(x=>!x.error&&x.status>=200&&x.status<400).length;const failed=rows.filter(x=>x.error).length;$("#scraperSummary").textContent=t("feeds.scraperSummary").replace("{total}",rows.length).replace("{ok}",ok).replace("{error}",failed)}catch(error){$("#scraperSummary").textContent="Scraper health check gagal: "+error.message}}
 function setFooterDate(){if($("#footerDate"))$("#footerDate").textContent=humanDate(new Date())}
 function systemThemeWatcher(){matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{if(state.theme==="system")applyTheme()})}
-async function boot(){setupLanguages();translate();applyTheme();setupMenu();setupFilters();setupPagination();setupAuth();setupSettings();setFooterDate();systemThemeWatcher();authMode("login");await refreshAuth();await loadMembers();await refreshScraper();$("#refreshScraper")?.addEventListener("click",refreshScraper)}
+async function boot(){
+  initDeviceRuntime({
+    onNetworkChange:online=>{
+      const status=$("#networkStatus");
+      if(status){
+        status.textContent=online?t("network.online"):t("network.offline");
+        status.classList.toggle("offline",!online);
+      }
+    }
+  });
+  setupLanguages();translate();applyTheme();setupMenu();setupFilters();setupPagination();setupAuth();setupSettings();setFooterDate();systemThemeWatcher();authMode("login");await refreshAuth();await loadMembers();await refreshScraper();$("#refreshScraper")?.addEventListener("click",refreshScraper)}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot,{once:true});else void boot();
