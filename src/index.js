@@ -17,7 +17,8 @@ import {createMediaDatabase} from './media/database.js';
 import {createMediaService} from './media/service.js';
 import {handleMediaCommand} from './media/command.js';
 import {createVerificationService} from './security/verification.js';
-import {createVerificationWebServer} from './web/verification/server.js';
+import {createWebAuthService} from './web/auth/service.js';
+import {createWebsiteServer} from './web/website/server.js';
 import {FEATURE_REGISTRY} from './config/features.js';
 import {getIndonesiaNews,getStockQuote,getFuelPrices,getElectricityPrices,getFoodPrices,findCity,getPrayerSchedule,upcomingRamadan,refreshIndonesiaCache,DATA_SOURCES} from './services/indonesia/data.js';
 import {getElectronicsPrices} from './services/indonesia/electronics.js';
@@ -64,8 +65,9 @@ const scraperOrchestrator=createScraperOrchestrator({db,onDataRefresh:async row=
  if(row.group_name==='restaurant-prices'){const source=await restaurantSourceStatus();if(!source.ok)throw new Error('Restaurant price source HTTP '+source.status+(source.error?' • '+source.error:''));return;}
 }});
 const mediaService=createMediaService({db:mediaDbState.db,dir:mediaDbState.dir});
-const verificationService=createVerificationService({db,baseUrl:process.env.VERIFY_WEB_BASE_URL||'http://localhost:'+String(process.env.VERIFY_WEB_PORT||3000)});
-const verificationWeb=createVerificationWebServer({service:verificationService,featureRegistry:FEATURE_REGISTRY});
+const verificationService=createVerificationService({db,baseUrl:process.env.WEBSITE_PUBLIC_URL||process.env.VERIFY_WEB_BASE_URL||'http://localhost:'+String(process.env.WEBSITE_PORT||process.env.VERIFY_WEB_PORT||3000)});
+const webAuthService=createWebAuthService({db});
+const verificationWeb=createWebsiteServer({db,authService:webAuthService,verificationService,featureRegistry:FEATURE_REGISTRY});
 verificationWeb.start();
 migrateLegacyAssets(db,jkt48Dbs.quiz);
 try{db.prepare('ALTER TABLE feed_sources ADD COLUMN kind TEXT DEFAULT "public"').run()}catch{}
@@ -362,7 +364,7 @@ const deny=botControl.denyReason({guildId:i.guild?.id,userId:i.user.id});
    if(sub==='health'){
     let dbOk=false;try{db.prepare('SELECT 1').get();dbOk=true}catch{}
     const mem=process.memoryUsage();
-    return i.reply({embeds:[embed('🩺 Bot Health','Database: **'+(dbOk?'OK':'ERROR')+'**\\nVerification Web: **'+(verificationWeb.enabled?'ENABLED':'DISABLED')+'**\\nWeb Port: **'+verificationWeb.port+'**\\nHeap: **'+Math.round(mem.heapUsed/1024/1024)+' MB**\\nRSS: **'+Math.round(mem.rss/1024/1024)+' MB**\\nUptime: **'+Math.floor(process.uptime())+' detik**',{color:dbOk?EMBED_COLORS.success:EMBED_COLORS.error})]});
+    return i.reply({embeds:[embed('🩺 Bot Health','Database: **'+(dbOk?'OK':'ERROR')+'**\\nWebsite/Auth: **'+(verificationWeb.enabled?'ENABLED':'DISABLED')+'**\\nGoogle Login: **'+(verificationWeb.googleEnabled?'ENABLED':'DISABLED')+'**\\nWeb Port: **'+verificationWeb.port+'**\\nHeap: **'+Math.round(mem.heapUsed/1024/1024)+' MB**\\nRSS: **'+Math.round(mem.rss/1024/1024)+' MB**\\nUptime: **'+Math.floor(process.uptime())+' detik**',{color:dbOk?EMBED_COLORS.success:EMBED_COLORS.error})]});
    }
   }
 
