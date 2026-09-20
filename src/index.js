@@ -354,7 +354,7 @@ const deny=botControl.denyReason({guildId:i.guild?.id,userId:i.user.id});
 
   if(n==='bot'){
    const sub=i.options.getSubcommand(true);
-   if(sub==='info')return i.reply({embeds:[embed('🤖 Bot Info','**Nama:** '+i.client.user.tag+'\\n**Version:** '+(process.env.BOT_VERSION||'3.0.0')+'\\n**Guild:** '+i.client.guilds.cache.size+'\\n**Node:** '+process.version+'\\n**Uptime:** '+Math.floor(process.uptime()/60)+' menit',{color:EMBED_COLORS.info})]});
+   if(sub==='info')return i.reply({embeds:[embed('🤖 Bot Info','**Nama:** '+i.client.user.tag+'\\n**Version:** '+(process.env.BOT_VERSION||'3.1.0')+'\\n**Guild:** '+i.client.guilds.cache.size+'\\n**Node:** '+process.version+'\\n**Uptime:** '+Math.floor(process.uptime()/60)+' menit',{color:EMBED_COLORS.info})]});
    if(sub==='features'){
     const grouped=new Map();
     for(const f of FEATURE_REGISTRY){if(!grouped.has(f.category))grouped.set(f.category,[]);grouped.get(f.category).push(f);}
