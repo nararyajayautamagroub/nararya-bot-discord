@@ -7,7 +7,7 @@ export const baseEmbed=(title,description="")=>new EmbedBuilder()
   .setTitle(title)
   .setDescription(description)
   .setTimestamp()
-  .setFooter({text:"PT. NEXOVONARSACORPORATION - All Right Reserved"});
+  .setFooter({text:"PT. NARARYA JAYA UTAMA GROUB - All Right Reserved"});
 
 export const notificationEmbed=(item,source)=>{
   const embed=baseEmbed("📢 "+source.name,item.title).setURL(item.url);
