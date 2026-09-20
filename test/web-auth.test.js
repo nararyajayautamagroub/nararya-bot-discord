@@ -38,6 +38,13 @@ test('web auth rejects duplicate and weak credentials',()=>{
   db.close();
 });
 
+test('google login does not auto-link an unverified local account',()=>{
+  const {db,auth}=service();
+  auth.register({username:'local_user',email:'same@example.com',password:'strong-pass-123',displayName:'Local'});
+  assert.throws(()=>auth.upsertGoogleProfile({sub:'google-sub',email:'same@example.com',email_verified:true,name:'Google User'}),/akun lokal/);
+  db.close();
+});
+
 test('oauth state is single-use and expires by policy',()=>{
   const {db,auth}=service();
   const state=auth.createOAuthState({provider:'google',returnTo:'/#home'});
