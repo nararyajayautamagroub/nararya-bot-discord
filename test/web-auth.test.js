@@ -23,6 +23,8 @@ test('web auth registers, logs in, sessions, and settings safely',()=>{
   assert.equal(updated.language,'ja');
   assert.equal(updated.theme,'dark');
   assert.equal(updated.timezone,'Asia/Tokyo');
+  const utc=auth.updateSettings(registered.user.id,{timezone:'UTC'});
+  assert.equal(utc.timezone,'UTC');
 
   auth.revokeSession(logged.token);
   assert.equal(auth.userFromSession(logged.token),null);
