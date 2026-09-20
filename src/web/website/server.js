@@ -256,7 +256,7 @@ export function createWebsiteServer({db,authService,verificationService,featureR
       ok:readyState,
       ready:readyState,
       service:'website',
-      version:'3.2.1',
+      version:'3.2.2',
       gateway:'enabled',
       auth,
       verification,
