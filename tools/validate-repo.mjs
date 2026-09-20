@@ -14,6 +14,9 @@ const required=[
   'src/jkt48/live-monitor.js',
   'src/jkt48/feed-service.js',
   'src/ticket-bot/index.js',
+  'src/web/auth/service.js',
+  'src/web/website/server.js',
+  'test/web-auth.test.js',
   'website/jkt48/index.html',
   'website/jkt48/style.css',
   'website/jkt48/app.js'
