@@ -41,7 +41,9 @@ test("website runtime wires health, auth, cookies, and CSP",async()=>{
     assert.equal(health.status,200);
     assert.equal((await health.json()).ok,true);
 
-    const before=await fetch(base+"/api/auth/me");
+    const readiness=await fetch(base+"/ready");
+    assert.equal(readiness.status,200);
+    const before=await fetch(base+"/api/v1/auth/me");
     assert.equal(before.status,200);
     assert.equal((await before.json()).user,null);
 
@@ -54,7 +56,7 @@ test("website runtime wires health, auth, cookies, and CSP",async()=>{
     const sessionCookie=register.headers.get("set-cookie");
     assert.ok(sessionCookie?.includes("nararya_web_session="));
 
-    const me=await fetch(base+"/api/auth/me",{headers:{cookie:sessionCookie.split(";")[0]}});
+    const me=await fetch(base+"/api/v1/auth/me",{headers:{cookie:sessionCookie.split(";")[0]}});
     assert.equal((await me.json()).user.username,"web_test");
 
     const html=await fetch(base+"/index.html");
