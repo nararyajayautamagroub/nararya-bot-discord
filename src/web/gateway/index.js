@@ -45,21 +45,15 @@ export function createWebGateway({
   async function readJson(req){
     let size=0;
     let data='';
+    let tooLarge=false;
     return new Promise((resolve,reject)=>{
-      const fail=error=>{
-        req.removeAllListeners('data');
-        reject(error);
-      };
       req.on('data',chunk=>{
         size+=chunk.length;
-        if(size>bodyLimitBytes){
-          fail(new Error('Request body too large.'));
-          req.destroy();
-          return;
-        }
-        data+=chunk;
+        if(size>bodyLimitBytes){tooLarge=true;return}
+        if(!tooLarge)data+=chunk;
       });
       req.on('end',()=>{
+        if(tooLarge)return reject(new Error('Request body too large.'));
         try{resolve(data?JSON.parse(data):{})}
         catch{reject(new Error('Invalid JSON.'))}
       });
