@@ -7,7 +7,7 @@ export const baseEmbed=(title,description="")=>new EmbedBuilder()
   .setTitle(title)
   .setDescription(description)
   .setTimestamp()
-  .setFooter({text:"Nararya Bot Discord"});
+  .setFooter({text:"PT. NEXOVONARSACORPORATION - All Right Reserved"});
 
 export const notificationEmbed=(item,source)=>{
   const embed=baseEmbed("📢 "+source.name,item.title).setURL(item.url);
