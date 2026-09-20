@@ -1,16 +1,17 @@
 {
   "name": "nararya-bot-discord",
-  "version": "2.1.2",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "deploy": "node src/deploy-commands.js",
-    "check": "tsc --noEmit",
     "test": "node --test",
     "start:ticket": "node src/ticket-bot/index.js",
-    "check:runtime": "node --check src/index.js && node --check src/jkt48/adapters.js && node --check src/jkt48/sources.js && node --check src/ticket-bot/index.js"
+    "check:runtime": "npm run validate && find src test website -type f -name '*.js' -print0 | xargs -0 -n1 node --check",
+    "validate": "node tools/validate-repo.mjs",
+    "test:all": "npm run validate && npm test"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
