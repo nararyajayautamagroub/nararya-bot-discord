@@ -108,14 +108,14 @@ function memberCard(m,index){
   const image=m.image_url?'<img src="'+escapeHtml(m.image_url)+'" alt="'+escapeHtml(m.name)+'" loading="lazy" decoding="async" referrerpolicy="no-referrer">':"";
   const fallback='<div class="member-photo-fallback" '+(image?"hidden":"")+'>'+initials+"</div>";
   const status=m.status==="active"?t("members.active"):m.status==="graduated"?t("members.graduated"):t("members.historical");
-  const profile=m.profile_url?'<a href="'+escapeHtml(m.profile_url)+'" target="_blank" rel="noopener noreferrer">Profil</a>':"";
+  const profile=m.profile_url?'<a href="'+escapeHtml(m.profile_url)+'" target="_blank" rel="noopener noreferrer">'+t("common.view")+"</a>":"";
   const socials=[["IG",m.instagram_url],["TT",m.tiktok_url],["X",m.x_url],["YT",m.youtube_url],["SR",m.showroom_url],["IDN",m.idn_url]]
     .filter(x=>x[1])
     .map(x=>'<a href="'+escapeHtml(x[1])+'" target="_blank" rel="noopener noreferrer">'+x[0]+"</a>")
     .join("");
   const tags=(m.generation?'<span class="member-tag">GEN '+m.generation+"</span>":"")+(m.team?'<span class="member-tag">'+escapeHtml(m.team)+"</span>":"");
   const nickname=escapeHtml(m.nickname||("Generation "+(m.generation||"?")));
-  return '<article class="member-card embed-card" style="animation-delay:'+(Math.min(index,11)*25)+'ms">'
+  return '<article class="member-card embed-card" data-member-index="'+Math.min(index,11)+'">'
     +'<div class="member-photo">'+image+fallback+'<span class="member-status">'+status+"</span></div>"
     +'<div class="member-body"><h3 class="member-name">'+escapeHtml(m.name)+"</h3>"
     +'<p class="member-nickname">'+nickname+"</p>"
