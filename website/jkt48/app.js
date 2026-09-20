@@ -53,6 +53,22 @@ Object.assign(I18N.es,{"nav.home":"Inicio","nav.members":"Miembros","nav.feature
 Object.assign(I18N.pt,{"nav.home":"Início","nav.members":"Membros","nav.features":"Recursos","nav.games":"Jogos","nav.feeds":"Feeds","nav.commands":"Comandos","nav.sources":"Fontes","hero.members":"Ver membros","hero.features":"Explorar recursos","features.title":"Recursos JKT48","members.title":"Membros JKT48","auth.login":"Entrar","auth.register":"Registrar","settings.title":"Configurações","settings.save":"Salvar configurações"});
 Object.assign(I18N.fr,{"nav.home":"Accueil","nav.members":"Membres","nav.features":"Fonctions","nav.games":"Jeux","nav.feeds":"Flux","nav.commands":"Commandes","nav.sources":"Sources","hero.members":"Voir les membres","hero.features":"Explorer","features.title":"Fonctions JKT48","members.title":"Membres JKT48","auth.login":"Connexion","auth.register":"Inscription","settings.title":"Paramètres","settings.save":"Enregistrer"});
 Object.assign(I18N.de,{"nav.home":"Start","nav.members":"Mitglieder","nav.features":"Funktionen","nav.games":"Spiele","nav.feeds":"Feeds","nav.commands":"Befehle","nav.sources":"Quellen","hero.members":"Mitglieder ansehen","hero.features":"Funktionen entdecken","features.title":"JKT48 Funktionen","members.title":"JKT48 Mitglieder","auth.login":"Anmelden","auth.register":"Registrieren","settings.title":"Einstellungen","settings.save":"Einstellungen speichern"});
+const NETWORK_TEXT={
+  id:{online:"Online",offline:"Offline"},
+  en:{online:"Online",offline:"Offline"},
+  ja:{online:"オンライン",offline:"オフライン"},
+  ko:{online:"온라인",offline:"오프라인"},
+  zh:{online:"在线",offline:"离线"},
+  ar:{online:"متصل",offline:"غير متصل"},
+  es:{online:"En línea",offline:"Sin conexión"},
+  pt:{online:"Online",offline:"Offline"},
+  fr:{online:"En ligne",offline:"Hors ligne"},
+  de:{online:"Online",offline:"Offline"}
+};
+for(const [language,labels] of Object.entries(NETWORK_TEXT)){
+  Object.assign(I18N[language],{"network.online":labels.online,"network.offline":labels.offline});
+}
+
 
 const state={all:[],active:[],merged:[],loading:false,page:1,user:null,authMode:"login",language:localStorage.getItem("nararya_language")||"id",theme:localStorage.getItem("nararya_theme")||"system",timezone:localStorage.getItem("nararya_timezone")||"Asia/Jakarta"};
 const $=q=>document.querySelector(q),$$=q=>Array.from(document.querySelectorAll(q));
