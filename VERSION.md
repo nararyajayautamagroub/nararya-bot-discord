@@ -1,10 +1,12 @@
 # Version
 
-Current version: 3.2.1
+Current version: 3.2.2
 
 Release date: 2026-09-20
 
 ## Release scope
+
+Version 3.2.2 unifies the footer branding in the primary Discord runtime embed helper with the website and shared embed utility.
 
 Version 3.2.1 aligns the website and Discord bot footer branding to PT. NARARYA JAYA UTAMA GROUB - All Right Reserved and keeps the full-stack runtime validation green.
 
