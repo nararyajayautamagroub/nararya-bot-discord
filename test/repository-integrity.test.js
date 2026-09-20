@@ -10,6 +10,7 @@ test('release metadata is aligned',()=>{
   const version=fs.readFileSync(path.join(root,'VERSION.md'),'utf8').match(/Current version:\s*([^\s]+)/i)?.[1];
   assert.equal(pkg.version,version);
   assert.equal(pkg.version,'3.1.0');
+  assert.equal(pkg.scripts['start:web'],'node src/index.js');
 });
 
 test('scraper does not depend on undeclared undici package',()=>{
