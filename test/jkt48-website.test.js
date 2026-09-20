@@ -12,7 +12,7 @@ test("JKT48 website assets and responsive controls are complete",()=>{
   const css=read("style.css");
   const js=read("app.js");
   for(const token of ['id="menuToggle"','id="mainNav"','id="memberGrid"','id="memberSearch"','id="refreshMembers"'])assert.ok(html.includes(token),"Missing "+token);
-  assert.ok(html.includes(">=</"));
+  assert.ok(html.includes("aria-controls=\"mainNav\""));
   assert.ok(css.includes("--red:#d71920"));
   assert.ok(css.includes("background:var(--white)"));
   assert.ok(css.includes(".hamburger"));
