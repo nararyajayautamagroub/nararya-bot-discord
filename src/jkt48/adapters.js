@@ -1,4 +1,3 @@
-import {fetch} from 'undici';
 import * as cheerio from 'cheerio';
 import {stableHash,safePublicUrl,cleanText,parseDate,uniqueByUrl} from '../tools/scraper-toolbox.js';
 
@@ -42,11 +41,11 @@ async function request(url,{accept='text/html,application/xhtml+xml,application/
   try{
    const response=await fetch(url,{headers:{'user-agent':UA,accept},redirect:'follow',signal:controller.signal});
    const body=await response.text();
-   if(!response.ok)throw new Error('HTTP '+response.status+' '+response.statusText);
+   if(!response.ok)throw new Error('HTTP '+response.status+' '+response.statusText+' for '+url);
    return {response,body};
   }catch(error){
    last=error;
-   if(attempt<2)await sleep(350*(attempt+1));
+   if(attempt<2)await sleep(500*(2**attempt));
   }finally{clearTimeout(timer)}
  }
  throw last||new Error('Request gagal');
