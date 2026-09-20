@@ -133,7 +133,7 @@ export async function syncMemberDatabase(db){
   rows=[...byId.values()];
  }
  if(!rows.length)return 0;
- const up=db.prepare(
+ const up=db.prepare(`
  INSERT INTO jkt48_members(id,name,nickname,generation,virtual_generation,status,team,image_url,profile_url,join_date,graduation_date,showroom_url,idn_url,youtube_url,instagram_url,tiktok_url,x_url,updated_at)
  VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
  ON CONFLICT(id) DO UPDATE SET name=excluded.name,nickname=excluded.nickname,generation=excluded.generation,status=excluded.status,team=excluded.team,image_url=excluded.image_url,profile_url=excluded.profile_url,join_date=excluded.join_date,graduation_date=excluded.graduation_date,showroom_url=excluded.showroom_url,idn_url=excluded.idn_url,youtube_url=excluded.youtube_url,instagram_url=excluded.instagram_url,tiktok_url=excluded.tiktok_url,x_url=excluded.x_url,updated_at=excluded.updated_at
