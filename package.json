@@ -12,7 +12,9 @@
     "check:runtime": "npm run validate && find src test website -type f -name '*.js' -print0 | xargs -0 -n1 node --check",
     "validate": "node tools/validate-repo.mjs",
     "test:all": "npm run validate && npm test",
-    "start:web": "node src/index.js"
+    "start:web": "node src/index.js",
+    "check:install": "npm install --no-audit --no-fund",
+    "check:website": "npm test -- test/jkt48-website.test.js test/web-auth.test.js test/web-server.test.js"
   },
   "dependencies": {
     "better-sqlite3": "^13.0.3",
@@ -25,5 +27,9 @@
   },
   "overrides": {
     "encoding-sniffer": "1.0.2"
+  },
+  "engines": {
+    "node": ">=22.12.0",
+    "npm": ">=10.0.0"
   }
 }
