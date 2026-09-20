@@ -91,11 +91,11 @@ export function createWebsiteServer({db,authService,verificationService,featureR
   function sendVerificationStatic(res,file,type){const full=path.join(verificationDir,file);if(!full.startsWith(verificationDir)||!fs.existsSync(full)||!fs.statSync(full).isFile()){res.writeHead(404);return res.end('Not found')}res.writeHead(200,{'Content-Type':type,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'no-referrer'});fs.createReadStream(full).pipe(res)}
 
   function sendStatic(res,file){
-    const safe=path.normalize(file).replace(/^([.][.][\/\\])+/, '');
+    const safe=path.normalize(file).split(path.sep).filter(part=>part!=='..'&&part!=='.').join(path.sep);
     const full=path.join(websiteDir,safe);
     if(!full.startsWith(websiteDir)||!fs.existsSync(full)||!fs.statSync(full).isFile()){res.writeHead(404,{'Content-Type':'text/plain; charset=utf-8'});return res.end('Not found')}
     const type=MIME[path.extname(full).toLowerCase()]||'application/octet-stream';
-    res.writeHead(200,{'Content-Type':type,'Cache-Control':file==='index.html'?'no-cache':'public, max-age=300','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'strict-origin-when-cross-origin','Content-Security-Policy':"default-src 'self'; img-src 'self' https: data:; style-src 'self'; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'});
+    res.writeHead(200,{'Content-Type':type,'Cache-Control':file==='index.html'?'no-cache':'public, max-age=300','X-Content-Type-Options':'nosniff','X-Frame-Options':'DENY','Referrer-Policy':'strict-origin-when-cross-origin','Content-Security-Policy':"default-src \\'self\\'; img-src \\'self\\' https: data:; style-src \\'self\\'; script-src \\'self\\'; connect-src \\'self\\'; frame-ancestors \\'none\\'; base-uri \\'self\\'; form-action \\'self\\''});
     fs.createReadStream(full).pipe(res);
   }
 
