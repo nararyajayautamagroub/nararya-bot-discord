@@ -70,6 +70,7 @@ for(const [language,labels] of Object.entries(NETWORK_TEXT)){
 }
 
 
+let languageSetupReady=false;
 const state={all:[],active:[],merged:[],loading:false,page:1,user:null,authMode:"login",language:localStorage.getItem("nararya_language")||"id",theme:localStorage.getItem("nararya_theme")||"system",timezone:localStorage.getItem("nararya_timezone")||"Asia/Jakarta"};
 const $=q=>document.querySelector(q),$$=q=>Array.from(document.querySelectorAll(q));
 const text=(v,f="")=>v===undefined||v===null?f:String(v).trim();
@@ -97,8 +98,9 @@ function translate(){
 function setupLanguages(){
   const build=(select)=>{if(!select)return;select.innerHTML=LANGS.map(x=>'<option value="'+x[0]+'">'+escapeHtml(x[1])+"</option>").join("");select.value=state.language};
   build($("#languageSelect"));build($("#settingsLanguage"));
+  if(languageSetupReady)return;
   $("#languageSelect")?.addEventListener("change",async e=>await setLanguage(e.target.value));
-  
+  languageSetupReady=true;
 }
 async function setLanguage(language){
   if(!LANGS.some(x=>x[0]===language))language="id";
