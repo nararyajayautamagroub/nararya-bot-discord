@@ -23,7 +23,7 @@ function safeReturnTo(value){const clean=String(value||'/');return /^\/(?!\/)/.t
 function pkceVerifier(){return crypto.randomBytes(48).toString('base64url')}
 function pkceChallenge(verifier){return crypto.createHash('sha256').update(verifier).digest('base64url')}
 
-export function createWebsiteServer({db,authService,verificationService,featureRegistry}){
+export function createWebsiteServer({db,authService,verificationService,featureRegistry,scraperOrchestrator}){
   const port=Number(process.env.WEBSITE_PORT||process.env.VERIFY_WEB_PORT||3000);
   const host=process.env.WEBSITE_HOST||process.env.VERIFY_WEB_HOST||'0.0.0.0';
   const enabled=String(process.env.WEBSITE_DISABLED||'false').toLowerCase()!=='true';
@@ -81,6 +81,7 @@ export function createWebsiteServer({db,authService,verificationService,featureR
       ]);
     }
     if(url.pathname==='/api/auth/health'&&req.method==='GET')return json(res,200,{ok:true,...authService.health()});
+    if(url.pathname==='/api/scrapers/status'&&req.method==='GET'){const rows=scraperOrchestrator?.status?.()||[];return json(res,200,{ok:true,rows:rows.map(x=>({key:x.key,group:x.group_name,status:x.last_status,latencyMs:x.last_latency_ms,error:x.last_error,checkedAt:x.last_checked_at,successAt:x.last_success_at}))});}
     if(url.pathname==='/api/verify/session'&&req.method==='GET'){const row=verificationService.getSession(url.searchParams.get('ticket')||'');if(!row)return json(res,404,{ok:false,error:'Sesi tidak ditemukan.'});return json(res,200,{ok:true,userId:row.user_id,guildId:row.guild_id,issuedAt:row.issued_at,expiresAt:row.expires_at,status:row.status});}
     if(url.pathname==='/api/verify/complete'&&req.method==='POST'){const body=await readBody(req);const result=verificationService.completeWebChallenge(body);return json(res,200,{ok:true,message:'Verifikasi berhasil. Masukkan kode berikut ke Discord.',code:result.code,expiresAt:result.expiresAt});}
     if(url.pathname==='/api/features'&&req.method==='GET')return json(res,200,{ok:true,features:featureRegistry});
