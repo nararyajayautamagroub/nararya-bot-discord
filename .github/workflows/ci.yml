@@ -4,6 +4,7 @@ env:
   GIT_CONFIG_COUNT: 1
   GIT_CONFIG_KEY_0: init.defaultBranch
   GIT_CONFIG_VALUE_0: main
+
 on:
   push:
   pull_request:
@@ -11,17 +12,33 @@ on:
 concurrency:
   group: nararya-bot-ci-${{ github.ref }}
   cancel-in-progress: true
+
 jobs:
   test:
     runs-on: ubuntu-latest
-    container:
-      image: node:22-bookworm
     steps:
-      - name: Install git
-        run: apt-get update && apt-get install -y --no-install-recommends git ca-certificates
       - uses: actions/checkout@v6
-      - run: npm install --no-audit --no-fund
-      - run: npm run validate
-      - run: find src test website -type f -name '*.js' -print0 | xargs -0 -n1 node --check
-      - run: npm test
-      - run: npm audit --audit-level=high --omit=dev
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Show runtime
+        run: node --version && npm --version
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Validate repository
+        run: npm run validate
+
+      - name: Check JavaScript syntax
+        run: npm run check:runtime
+
+      - name: Run test suite
+        run: npm test
+
+      - name: Audit production dependencies
+        run: npm audit --audit-level=high --omit=dev
