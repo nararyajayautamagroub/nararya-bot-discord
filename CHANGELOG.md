@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.2.1 - 2026-09-20
+
+- Aligned website and Discord embed footer branding to PT. NARARYA JAYA UTAMA GROUB - All Right Reserved.
+- Added footer regression coverage.
+
 ## 3.2.0 - 2026-09-20
 
 - Added shared web gateway controls for request IDs, rate limiting, origin validation, body limits, and security headers.
