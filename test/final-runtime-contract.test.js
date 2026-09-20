@@ -4,7 +4,7 @@ import fs from "node:fs";
 
 test("final runtime contract is complete",()=>{
   const pkg=JSON.parse(fs.readFileSync("package.json","utf8"));
-  assert.equal(pkg.version,"3.2.0");
+  assert.equal(pkg.version,"3.2.1");
   assert.equal(pkg.type,"module");
   assert.match(pkg.engines.node,/^>=22/);
   assert.equal(pkg.scripts.start,"node src/index.js");
