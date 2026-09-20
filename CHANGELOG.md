@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.2.0 - 2026-09-20
+
+- Added shared web gateway controls for request IDs, rate limiting, origin validation, body limits, and security headers.
+- Added versioned /api/v1 routes with backward-compatible /api routes.
+- Added modular frontend API and responsive device runtime modules.
+- Added readiness health endpoint and graceful shutdown handling.
+- Hardened CI so clean npm install runs without a lockfile-dependent cache requirement.
+- Added gateway, web-server, scraper, package-contract, and responsive frontend regression tests.
+
 ## 3.1.0 - 2026-09-20
 
 - Added unified responsive website runtime.
