@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.1.0 - 2026-09-20
+
+- Added unified responsive website runtime.
+- Added local registration and login with scrypt password hashing.
+- Added Google OAuth 2.0 login with PKCE and state validation.
+- Added secure web sessions, logout, password change, language, theme, and timezone settings.
+- Added ten-language website localization foundation.
+- Unified the verification web flow under the website runtime.
+
+
 ## 3.0.0 - 2026-09-20
 
 - Hardened scraper HTTP handling and removed an undeclared runtime dependency.
