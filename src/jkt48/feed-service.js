@@ -1,4 +1,4 @@
-import {scrapeSource} from './adapters.js';
+import {scrapeSourceWithFallback} from './adapters.js';
 
 function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
 
@@ -24,7 +24,7 @@ export function createFeedService({db,client,buildEmbed}){
  async function pollSource(row){
   const started=Date.now();
   try{
-   const items=await withRetry(()=>scrapeSource(row));
+   const items=await withRetry(()=>scrapeSourceWithFallback(row,{maxSources:10,onSourceError:detail=>{\n    if(detail.index>0)console.warn('[feed:'+row.name+'] fallback #'+(detail.index+1)+' '+detail.source.url+': '+detail.error);\n   }}));
    let sent=0;
    for(const sourceItem of items){
     if(!sourceItem?.url||claim.get(row.id,sourceItem.key))continue;
