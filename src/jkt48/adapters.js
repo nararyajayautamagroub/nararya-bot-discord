@@ -230,3 +230,30 @@ export async function scrapeSource(source){
  if(kind==='shopee')return scrapeMarketplace(url,'shopee');
  return scrapePublicProfile(url,kind);
 }
+
+/**
+ * Try a primary feed and up to nine explicitly configured public fallbacks.
+ * Configure fallback_urls as a pipe/comma/newline-separated list in the feed row.
+ * Each fallback is fetched using the same adapter kind; unsupported sources fail closed.
+ */
+export async function scrapeSourceWithFallback(source,{maxSources=10,onSourceError=()=>{}}={}){
+ const candidates=[{...source,url:source?.url},...String(source?.fallback_urls||'').split(/[|,\\n]+/).map(url=>url.trim()).filter(Boolean).map(url=>({...source,url}))]
+  .filter(x=>x.url).slice(0,Math.min(10,Math.max(1,Number(maxSources)||10)));
+ if(!candidates.length)throw new Error('Feed utama dan sumber cadangan tidak dikonfigurasi');
+ const errors=[];
+ for(let index=0;index<candidates.length;index++){
+  const candidate=candidates[index];
+  try{
+   const items=await scrapeSource(candidate);
+   if(!Array.isArray(items))throw new Error('Adapter mengembalikan format data yang tidak valid');
+   if(index>0)onSourceError({source:candidate,index,error:'Sumber utama gagal; sumber cadangan berhasil'});
+   return items.map(item=>({...item,sourceFallback:index>0,sourceIndex:index,sourceUrl:candidate.url}));
+  }catch(error){
+   const detail={source:candidate,index,error:String(error?.message||error)};
+   errors.push(detail);onSourceError(detail);
+  }
+ }
+ const error=new Error('Semua '+candidates.length+' sumber feed gagal: '+errors.map(x=>'#'+(x.index+1)+' '+x.error).join(' | '));
+ error.sourceErrors=errors;
+ throw error;
+}
