@@ -28,12 +28,14 @@ export function createFeedService({db,client,buildEmbed}){
    let sent=0;
    for(const sourceItem of items){
     if(!sourceItem?.url||claim.get(row.id,sourceItem.key))continue;
-    insert.run(row.id,sourceItem.key,sourceItem.title,sourceItem.url,sourceItem.publishedAt||Date.now());
     const channel=await client.channels.fetch(row.channel_id).catch(()=>null);
-    if(channel?.isTextBased()){
-     await channel.send({embeds:[buildEmbed({...sourceItem,sourceName:row.name})]}).catch(()=>{});
-     sent++;
-    }
+    if(!channel?.isTextBased())throw new Error('Kanal Discord tidak tersedia atau bukan kanal teks');
+    // Save the deduplication key only after Discord accepts the message.
+    // A transient send failure can then be retried on the next poll instead
+    // of silently losing an announcement forever.
+    await channel.send({embeds:[buildEmbed({...sourceItem,sourceName:row.name})]});
+    insert.run(row.id,sourceItem.key,sourceItem.title,sourceItem.url,sourceItem.publishedAt||Date.now());
+    sent++;
    }
    markSuccess.run(Date.now(),items.length,Date.now(),row.id);
    return {items:items.length,sent,elapsedMs:Date.now()-started};
