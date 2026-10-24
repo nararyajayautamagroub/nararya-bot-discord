@@ -1,0 +1,83 @@
+name: JKT48 Live Data Source Health
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "website/jkt48/app.js"
+      - "src/jkt48/member-database.js"
+      - ".github/workflows/jkt48-source-health.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: jkt48-live-data-health
+  cancel-in-progress: true
+
+jobs:
+  verify-public-member-sources:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Verify public member JSON sources
+        env:
+          ALL_MEMBERS_URL: https://raw.githubusercontent.com/FrenzY8/JKT48-Member/refs/heads/main/AllMember.json
+          ACTIVE_MEMBERS_URL: https://raw.githubusercontent.com/FrenzY8/JKT48-Member/refs/heads/main/ActiveMember.json
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/jkt48-source-health
+          curl --fail --silent --show-error --location --retry 3 --retry-delay 2 --max-time 25 "$ALL_MEMBERS_URL" -o /tmp/jkt48-source-health/all.json
+          curl --fail --silent --show-error --location --retry 3 --retry-delay 2 --max-time 25 "$ACTIVE_MEMBERS_URL" -o /tmp/jkt48-source-health/active.json
+          node --input-type=module <<'NODE'
+          import { readFileSync } from 'node:fs';
+
+          function readMembers(path, label) {
+            const raw = readFileSync(path, 'utf8');
+            let data;
+            try {
+              data = JSON.parse(raw);
+            } catch {
+              throw new Error(label + ': response is not valid JSON');
+            }
+
+            const rows = Array.isArray(data)
+              ? data
+              : ['data', 'members', 'results', 'items', 'all_members', 'active_members', 'AllMember', 'ActiveMember']
+                  .map(key => data?.[key])
+                  .find(Array.isArray);
+
+            if (!Array.isArray(rows) || rows.length === 0) {
+              throw new Error(label + ': expected a non-empty member array');
+            }
+
+            const named = rows.filter(row =>
+              typeof row === 'string'
+                ? row.trim().length > 0
+                : row && typeof row === 'object' &&
+                  ['name', 'member_name', 'memberName', 'nama', 'full_name', 'fullName', 'real_name', 'stage_name']
+                    .some(key => typeof row[key] === 'string' && row[key].trim().length > 0)
+            );
+
+            if (named.length === 0) {
+              throw new Error(label + ': no recognizable member names found');
+            }
+
+            console.log(label + ': valid JSON; ' + rows.length + ' records; ' + named.length + ' recognizable names');
+          }
+
+          readMembers('/tmp/jkt48-source-health/all.json', 'AllMember.json');
+          readMembers('/tmp/jkt48-source-health/active.json', 'ActiveMember.json');
+          console.log('Checked at: ' + new Date().toISOString());
+          NODE
