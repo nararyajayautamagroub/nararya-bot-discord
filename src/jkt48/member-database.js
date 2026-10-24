@@ -14,7 +14,7 @@ const norm=v=>text(v).toLowerCase().normalize('NFKC').replace(/[^a-z0-9]+/g,' ')
 const first=(...values)=>values.find(v=>v!==undefined&&v!==null&&text(v)!=='');
 function generationOf(m){
  const raw=first(m.generation,m.generation_number,m.gen,m.generasi,m.generationName,m.generasiName);
- if(typeof raw==='number')return Number.isInteger(raw)&&raw>=1&&raw<=14?raw:null;
+ if(typeof raw==='number')return Number.isInteger(raw)&&raw>=1&&raw<=99?raw:null;
  const match=text(raw).match(/(?:gen(?:eration)?|generasi)?\s*([0-9]{1,2})/i);
  const n=match?Number(match[1]):null;
  return Number.isInteger(n)&&n>=1&&n<=99?n:null;
@@ -83,7 +83,7 @@ async function fetchSourceMembers(){
   const id=row.id||norm(row.name);
   const existing=merged.get(id)||merged.get(norm(row.name));
   if(existing){merged.set(existing.id,{...existing,...row,generation:existing.generation??row.generation,status:'active'});}
-  else if(row.generation&&row.generation<=14)merged.set(id,row);
+  else if(row.generation&&row.generation<=99)merged.set(id,row);
  }
  return [...merged.values()];
 }
