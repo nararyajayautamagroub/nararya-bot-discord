@@ -264,3 +264,38 @@ html[data-theme="dark"] .modal-card input,html[data-theme="dark"] .settings-grid
   .hero h1{font-size:clamp(34px,10vw,54px)}
   .member-grid,.feature-grid,.game-grid,.feed-grid{grid-template-columns:1fr}
 }
+
+
+/* 3.3 UI polish: calmer surfaces, consistent controls, and clearer focus states. */
+:root{
+  --radius:16px;
+  --shadow:0 8px 28px rgba(40,12,16,.07);
+}
+:where(button,a,input,select):focus-visible{
+  outline:3px solid rgba(215,25,32,.42);
+  outline-offset:3px;
+}
+.button,.account-button,.mini-button,.icon-button,.hamburger{
+  border-radius:12px;
+  transition:transform .18s ease,box-shadow .18s ease,background-color .18s ease,border-color .18s ease;
+}
+.button-red,.account-button{
+  box-shadow:0 5px 14px rgba(215,25,32,.14);
+}
+.button-red:hover,.account-button:hover{
+  box-shadow:0 8px 20px rgba(215,25,32,.2);
+}
+.embed-card,.feature-card,.game-card,.feed-card,.source-panel{
+  box-shadow:0 4px 18px rgba(40,12,16,.035);
+}
+.input-wrap input,.select-wrap select,.language-select select,.settings-grid select{
+  min-height:44px;
+  border-radius:12px;
+}
+.member-meta{
+  gap:12px;
+  flex-wrap:wrap;
+}
+@media(prefers-reduced-motion:reduce){
+  .button,.account-button,.mini-button,.icon-button,.hamburger{transition:none}
+}
