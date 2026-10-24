@@ -17,7 +17,7 @@ function generationOf(m){
  if(typeof raw==='number')return Number.isInteger(raw)&&raw>=1&&raw<=14?raw:null;
  const match=text(raw).match(/(?:gen(?:eration)?|generasi)?\s*([0-9]{1,2})/i);
  const n=match?Number(match[1]):null;
- return Number.isInteger(n)&&n>=1&&n<=14?n:null;
+ return Number.isInteger(n)&&n>=1&&n<=99?n:null;
 }
 function arrayFrom(data){
  if(Array.isArray(data))return data;
@@ -67,10 +67,14 @@ async function fetchSourceMembers(){
  const [allData,activeData]=await Promise.all([fetchJson(SOURCES.all),fetchJson(SOURCES.active)]);
  const all=arrayFrom(allData).map(x=>memberRecord(x,false)).filter(Boolean);
  const activeRows=arrayFrom(activeData).map(x=>memberRecord(x,true)).filter(Boolean);
+ // Treat an empty/unrecognized all-members payload as a source failure, not a
+ // successful sync. This prevents a temporary API/schema change from making
+ // the database look freshly updated with only supplemental static rows.
+ if(!all.length)throw new Error('Sumber seluruh anggota kosong atau format JSON tidak dikenali');
  const activeKeys=new Set(activeRows.flatMap(x=>[x.id,norm(x.name)]));
  const merged=new Map();
  for(const row of all){
-  if(row.generation===null||row.generation===undefined||row.generation<1||row.generation>14)continue;
+  if(row.generation===null||row.generation===undefined||row.generation<1||row.generation>99)continue;
   const active=activeKeys.has(row.id)||activeKeys.has(norm(row.name));
   merged.set(row.id,{...row,status:active?'active':row.status==='graduated'?'graduated':'historical'});
  }
@@ -92,7 +96,7 @@ async function fetchApiMembers(){
   const res=await request(u,{headers:{accept:'application/json','user-agent':'Nararya-Bot-Discord/1.0'}});
   if(res.statusCode<200||res.statusCode>=300)return [];
   const data=await res.body.json();
-  return arrayFrom(data).map(x=>memberRecord(x,false)).filter(x=>x&&x.generation>=1&&x.generation<=14);
+  return arrayFrom(data).map(x=>memberRecord(x,false)).filter(x=>x&&x.generation>=1&&x.generation<=99);
  }catch{return []}
 }
 
